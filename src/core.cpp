@@ -28,7 +28,7 @@ namespace rm {
 
     Armour::Armour(std::vector<rm::LightBar> lightBars) {
         if (lightBars.size() != 2) {
-            throw std::runtime_error("Armour must be initialized with 2 rm::LightBar (s)");
+            throw std::runtime_error("Armour must be initialized with 2 rm::LightBar (s).");
         }
 
         // sort light bars left to right

@@ -9,11 +9,16 @@
 
 namespace rm {
     enum ForceType {
-        HERO = 0,
-        STANDARD = 1,
-        ENGINEER = 2,
-        AERIAL = 3,
-        SENTRY = 4
+        FORCE_HERO = 0,
+        FORCE_STANDARD = 1,
+        FORCE_ENGINEER = 2,
+        FORCE_AERIAL = 3,
+        FORCE_SENTRY = 4
+    };
+
+    enum CampType {
+        CAMP_RED = 0,
+        CAMP_BLUE = 1
     };
 
     class LightBar {
@@ -31,7 +36,7 @@ namespace rm {
         cv::Point2f vertices[4];
         cv::Point2f center;
         cv::Size2f size;
-        float rank;
+        float rank = -1;
 
         Armour(std::vector<rm::LightBar> lightBars);
     };

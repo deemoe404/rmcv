@@ -5,7 +5,6 @@
 #ifndef RM_STANDARD2022_IMGPROC_H
 #define RM_STANDARD2022_IMGPROC_H
 
-#include "opencv2/opencv.hpp"
 #include "core.h"
 
 namespace rm {

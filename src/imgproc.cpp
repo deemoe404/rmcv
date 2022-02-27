@@ -14,29 +14,13 @@ namespace rm {
     }
 
     void CalcGamma(const cv::Mat &input, cv::Mat &output, const float gamma = 0.5f) {
-        unsigned char bin[256];
+        cv::Mat lookUpTable(1, 256, CV_8U);
+        uchar *p = lookUpTable.ptr();
         for (int i = 0; i < 256; ++i) {
-            bin[i] = cv::saturate_cast<uchar>(pow((float) (i / 255.0), gamma) * 255.0f);
+            p[i] = cv::saturate_cast<uchar>(pow(i / 255.0, gamma) * 255.0);
         }
-        output = input.clone();
-        const int channels = output.channels();
-        switch (channels) {
-            case 1: {
-                cv::MatIterator_<uchar> it, end;
-                for (it = output.begin<uchar>(), end = output.end<uchar>(); it != end; it++)
-                    *it = bin[(*it)];
-                break;
-            }
-            case 3: {
-                cv::MatIterator_<cv::Vec3b> it, end;
-                for (it = output.begin<cv::Vec3b>(), end = output.end<cv::Vec3b>(); it != end; it++) {
-                    (*it)[0] = bin[((*it)[0])];
-                    (*it)[1] = bin[((*it)[1])];
-                    (*it)[2] = bin[((*it)[2])];
-                }
-                break;
-            }
-        }
+
+        cv::LUT(input, lookUpTable, output);
     }
 
     void ExtractColor(const cv::Mat &input, cv::Mat &output, const rm::CampType enemy) {

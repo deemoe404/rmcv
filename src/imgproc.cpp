@@ -5,7 +5,7 @@
 #include "imgproc.h"
 
 namespace rm {
-    void CalcRatio(const cv::Point2f srcPts[4], const cv::Point2f dstPts[4], const cv::Mat &input, cv::Mat &output) {
+    void CalcRatio(cv::Mat &input, cv::Mat &output, cv::Point2f srcPts[4], cv::Point2f dstPts[4]) {
         cv::Mat tmp;
         auto warp = cv::getAffineTransform(srcPts, dstPts);
         cv::warpAffine(input, tmp, warp, tmp.size());
@@ -13,7 +13,7 @@ namespace rm {
         tmp(roi).copyTo(output);
     }
 
-    void CalcGamma(const cv::Mat &input, cv::Mat &output, const float gamma = 0.5f) {
+    void CalcGamma(cv::Mat &input, cv::Mat &output, float gamma = 0.5f) {
         cv::Mat lookUpTable(1, 256, CV_8U);
         uchar *p = lookUpTable.ptr();
         for (int i = 0; i < 256; ++i) {
@@ -23,7 +23,7 @@ namespace rm {
         cv::LUT(input, lookUpTable, output);
     }
 
-    void ExtractColor(const cv::Mat &input, cv::Mat &output, const rm::CampType enemy) {
+    void ExtractColor(cv::Mat &input, cv::Mat &output, rm::CampType enemy) {
         cv::Mat hsv;
         cv::cvtColor(input, hsv, cv::COLOR_BGR2HSV);
 

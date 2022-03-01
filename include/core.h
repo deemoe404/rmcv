@@ -6,6 +6,11 @@
 #define RM_STANDARD2022_CORE_H
 
 #include "opencv2/opencv.hpp"
+#include <mutex>
+#include <condition_variable>
+#include <deque>
+#include <queue>
+#include <memory>
 
 namespace rm {
     enum ForceType {
@@ -36,9 +41,34 @@ namespace rm {
         cv::Point2f vertices[4];
         cv::Point2f center;
         cv::Size2f size;
+        cv::Mat rvecs;
+        cv::Mat tvecs;
+        float area = 0;
         float rank = -1;
 
         Armour(std::vector<rm::LightBar> lightBars);
+    };
+
+    template<typename DATATYPE, typename SEQUENCE = std::deque<DATATYPE>>
+    class ConcurrenceQueue {
+    public:
+        ConcurrenceQueue() = default;
+        ConcurrenceQueue(const ConcurrenceQueue &other);
+        ConcurrenceQueue(ConcurrenceQueue &&) = delete;
+        ConcurrenceQueue &operator=(const ConcurrenceQueue &) = delete;
+
+        ~ConcurrenceQueue() = default;
+
+        void push(const DATATYPE &data);
+        void push(DATATYPE &&data);
+
+        std::shared_ptr<DATATYPE> tryPop();
+        std::shared_ptr<DATATYPE> pop();
+
+    private:
+        std::queue<DATATYPE, SEQUENCE> m_data;
+        mutable std::mutex m_mutex;
+        std::condition_variable m_cond;
     };
 
 }

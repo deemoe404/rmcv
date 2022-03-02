@@ -50,14 +50,14 @@ namespace rm {
     };
 
     template<typename DATATYPE, typename SEQUENCE = std::deque<DATATYPE>>
-    class ConcurrenceQueue {
+    class ParallelQueue {
     public:
-        ConcurrenceQueue() = default;
-        ConcurrenceQueue(const ConcurrenceQueue &other);
-        ConcurrenceQueue(ConcurrenceQueue &&) = delete;
-        ConcurrenceQueue &operator=(const ConcurrenceQueue &) = delete;
+        ParallelQueue() = default;
+        ParallelQueue(const ParallelQueue &other);
+        ParallelQueue(ParallelQueue &&) = delete;
+        ParallelQueue &operator=(const ParallelQueue &) = delete;
 
-        ~ConcurrenceQueue() = default;
+        ~ParallelQueue() = default;
 
         void push(const DATATYPE &data);
         void push(DATATYPE &&data);

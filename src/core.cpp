@@ -43,4 +43,42 @@ namespace rm {
             vertices[i++] = lightBar.vertices[i];
         }
     }
+
+    template<typename DATATYPE, typename SEQUENCE>
+    ParallelQueue<DATATYPE, SEQUENCE>::ParallelQueue(const ParallelQueue &other) {
+        std::lock_guard<std::mutex> lg(other.m_mutex);
+        m_data = other.m_data;
+    }
+
+    template<typename DATATYPE, typename SEQUENCE>
+    void ParallelQueue<DATATYPE, SEQUENCE>::push(const DATATYPE &data) {
+        std::lock_guard<std::mutex> lg(m_mutex);
+        m_data.push(data);
+        m_cond.notify_one();
+    }
+
+    template<typename DATATYPE, typename SEQUENCE>
+    void ParallelQueue<DATATYPE, SEQUENCE>::push(DATATYPE &&data) {
+        std::lock_guard<std::mutex> lg(m_mutex);
+        m_data.push(std::move(data));
+        m_cond.notify_one();
+    }
+
+    template<typename DATATYPE, typename SEQUENCE>
+    std::shared_ptr<DATATYPE> ParallelQueue<DATATYPE, SEQUENCE>::tryPop() {
+        std::lock_guard<std::mutex> lg(m_mutex);
+        if (m_data.empty()) return {};
+        auto res = std::make_shared<DATATYPE>(m_data.front());
+        m_data.pop();
+        return res;
+    }
+
+    template<typename DATATYPE, typename SEQUENCE>
+    std::shared_ptr<DATATYPE> ParallelQueue<DATATYPE, SEQUENCE>::pop() {
+        std::unique_lock<std::mutex> lg(m_mutex);
+        m_cond.wait(lg, [this] { return !m_data.empty(); });
+        auto res = std::make_shared<DATATYPE>(std::move(m_data.front()));
+        m_data.pop();
+        return res;
+    }
 }

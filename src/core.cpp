@@ -6,20 +6,7 @@
 
 namespace rm {
     LightBar::LightBar(cv::RotatedRect ellipse) {
-        cv::Point2f temp[4];
-        ellipse.points(temp);
-
-        // sort vertices ascending by y
-        std::sort(temp, temp + 4,
-                  [](cv::Point2f point_1, cv::Point2f point_2) {
-                      return point_1.y < point_2.y;
-                  });
-
-        bool swap_up = temp[0].x < temp[1].x, swap_down = temp[2].x < temp[3].x;
-        vertices[0] = swap_down ? temp[2] : temp[3]; //left down
-        vertices[1] = swap_up ? temp[0] : temp[1];   //left up
-        vertices[2] = swap_up ? temp[1] : temp[0];   //right up
-        vertices[3] = swap_down ? temp[3] : temp[2]; //right down
+        VerticesRectify(ellipse, vertices);
 
         center = ellipse.center;
         size = ellipse.size;

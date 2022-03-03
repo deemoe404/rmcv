@@ -6,6 +6,7 @@
 #define RM_STANDARD2022_CORE_H
 
 #include "opencv2/opencv.hpp"
+#include "utils.h"
 #include <mutex>
 #include <condition_variable>
 #include <deque>
@@ -33,7 +34,7 @@ namespace rm {
         cv::Size2f size;
         float angle;
 
-        LightBar(cv::RotatedRect ellipse);
+        explicit LightBar(cv::RotatedRect ellipse);
     };
 
     class Armour {
@@ -46,7 +47,7 @@ namespace rm {
         float area = 0;
         float rank = -1;
 
-        Armour(std::vector<rm::LightBar> lightBars);
+        explicit Armour(std::vector<rm::LightBar> lightBars);
     };
 
     template<typename DATATYPE, typename SEQUENCE = std::deque<DATATYPE>>

@@ -7,12 +7,20 @@
 
 #include <cmath>
 #include <vector>
+#include "opencv2/opencv.hpp"
 
 namespace rm {
+    enum RectType {
+        RECT_TALL = 0,
+        RECT_SIDE = 1
+    };
+
     double NewtonIteration(double (*fd)(double), double x0, double error, int cycle);
 
-    double NewtonIteration(double (*fd)(double, std::vector<double>), const std::vector<double>& literals, double x0,
+    double NewtonIteration(double (*fd)(double, std::vector<double>), const std::vector<double> &literals, double x0,
                            double error, int cycle);
+
+    void VerticesRectify(cv::RotatedRect &input, cv::Point2f *output, RectType type);
 }
 
 #endif //RM_STANDARD2022_UTILS_H

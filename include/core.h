@@ -7,6 +7,7 @@
 
 #include "opencv2/opencv.hpp"
 #include "utils.h"
+#include "serialport.h"
 #include <mutex>
 #include <condition_variable>
 #include <deque>
@@ -15,16 +16,11 @@
 
 namespace rm {
     enum ForceType {
-        FORCE_HERO = 0,
-        FORCE_STANDARD = 1,
-        FORCE_ENGINEER = 2,
-        FORCE_AERIAL = 3,
-        FORCE_SENTRY = 4
+        FORCE_HERO = 0, FORCE_STANDARD = 1, FORCE_ENGINEER = 2, FORCE_AERIAL = 3, FORCE_SENTRY = 4
     };
 
     enum CampType {
-        CAMP_RED = 0,
-        CAMP_BLUE = 1
+        CAMP_RED = 0, CAMP_BLUE = 1
     };
 
     class LightBar {
@@ -52,24 +48,29 @@ namespace rm {
 
     template<typename DATATYPE, typename SEQUENCE = std::deque<DATATYPE>>
     class ParallelQueue {
+    private:
+        std::condition_variable m_cond;
+        std::queue<DATATYPE, SEQUENCE> m_data;
+        mutable std::mutex m_mutex;
+
     public:
         ParallelQueue() = default;
+
         ParallelQueue(const ParallelQueue &other);
+
         ParallelQueue(ParallelQueue &&) = delete;
-        ParallelQueue &operator=(const ParallelQueue &) = delete;
 
         ~ParallelQueue() = default;
 
+        ParallelQueue &operator=(const ParallelQueue &) = delete;
+
         void push(const DATATYPE &data);
+
         void push(DATATYPE &&data);
 
         std::shared_ptr<DATATYPE> tryPop();
-        std::shared_ptr<DATATYPE> pop();
 
-    private:
-        std::queue<DATATYPE, SEQUENCE> m_data;
-        mutable std::mutex m_mutex;
-        std::condition_variable m_cond;
+        std::shared_ptr<DATATYPE> pop();
     };
 
 }

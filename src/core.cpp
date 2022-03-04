@@ -6,7 +6,7 @@
 
 namespace rm {
     LightBar::LightBar(cv::RotatedRect ellipse) {
-        VerticesRectify(ellipse, vertices);
+        VerticesRectify(ellipse, vertices, RECT_TALL);
 
         center = ellipse.center;
         size = ellipse.size;

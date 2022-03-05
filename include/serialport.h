@@ -75,7 +75,7 @@ namespace rm {
     public:
         SerialPort() = default;
 
-        bool Initialize(const char *device);
+        bool Initialize(const char *device = "/dev/ttyUSB0");
 
         bool Send(Response &message);
 

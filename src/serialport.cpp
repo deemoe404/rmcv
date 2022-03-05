@@ -5,7 +5,7 @@
 #include "serialport.h"
 
 namespace rm {
-    bool SerialPort::Initialize(const char *device = "/dev/ttyUSB0") {
+    bool SerialPort::Initialize(const char *device) {
         fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
         if (fd != -1) {
             fcntl(fd, F_SETFL, 0);
@@ -68,7 +68,7 @@ namespace rm {
         FD_SET(fd, &fdRead);
 
         struct timeval timeout{};
-        timeout.tv_sec = 600;
+        timeout.tv_sec = 5;
         timeout.tv_usec = 0;
 
         if (select(fd + 1, &fdRead, nullptr, nullptr, &timeout) <= 0) {

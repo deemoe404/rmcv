@@ -27,16 +27,14 @@ namespace rm {
     } BitFloat;
 
     typedef struct {
-        uc header;
         uc camp;
         uc mode;
         uc speed;
-        uc timestamp;
+        uint16 timestamp;
         BitFloat pitch;
         BitFloat yaw;
         BitFloat pitchSpeed;
         BitFloat yawSpeed;
-        uc crc;
     } Request;
 
     typedef struct {
@@ -72,7 +70,7 @@ namespace rm {
         int fd = -1;
         uc buffer[22]{};
 
-        static uc LookupCRC(uc *data, uc dataLen);
+        static uc lookupCRC(uc *data, uc dataLen);
 
     public:
         SerialPort() = default;

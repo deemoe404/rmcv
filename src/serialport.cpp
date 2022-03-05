@@ -28,11 +28,10 @@ namespace rm {
                 return !tcsetattr(fd, TCSANOW, &options);
             }
         }
-        std::perror("Failed opening serial port");
         return false;
     }
 
-    uc SerialPort::LookupCRC(uc *data, uc dataLen) {
+    uc SerialPort::lookupCRC(uc *data, uc dataLen) {
         uint8_t crc = 0x00;
 
         while (dataLen--) {
@@ -57,18 +56,68 @@ namespace rm {
         buffer[7] = message.yaw.bit[2];
         buffer[8] = message.yaw.bit[3];
 
+        //rank
         buffer[9] = message.rank;
 
-        if (write(fd, buffer, 10) > 0) {
-            return true;
-        } else {
-            std::perror("Failed writing to serial port");
-            return false;
-        }
+        return write(fd, buffer, 10) > 0;
     }
 
     bool SerialPort::Receive(Request &message) {
-        return false;
+        fd_set fdRead;
+        FD_ZERO(&fdRead);
+        FD_SET(fd, &fdRead);
+
+        struct timeval timeout{};
+        timeout.tv_sec = 600;
+        timeout.tv_usec = 0;
+
+        if (select(fd + 1, &fdRead, nullptr, nullptr, &timeout) <= 0) {
+            return false;
+        }
+
+        if (!FD_ISSET(fd, &fdRead)) {
+            return false;
+        }
+
+        if (read(fd, buffer, 22) > 0) {
+            if (buffer[0] != 0x38) {
+                return false;
+            }
+
+            if (buffer[21] != lookupCRC(buffer, 21)) {
+                return false;
+            }
+
+            // TODO: confirm the definition of camp & mode.
+            message.camp = buffer[1] & 0x01;
+            message.mode = (buffer[1] & 0x04) >> 2;
+            message.speed = buffer[2];
+            message.timestamp = buffer[3] << 8 | buffer[4];
+
+            message.yaw.bit[0] = buffer[5];
+            message.yaw.bit[1] = buffer[6];
+            message.yaw.bit[2] = buffer[7];
+            message.yaw.bit[3] = buffer[8];
+
+            message.pitch.bit[0] = buffer[9];
+            message.pitch.bit[1] = buffer[10];
+            message.pitch.bit[2] = buffer[11];
+            message.pitch.bit[3] = buffer[12];
+
+            message.pitchSpeed.bit[0] = buffer[13];
+            message.pitchSpeed.bit[1] = buffer[14];
+            message.pitchSpeed.bit[2] = buffer[15];
+            message.pitchSpeed.bit[3] = buffer[16];
+
+            message.yawSpeed.bit[0] = buffer[17];
+            message.yawSpeed.bit[1] = buffer[18];
+            message.yawSpeed.bit[2] = buffer[19];
+            message.yawSpeed.bit[3] = buffer[20];
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     void SerialPort::Destroyed() const {
@@ -76,4 +125,5 @@ namespace rm {
             close(fd);
         }
     }
+
 }

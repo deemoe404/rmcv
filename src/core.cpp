@@ -2,7 +2,7 @@
 // Created by yaione on 2/26/2022.
 //
 
-#include "core.h"
+#include "rmcv/core/core.h"
 
 namespace rm {
     LightBar::LightBar(cv::RotatedRect ellipse) {

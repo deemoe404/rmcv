@@ -5,7 +5,7 @@
 #ifndef RM_STANDARD2022_IMGPROC_H
 #define RM_STANDARD2022_IMGPROC_H
 
-#include "core.h"
+#include "rmcv/core/core.h"
 
 namespace rm {
     void CalcRatio(cv::Mat &input, cv::Mat &output, cv::Point2f srcPts[4], cv::Point2f dstPts[4]);

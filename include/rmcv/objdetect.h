@@ -5,7 +5,7 @@
 #ifndef RM_STANDARD2022_OBJDETECT_H
 #define RM_STANDARD2022_OBJDETECT_H
 
-#include "core.h"
+#include "core/core.h"
 
 namespace rm {
     void FindLightBars(std::vector<std::vector<cv::Point>> &input, std::vector<rm::LightBar> &output, float minRatio,

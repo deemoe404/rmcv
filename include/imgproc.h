@@ -10,7 +10,7 @@
 namespace rm {
     void CalcRatio(cv::Mat &input, cv::Mat &output, cv::Point2f srcPts[4], cv::Point2f dstPts[4]);
 
-    void CalcGamma(cv::Mat &input, cv::Mat &output, float gamma);
+    void CalcGamma(cv::Mat &input, cv::Mat &output, float gamma = 0.5f);
 
     void ExtractColor(cv::Mat &input, cv::Mat &output, rm::CampType enemy);
 }

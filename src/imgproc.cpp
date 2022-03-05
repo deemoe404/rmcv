@@ -9,11 +9,11 @@ namespace rm {
         cv::Mat tmp;
         auto warp = cv::getAffineTransform(srcPts, dstPts);
         cv::warpAffine(input, tmp, warp, tmp.size());
-        cv::Rect roi(0, 0, dstPts[1].x, dstPts[1].x);
+        cv::Rect roi(0, 0, (int) dstPts[1].x, (int) dstPts[1].x);
         tmp(roi).copyTo(output);
     }
 
-    void CalcGamma(cv::Mat &input, cv::Mat &output, float gamma = 0.5f) {
+    void CalcGamma(cv::Mat &input, cv::Mat &output, float gamma) {
         cv::Mat lookUpTable(1, 256, CV_8U);
         uchar *p = lookUpTable.ptr();
         for (int i = 0; i < 256; ++i) {

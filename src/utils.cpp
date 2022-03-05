@@ -5,7 +5,7 @@
 #include "utils.h"
 
 namespace rm {
-    double NewtonIteration(double (*fd)(double), double x0 = 0, double error = 0.0001, int cycle = 1024) {
+    double NewtonIteration(double (*fd)(double), double x0, double error, int cycle) {
         double a = x0;
         double x = x0 - fd(x0);
 
@@ -19,9 +19,8 @@ namespace rm {
         return x;
     }
 
-    double
-    NewtonIteration(double (*fd)(double, std::vector<double>), const std::vector<double> &literals = {}, double x0 = 0,
-                    double error = 0.0001, int cycle = 1024) {
+    double NewtonIteration(double (*fd)(double, std::vector<double>), const std::vector<double> &literals, double x0,
+                           double error, int cycle) {
         double a = x0;
         double x = x0 - fd(x0, literals);
 
@@ -40,10 +39,9 @@ namespace rm {
         input.points(temp);
 
         // sort vertices ascending by y
-        std::sort(temp, temp + 4,
-                  [](cv::Point2f point_1, cv::Point2f point_2) {
-                      return point_1.y < point_2.y;
-                  });
+        std::sort(temp, temp + 4, [](cv::Point2f point_1, cv::Point2f point_2) {
+            return point_1.y < point_2.y;
+        });
 
         bool swap_up = temp[0].x < temp[1].x, swap_down = temp[2].x < temp[3].x;
         output[0] = swap_down ? temp[2] : temp[3]; //left down

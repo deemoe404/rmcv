@@ -11,14 +11,14 @@
 
 namespace rm {
     enum RectType {
-        RECT_TALL = 0,
-        RECT_SIDE = 1
+        RECT_TALL = 0, RECT_SIDE = 1
     };
 
-    double NewtonIteration(double (*fd)(double), double x0, double error, int cycle);
+    double NewtonIteration(double (*fd)(double), double x0 = 0, double error = 0.001, int cycle = 1024);
 
-    double NewtonIteration(double (*fd)(double, std::vector<double>), const std::vector<double> &literals, double x0,
-                           double error, int cycle);
+    double
+    NewtonIteration(double (*fd)(double, std::vector<double>), const std::vector<double> &literals, double x0 = 0,
+                    double error = 0.001, int cycle = 1024);
 
     void VerticesRectify(cv::RotatedRect &input, cv::Point2f *output, RectType type);
 }

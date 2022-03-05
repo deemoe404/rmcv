@@ -15,8 +15,12 @@
 #include <memory>
 
 namespace rm {
+    enum ArmourType {
+        ARMOUR_BIG = 0, ARMOUR_SMALL = 1
+    };
+
     enum ForceType {
-        FORCE_HERO = 0, FORCE_STANDARD = 1, FORCE_ENGINEER = 2, FORCE_AERIAL = 3, FORCE_SENTRY = 4
+        FORCE_NULL = -1, FORCE_HERO = 0, FORCE_STANDARD = 1, FORCE_ENGINEER = 2, FORCE_AERIAL = 3, FORCE_SENTRY = 4
     };
 
     enum CampType {
@@ -36,14 +40,18 @@ namespace rm {
     class Armour {
     public:
         cv::Point2f vertices[4];
-        cv::Point2f center;
-        cv::Size2f size;
+        cv::Rect box;
         cv::Mat rvecs;
         cv::Mat tvecs;
-        float area = 0;
+        rm::ForceType forceType = rm::FORCE_NULL;
+        rm::ArmourType armourType = rm::ARMOUR_SMALL;
+        double airTime;
+        float pitch;
+        float yaw;
+        float distance = 0;
         float rank = -1;
 
-        explicit Armour(std::vector<rm::LightBar> lightBars);
+        explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType type = rm::ARMOUR_SMALL);
     };
 
     template<typename DATATYPE, typename SEQUENCE = std::deque<DATATYPE>>

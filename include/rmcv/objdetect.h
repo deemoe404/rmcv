@@ -14,9 +14,20 @@ namespace rm {
     void FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float angleDif, float angleErr,
                     float minBoxRatio, float maxBoxRatio, float duoRatio);
 
-    void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs);
+    /// Use PNP algorithm to estimate the pose in 3D of Armour.
+    /// \param target Armour which changes is to make on.
+    /// \param cameraMatrix
+    /// \param distCoeffs
+    /// \param exactSize Real size of the Armour, unit in mm.
+    void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Point2f &exactSize);
 
-    double SolveAirTrack(rm::Armour &input, double g, double v0, double hOffset);
+    /// Calculate the delta pitch, delta yaw and estimated time on air.
+    /// \param target Armour which changes is to make on.
+    /// \param g Acceleration of gravity.
+    /// \param v0 The initial speed of bullet.
+    /// \param hOffset Distance between camera and barrel, positive when barrel sets under camera.
+    /// \param motorAngle Positive upwards, unit in radians.
+    void SolveAirTrack(rm::Armour &target, double g, double v0, double hOffset, float motorAngle);
 }
 
 #endif //RM_STANDARD2022_OBJDETECT_H

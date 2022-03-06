@@ -16,24 +16,25 @@ namespace rm {
 
     }
 
-    double SolveAirTrack(rm::Armour &input, double g, double v0, double hOffset) {
-        double h = -input.tvecs.ptr<double>(0)[1] - hOffset;
-        double d = sqrt(pow(input.tvecs.ptr<double>(0)[0], 2) + pow(input.tvecs.ptr<double>(0)[2], 2)) / 100;
+    void SolveAirTrack(rm::Armour &input, double g, double v0, double hOffset, float motorAngle) {
+        double h = (input.tvecs.ptr<double>(0)[1] - hOffset) / 100;
+        double d = input.tvecs.ptr<double>(0)[2] / 100;
 
+        double dPitch = -atan2(h, d) + motorAngle;               // Horizontal related angle.
+        double hWorld = d * tan(dPitch);                            // Ground related height.
+        double shootTheta = rm::NewtonIteration(rm::ProjectileMotionFD, {g, d, hWorld, v0});
 
-
-        return rm::NewtonIteration(rm::ProjectileMotionFD, {g, d, h, v0});
+        input.pitch = (float) shootTheta - motorAngle;
+        input.yaw = (float) atan2(input.tvecs.ptr<double>(0)[0], input.tvecs.ptr<double>(0)[2]);
+        input.airTime = d / v0 * cos(shootTheta);
     }
 
-    void
-    SolveArmourPose(Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, std::vector<cv::Point2f> &exactSize) {
+    void SolveArmourPose(Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Point2f &exactSize) {
         target.rvecs = cv::Mat::zeros(3, 1, CV_64FC1);
         target.tvecs = cv::Mat::zeros(3, 1, CV_64FC1);
 
-        std::vector<cv::Point3f> exactPoint{cv::Point3f(0, 0, 0), cv::Point3f(0, 0, exactSize[target.armourType].y),
-                                            cv::Point3f(exactSize[target.armourType].x, 0,
-                                                        exactSize[target.armourType].y),
-                                            cv::Point3f(exactSize[target.armourType].x, 0, 0)};
+        std::vector<cv::Point3f> exactPoint{cv::Point3f(0, 0, 0), cv::Point3f(0, 0, exactSize.y),
+                                            cv::Point3f(exactSize.x, 0, exactSize.y), cv::Point3f(exactSize.x, 0, 0)};
 
         std::vector<cv::Point2f> tdCoordinate{cv::Point2f(target.vertices[0].x, target.vertices[0].y),
                                               cv::Point2f(target.vertices[1].x, target.vertices[1].y),

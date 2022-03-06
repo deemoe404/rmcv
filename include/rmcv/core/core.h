@@ -40,15 +40,14 @@ namespace rm {
     class Armour {
     public:
         cv::Point2f vertices[4];
-        cv::Rect box;
+        cv::Rect box; // Bounding rect
         cv::Mat rvecs;
         cv::Mat tvecs;
         rm::ForceType forceType = rm::FORCE_NULL;
         rm::ArmourType armourType = rm::ARMOUR_SMALL;
-        double airTime;
-        float pitch;
-        float yaw;
-        float distance = 0;
+        double airTime = 0;
+        float pitch = 0;
+        float yaw = 0;
         float rank = -1;
 
         explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType type = rm::ARMOUR_SMALL);

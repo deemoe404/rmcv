@@ -5,6 +5,15 @@
 #include "rmcv/core/serialport.h"
 
 namespace rm {
+    uc LookupCRC(uc *data, uc dataLen) {
+        uint8_t crc = 0x00;
+
+        while (dataLen--) {
+            crc = CRCTable[crc ^ *data++];
+        }
+        return crc;
+    }
+
     bool SerialPort::Initialize(const char *device) {
         fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
         if (fd != -1) {
@@ -29,15 +38,6 @@ namespace rm {
             }
         }
         return false;
-    }
-
-    uc SerialPort::lookupCRC(uc *data, uc dataLen) {
-        uint8_t crc = 0x00;
-
-        while (dataLen--) {
-            crc = CRCTable[crc ^ *data++];
-        }
-        return crc;
     }
 
     bool SerialPort::Send(Response &message) {
@@ -84,7 +84,7 @@ namespace rm {
                 return false;
             }
 
-            if (buffer[21] != lookupCRC(buffer, 21)) {
+            if (buffer[21] != LookupCRC(buffer, 21)) {
                 return false;
             }
 

@@ -8,6 +8,7 @@
 #include "opencv2/opencv.hpp"
 #include "utils.h"
 #include "serialport.h"
+#include "daheng/daheng.h"
 #include <mutex>
 #include <condition_variable>
 #include <deque>

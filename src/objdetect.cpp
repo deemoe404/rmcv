@@ -8,12 +8,37 @@ namespace rm {
 
     void FindLightBars(std::vector<std::vector<cv::Point>> &input, std::vector<rm::LightBar> &output, float minRatio,
                        float maxRatio, float minAngle, float maxAngle, float minArea) {
+        if (input.size() < 2) return;
+        output.clear();
 
+        for (auto &i: input) {
+            if (i.size() < 6 || cv::contourArea(i) < minArea) continue;
+
+            cv::RotatedRect ellipse = cv::fitEllipse(i);
+
+            // Aspect ratio
+            float ratio = std::max(ellipse.size.width, ellipse.size.height) /
+                          std::min(ellipse.size.width, ellipse.size.height);
+            if (ratio > maxRatio || ratio < minRatio) continue;
+
+            // Angle (Perpendicular to the frame is considered as zero degrees)
+            float angle = ellipse.angle > 90 ? ellipse.angle - 90 : ellipse.angle + 90;
+            if (angle > maxAngle || angle < minAngle) continue;
+
+            output.emplace_back(ellipse);
+        }
     }
 
     void FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float angleDif, float angleErr,
                     float minBoxRatio, float maxBoxRatio, float duoRatio) {
+        if (input.size() < 2) return;
+        output.clear();
 
+        for (int i = 0; i < input.size() - 1; i++) {
+            for (int j = i + 1; j < input.size(); j++) {
+                float angleDiff = abs(input[i].angle - input[j].angle);
+            }
+        }
     }
 
     void SolveAirTrack(rm::Armour &input, double g, double v0, double hOffset, float motorAngle) {

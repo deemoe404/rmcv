@@ -55,7 +55,7 @@ public:
         GXSetEnum(hDevice, GX_ENUM_ACQUISITION_FRAME_RATE_MODE, GX_ACQUISITION_FRAME_RATE_MODE_ON);
         GXSetFloat(hDevice, GX_FLOAT_ACQUISITION_FRAME_RATE, frameSpeed);
         GXSetFloat(hDevice, GX_FLOAT_EXPOSURE_TIME, expoosureTime);
-        GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_CONTINUOUS);
+        GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_OFF);
         status = GXSendCommand(hDevice, GX_COMMAND_ACQUISITION_START);
         if (status != GX_STATUS_SUCCESS) {
             return false;

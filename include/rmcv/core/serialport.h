@@ -30,11 +30,7 @@ namespace rm {
         uc camp;
         uc mode;
         uc speed;
-        uint16 timestamp;
         BitFloat pitch;
-        BitFloat yaw;
-        BitFloat pitchSpeed;
-        BitFloat yawSpeed;
     } Request;
 
     typedef struct {
@@ -67,7 +63,8 @@ namespace rm {
     class SerialPort {
     private:
         int fd = -1;
-        uc buffer[22]{};
+        uc receiveBuffer[8]{};
+        uc sendBuffer[10]{};
 
     public:
         SerialPort() = default;

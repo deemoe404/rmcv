@@ -42,24 +42,24 @@ namespace rm {
 
     bool SerialPort::Send(Response &message) {
         //check
-        buffer[0] = 0x66;
+        sendBuffer[0] = 0x66;
 
         //pitch
-        buffer[1] = message.pitch.bit[0];
-        buffer[2] = message.pitch.bit[1];
-        buffer[3] = message.pitch.bit[2];
-        buffer[4] = message.pitch.bit[3];
+        sendBuffer[1] = message.pitch.bit[0];
+        sendBuffer[2] = message.pitch.bit[1];
+        sendBuffer[3] = message.pitch.bit[2];
+        sendBuffer[4] = message.pitch.bit[3];
 
         //yaw
-        buffer[5] = message.yaw.bit[0];
-        buffer[6] = message.yaw.bit[1];
-        buffer[7] = message.yaw.bit[2];
-        buffer[8] = message.yaw.bit[3];
+        sendBuffer[5] = message.yaw.bit[0];
+        sendBuffer[6] = message.yaw.bit[1];
+        sendBuffer[7] = message.yaw.bit[2];
+        sendBuffer[8] = message.yaw.bit[3];
 
         //rank
-        buffer[9] = message.rank;
+        sendBuffer[9] = message.rank;
 
-        return write(fd, buffer, 10) > 0;
+        return write(fd, sendBuffer, 10) > 0;
     }
 
     bool SerialPort::Receive(Request &message) {
@@ -68,7 +68,7 @@ namespace rm {
         FD_SET(fd, &fdRead);
 
         struct timeval timeout{};
-        timeout.tv_sec = 5;
+        timeout.tv_sec = 1;
         timeout.tv_usec = 0;
 
         if (select(fd + 1, &fdRead, nullptr, nullptr, &timeout) <= 0) {
@@ -79,40 +79,24 @@ namespace rm {
             return false;
         }
 
-        if (read(fd, buffer, 22) > 0) {
-            if (buffer[0] != 0x38) {
+        if (read(fd, receiveBuffer, 8) == 8) {
+            if (receiveBuffer[0] != 0x38) {
                 return false;
             }
 
-            if (buffer[21] != LookupCRC(buffer, 21)) {
+            if (receiveBuffer[7] != LookupCRC(receiveBuffer, 7)) {
                 return false;
             }
 
             // TODO: confirm the definition of camp & mode.
-            message.camp = buffer[1] & 0x01;
-            message.mode = (buffer[1] & 0x04) >> 2;
-            message.speed = buffer[2];
-            message.timestamp = buffer[3] << 8 | buffer[4];
+            message.camp = receiveBuffer[1] & 0x01;
+            message.mode = (receiveBuffer[1] & 0x04) >> 2;
+            message.speed = receiveBuffer[2];
 
-            message.yaw.bit[0] = buffer[5];
-            message.yaw.bit[1] = buffer[6];
-            message.yaw.bit[2] = buffer[7];
-            message.yaw.bit[3] = buffer[8];
-
-            message.pitch.bit[0] = buffer[9];
-            message.pitch.bit[1] = buffer[10];
-            message.pitch.bit[2] = buffer[11];
-            message.pitch.bit[3] = buffer[12];
-
-            message.pitchSpeed.bit[0] = buffer[13];
-            message.pitchSpeed.bit[1] = buffer[14];
-            message.pitchSpeed.bit[2] = buffer[15];
-            message.pitchSpeed.bit[3] = buffer[16];
-
-            message.yawSpeed.bit[0] = buffer[17];
-            message.yawSpeed.bit[1] = buffer[18];
-            message.yawSpeed.bit[2] = buffer[19];
-            message.yawSpeed.bit[3] = buffer[20];
+            message.pitch.bit[0] = receiveBuffer[3];
+            message.pitch.bit[1] = receiveBuffer[4];
+            message.pitch.bit[2] = receiveBuffer[5];
+            message.pitch.bit[3] = receiveBuffer[6];
 
             return true;
         } else {

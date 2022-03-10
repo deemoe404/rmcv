@@ -9,7 +9,7 @@ namespace rm {
         cv::Mat tmp;
         auto warp = cv::getAffineTransform(srcPts, dstPts);
         cv::warpAffine(input, tmp, warp, tmp.size());
-        cv::Rect roi(0, 0, (int) dstPts[1].x, (int) dstPts[1].x);
+        cv::Rect roi(0, 0, (int) dstPts[2].y, (int) dstPts[1].x);
         tmp(roi).copyTo(output);
     }
 

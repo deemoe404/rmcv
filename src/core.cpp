@@ -5,12 +5,12 @@
 #include "rmcv/core/core.h"
 
 namespace rm {
-    LightBar::LightBar(cv::RotatedRect ellipse) {
-        VerticesRectify(ellipse, vertices, RECT_TALL);
+    LightBar::LightBar(cv::RotatedRect box, float angle) : angle(angle) {
+        VerticesRectify(box, vertices, RECT_TALL);
 
-        center = ellipse.center;
-        size = ellipse.size;
-        angle = ellipse.angle > 90 ? ellipse.angle - 90 : ellipse.angle + 90;
+        center = box.center;
+        size.height = max(box.size.height, box.size.width);
+        size.width = min(box.size.height, box.size.width);
     }
 
     Armour::Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType type) : armourType(type) {
@@ -25,9 +25,12 @@ namespace rm {
 
         int i = 0;
         for (auto lightBar: lightBars) {
-            vertices[i++] = lightBar.vertices[i];
-            vertices[i++] = lightBar.vertices[i];
+            vertices[i] = lightBar.vertices[i];
+            i++;
+            vertices[i] = lightBar.vertices[i];
+            i++;
         }
+//        printf("");
 
         box.x = (int) std::min(vertices[0].x, vertices[1].x);
         box.y = (int) std::min(vertices[1].x, vertices[2].x);

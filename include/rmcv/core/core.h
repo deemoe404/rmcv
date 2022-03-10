@@ -21,7 +21,7 @@ namespace rm {
     };
 
     enum ForceType {
-        FORCE_NULL = -1, FORCE_HERO = 0, FORCE_STANDARD = 1, FORCE_ENGINEER = 2, FORCE_AERIAL = 3, FORCE_SENTRY = 4
+        FORCE_HERO = 0, FORCE_STANDARD = 1, FORCE_ENGINEER = 2, FORCE_AERIAL = 3, FORCE_SENTRY = 4
     };
 
     enum CampType {
@@ -35,7 +35,7 @@ namespace rm {
         cv::Size2f size;
         float angle;
 
-        explicit LightBar(cv::RotatedRect ellipse);
+        explicit LightBar(cv::RotatedRect box, float angle);
     };
 
     class Armour {
@@ -44,7 +44,7 @@ namespace rm {
         cv::Rect box; // Bounding rect
         cv::Mat rvecs;
         cv::Mat tvecs;
-        rm::ForceType forceType = rm::FORCE_NULL;
+        rm::ForceType forceType = rm::FORCE_STANDARD;
         rm::ArmourType armourType = rm::ARMOUR_SMALL;
         double airTime = 0;
         float pitch = 0;

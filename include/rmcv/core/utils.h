@@ -45,6 +45,8 @@ namespace rm {
     /// \param literals The independent variables, in the order of g, d, h, v0.
     /// \return f(x)/f'(x)
     double ProjectileMotionFD(double theta, std::vector<double> literals);
+
+    float PointDistance(cv::Point2f pt1, cv::Point2f pt2);
 }
 
 #endif //RM_STANDARD2022_UTILS_H

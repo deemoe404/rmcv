@@ -3,32 +3,89 @@
 #include "rmcv/rmcv.h"
 
 int main() {
-
     DahengCamera camera;
     cv::Mat frames;
-    auto ts = (double) cv::getTickCount();
     int key;
 
     if (camera.dahengCameraInit((char *) "KE0210030295", 2000, 210)) {
         while (key != 'q') {
-            ts = (double) cv::getTickCount();
             frames = camera.getFrame();
 
             std::vector<cv::Mat> channels;
-            cv::Mat hsv;
-            //cv::cvtColor(frames, hsv, COLOR_BGR2HSV);
             cv::split(frames, channels);
 
-            cv::Mat gray;
-            cv::inRange(channels[0], 220, 255, gray);
+            cv::Mat gray = channels[0] - channels[2];
+            cv::Mat bin;
 
-            rm::CalcGamma(frames, frames, 0.25);
+            // Blue: bin[140,255], area[10), lb{ratio[3,15], ta(20]}
+            cv::inRange(gray, 140, 255, bin);
+            auto kernal = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
+            cv::morphologyEx(bin, bin, cv::MORPH_CLOSE, kernal);
+            std::vector<std::vector<cv::Point>> contours;
+            cv::findContours(bin, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE); // no roi
+
+//            for(int i = 0;i < contours.size();i++){
+//                if(cv::contourArea(contours[i]) < 10) continue;
+//                printf("%f\n", cv::contourArea(contours[i]));
+//                cv::drawContours(frames, contours, i, cv::Scalar(0, 0, 255), 1);
+//            }
+
+            std::vector<rm::LightBar> lbs;
+            rm::FindLightBars(contours, lbs, 3, 19, 20, 10);
+            std::vector<std::vector<cv::Point>> tmp;
+            for (auto &lb: lbs) {
+                std::vector<cv::Point> tmp2;
+                tmp2.push_back(lb.vertices[0]);
+                tmp2.push_back(lb.vertices[1]);
+                tmp2.push_back(lb.vertices[2]);
+                tmp2.push_back(lb.vertices[3]);
+                tmp.push_back(tmp2);
+            }
+            cv::drawContours(frames, tmp, -1, {0, 0, 255}, 1);
+
+            std::vector<rm::Armour> ams;
+            rm::FindArmour(lbs, ams, 25, 18, 0.325, 0.6, 0.75);
+            std::vector<std::vector<cv::Point>> tmp3;
+            for (auto &am: ams) {
+                std::vector<cv::Point> tmp2;
+                tmp2.push_back(am.vertices[0]);
+                tmp2.push_back(am.vertices[1]);
+                tmp2.push_back(am.vertices[2]);
+                tmp2.push_back(am.vertices[3]);
+                tmp3.push_back(tmp2);
+                cv::drawContours(frames, tmp3, -1, {0, 255, 255}, 1);
+            }
+
+            for (auto &am: ams) {
+//                cv::Mat m2 = frames(am.box);
+//
+                cv::Mat calcal;
+//                cv::Point2f test[3];
+//                test[0] = cv::Point2f(0, 0);
+//                test[1] = cv::Point2f(0, 15);
+//                test[2] = cv::Point2f(15, 15);
+////                test[3] = cv::Point2f(15, 0);
+                cv::Point2f pts1[4];
+                cv::Point2f pts2[3];
+
+                pts1[0] = am.vertices[0];
+                pts1[1] = am.vertices[3];
+                pts1[2] = am.vertices[1];
+//                pts1[3] = cv::Point2f( 0, 225 );
+
+                pts2[0] = cv::Point2f( 0, 0);
+                pts2[1] = cv::Point2f( 225, 0 );
+                pts2[2] = cv::Point2f( 0, 225 );
+
+                rm::CalcRatio(frames, calcal, pts1, pts2);
+                rm::CalcGamma(calcal, calcal, 0.25);
+                cv::imshow("aa", calcal);
+            }
 
 
-            cv::imshow("aaa", channels[2] - channels[1]);
-            cv::imshow("aaa2", frames);
+            cv::imshow("bin", bin);
+            cv::imshow("frame", frames);
 
-            std::cout << 1 / (((double) cv::getTickCount() - ts) / cv::getTickFrequency()) << std::endl;
             key = cv::waitKey(1);
         }
     }

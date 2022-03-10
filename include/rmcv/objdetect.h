@@ -9,10 +9,11 @@
 
 namespace rm {
     void FindLightBars(std::vector<std::vector<cv::Point>> &input, std::vector<rm::LightBar> &output, float minRatio,
-                       float maxRatio, float minAngle, float maxAngle, float minArea);
+                       float maxRatio, float tilAngle, float minArea);
 
-    void FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float angleDif, float angleErr,
-                    float minBoxRatio, float maxBoxRatio, float duoRatio);
+    void
+    FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float maxAngleDif, float errAngle,
+               float minBoxRatio, float maxBoxRatio, float lenRatio);
 
     /// Use PNP algorithm to estimate the pose in 3D of Armour.
     /// \param target Armour which changes is to make on.

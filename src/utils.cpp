@@ -66,4 +66,8 @@ namespace rm {
             return -1;
         }
     }
+
+    float PointDistance(cv::Point2f pt1, cv::Point2f pt2) {
+        return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
+    }
 }

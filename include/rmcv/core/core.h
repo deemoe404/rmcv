@@ -30,8 +30,8 @@ namespace rm {
 
     class LightBar {
     public:
-        cv::Point2f vertices[4];
-        cv::Point2f center;
+        cv::Point vertices[4]; // Four vertices around light bar
+        cv::Point center;
         cv::Size2f size;
         float angle;
 
@@ -40,8 +40,9 @@ namespace rm {
 
     class Armour {
     public:
-        cv::Point2f vertices[4];
-        cv::Rect box; // Bounding rect
+        cv::Point vertices[4]; // Vertices around two light bars
+        cv::Point iconBox[4];  // Vertices around icon
+        cv::Rect box;          // Bounding rect
         cv::Mat rvecs;
         cv::Mat tvecs;
         rm::ForceType forceType = rm::FORCE_STANDARD;
@@ -49,7 +50,7 @@ namespace rm {
         double airTime = 0;
         float pitch = 0;
         float yaw = 0;
-        float rank = -1;
+        char rank = -1;
 
         explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType type = rm::ARMOUR_SMALL);
     };

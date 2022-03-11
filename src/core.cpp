@@ -19,25 +19,24 @@ namespace rm {
         }
 
         // sort light bars left to right
-        std::sort(lightBars.begin(), lightBars.end(), [](rm::LightBar lightBar_1, rm::LightBar lightBar_2) {
-            return lightBar_1.center.x < lightBar_2.center.x;
+        std::sort(lightBars.begin(), lightBars.end(), [](rm::LightBar lightBar1, rm::LightBar lightBar2) {
+            return lightBar1.center.x < lightBar2.center.x;
         });
 
-        int i = 0;
+        int i = 0, j = 3;
         for (auto lightBar: lightBars) {
-            vertices[i] = lightBar.vertices[i];
-            i++;
-            vertices[i] = lightBar.vertices[i];
-            i++;
+            vertices[i++] = lightBar.vertices[j--];
+            vertices[i++] = lightBar.vertices[j--];
         }
-//        printf("");
 
-        box.x = (int) std::min(vertices[0].x, vertices[1].x);
-        box.y = (int) std::min(vertices[1].x, vertices[2].x);
-        box.width = (int) (std::max(std::max(vertices[0].x, vertices[1].x), std::max(vertices[2].x, vertices[3].x)) -
-                           std::min(std::min(vertices[0].x, vertices[1].x), std::min(vertices[2].x, vertices[3].x)));
-        box.height = (int) (std::max(std::max(vertices[0].y, vertices[1].y), std::max(vertices[2].y, vertices[3].y)) -
-                            std::min(std::min(vertices[0].y, vertices[1].y), std::min(vertices[2].y, vertices[3].y)));
+        float distanceL = rm::PointDistance(vertices[0], vertices[1]);
+        float distanceR = rm::PointDistance(vertices[2], vertices[3]);
+        int offsetL = (int) round((distanceL / 0.44f - distanceL) / 2);
+        int offsetR = (int) round((distanceR / 0.44f - distanceR) / 2);
+        ExCord(vertices[0], vertices[1], offsetL, iconBox[0], iconBox[1]);
+        ExCord(vertices[3], vertices[2], offsetR, iconBox[3], iconBox[2]);
+
+        box = cv::boundingRect(std::vector<cv::Point>({vertices[0], vertices[1], vertices[2], vertices[3]}));
     }
 
     template<typename DATATYPE, typename SEQUENCE>

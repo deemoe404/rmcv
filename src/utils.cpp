@@ -5,20 +5,20 @@
 #include "rmcv/core/utils.h"
 
 namespace rm {
-    void VerticesRectify(cv::RotatedRect &input, cv::Point2f *output, RectType type = RECT_TALL) {
+    void VerticesRectify(cv::RotatedRect &input, cv::Point *output, RectType type = RECT_TALL) {
         cv::Point2f temp[4];
         input.points(temp);
 
         // sort vertices ascending by y
-        std::sort(temp, temp + 4, [](cv::Point2f point_1, cv::Point2f point_2) {
-            return point_1.y < point_2.y;
+        std::sort(temp, temp + 4, [](cv::Point2f point1, cv::Point2f point2) {
+            return point1.y < point2.y;
         });
 
         bool swap_up = temp[0].x < temp[1].x, swap_down = temp[2].x < temp[3].x;
-        output[0] = swap_down ? temp[2] : temp[3]; //left down
-        output[1] = swap_up ? temp[0] : temp[1];   //left up
-        output[2] = swap_up ? temp[1] : temp[0];   //right up
-        output[3] = swap_down ? temp[3] : temp[2]; //right down
+        output[0] = swap_down ? temp[2] : temp[3]; // left down
+        output[1] = swap_up ? temp[0] : temp[1];   // left up
+        output[2] = swap_up ? temp[1] : temp[0];   // right up
+        output[3] = swap_down ? temp[3] : temp[2]; // right down
 
         // TODO: Add side support & handle some edge case.
     }
@@ -69,5 +69,70 @@ namespace rm {
 
     float PointDistance(cv::Point2f pt1, cv::Point2f pt2) {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
+    }
+
+    void ExCord(cv::Point pt1, cv::Point pt2, int deltaLen, cv::Point &dst1, cv::Point &dst2) {
+        // Special case
+        if (pt1.x == pt2.x) {
+            dst1.x = pt1.x;
+            dst2.x = pt1.x;
+
+            if (pt1.y > pt2.y) {
+                dst1.y = pt1.y + deltaLen;
+                dst2.y = pt2.y - deltaLen;
+            } else {
+                dst1.y = pt1.y - deltaLen;
+                dst2.y = pt2.y + deltaLen;
+            }
+        } else if (pt1.y == pt2.y) {
+            dst1.y = pt1.y;
+            dst2.y = pt1.y;
+
+            if (pt1.x > pt2.x) {
+                dst1.x = pt1.x + deltaLen;
+                dst2.x = pt2.x - deltaLen;
+            } else {
+                dst1.x = pt1.x - deltaLen;
+                dst2.x = pt2.x + deltaLen;
+            }
+            // Common case
+        } else {
+            float k = (float) (pt1.y - pt2.y) / (float) (pt1.x - pt2.x);
+            float theta = atan2((float) abs(pt1.y - pt2.y), (float) abs(pt1.x - pt2.x));
+            float b = (float) pt1.y - k * (float) pt1.x;
+            float zoom = cos(theta) * (float) deltaLen;
+
+            // Left tilt
+            if (k > 0) {
+                if (pt1.x > pt2.x) {
+                    dst1.x = (int) ((float) pt1.x + zoom);
+                    dst1.y = (int) (k * (float) dst1.x + b);
+
+                    dst2.x = (int) ((float) pt2.x - zoom);
+                    dst2.y = (int) (k * (float) dst2.x + b);
+                } else {
+                    dst1.x = (int) ((float) pt1.x - zoom);
+                    dst1.y = (int) (k * (float) dst1.x + b);
+
+                    dst2.x = (int) ((float) pt2.x + zoom);
+                    dst2.y = (int) (k * (float) dst2.x + b);
+                }
+                // Right tilt
+            } else {
+                if (pt1.x < pt2.x) {
+                    dst1.x = (int) ((float) pt1.x - zoom);
+                    dst1.y = (int) (k * (float) dst1.x + b);
+
+                    dst2.x = (int) ((float) pt2.x + zoom);
+                    dst2.y = (int) (k * (float) dst2.x + b);
+                } else {
+                    dst1.x = (int) ((float) pt1.x + zoom);
+                    dst1.y = (int) (k * (float) dst1.x + b);
+
+                    dst2.x = (int) ((float) pt2.x - zoom);
+                    dst2.y = (int) (k * (float) dst2.x + b);
+                }
+            }
+        }
     }
 }

@@ -18,7 +18,7 @@ namespace rm {
     /// \param input The original rectangle.
     /// \param output Reordered vertices.
     /// \param type Rectangle type.
-    void VerticesRectify(cv::RotatedRect &input, cv::Point2f *output, RectType type);
+    void VerticesRectify(cv::RotatedRect &input, cv::Point *output, RectType type);
 
     /// Use newton's iteration to approach the approx solve of function.
     /// \param fd The f(x)/f'(x) function of goal function.
@@ -47,6 +47,8 @@ namespace rm {
     double ProjectileMotionFD(double theta, std::vector<double> literals);
 
     float PointDistance(cv::Point2f pt1, cv::Point2f pt2);
+
+    void ExCord(cv::Point pt1, cv::Point pt2, int deltaLen, cv::Point &dst1, cv::Point &dst2);
 }
 
 #endif //RM_STANDARD2022_UTILS_H

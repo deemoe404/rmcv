@@ -41,11 +41,15 @@ namespace rm {
                 float angleDif = abs(input[i].angle - input[j].angle);
                 if (angleDif > maxAngleDif) continue;
 
-                float y = abs(input[i].center.y - input[j].center.y);
-                float x = abs(input[i].center.x - input[j].center.x);
-                float angle = atan2(y, x) * 180 / (float) CV_PI;
-                float errorI = abs(angle - input[i].angle + 90);
-                float errorJ = abs(angle - input[j].angle + 90);
+                int y = abs(input[i].center.y - input[j].center.y);
+                int x = abs(input[i].center.x - input[j].center.x);
+                float angle = (float) atan2(y, x) * 180 / (float) CV_PI;
+                float errorI = abs(
+                        input[i].angle > 90 ? abs(input[i].angle - angle) - 90 : abs(180 - input[i].angle - angle) -
+                                                                                 90);
+                float errorJ =  abs(
+                        input[j].angle > 90 ? abs(input[j].angle - angle) - 90 : abs(180 - input[j].angle - angle) -
+                                                                                 90);
                 if (errorI > errAngle || errorJ > errAngle) continue;
 
                 float heightI = input[i].size.height;
@@ -55,7 +59,6 @@ namespace rm {
 
                 float distance = rm::PointDistance(input[i].center, input[j].center);
                 float boxRatio = ((heightI + heightJ) / 2) / distance;
-                printf("%f\n", boxRatio);
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
                 output.push_back(rm::Armour({input[i], input[j]}, rm::ARMOUR_SMALL));

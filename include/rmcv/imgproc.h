@@ -8,7 +8,7 @@
 #include "rmcv/core/core.h"
 
 namespace rm {
-    void CalcRatio(cv::Mat &input, cv::Mat &output, cv::Point2f srcPts[4], cv::Point2f dstPts[4]);
+    void CalcRatio(cv::Mat &input, cv::Mat &output, cv::Point vertices[4], cv::Rect box, cv::Size outSize);
 
     void CalcGamma(cv::Mat &input, cv::Mat &output, float gamma = 0.5f);
 

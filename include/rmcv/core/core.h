@@ -41,8 +41,9 @@ namespace rm {
     class Armour {
     public:
         cv::Point vertices[4]; // Vertices around two light bars
-        cv::Point iconBox[4];  // Vertices around icon
+        cv::Point icon[4];     // Vertices around icon
         cv::Rect box;          // Bounding rect
+        cv::Rect iconBox;      // Icon rect
         cv::Mat rvecs;
         cv::Mat tvecs;
         rm::ForceType forceType = rm::FORCE_STANDARD;

@@ -33,10 +33,11 @@ namespace rm {
         float distanceR = rm::PointDistance(vertices[2], vertices[3]);
         int offsetL = (int) round((distanceL / 0.44f - distanceL) / 2);
         int offsetR = (int) round((distanceR / 0.44f - distanceR) / 2);
-        ExCord(vertices[0], vertices[1], offsetL, iconBox[0], iconBox[1]);
-        ExCord(vertices[3], vertices[2], offsetR, iconBox[3], iconBox[2]);
+        ExCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
+        ExCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
 
         box = cv::boundingRect(std::vector<cv::Point>({vertices[0], vertices[1], vertices[2], vertices[3]}));
+        iconBox = cv::boundingRect(std::vector<cv::Point>({icon[0], icon[1], icon[2], icon[3]}));
     }
 
     template<typename DATATYPE, typename SEQUENCE>

@@ -135,4 +135,17 @@ namespace rm {
             }
         }
     }
+
+    std::string PathCombine(const std::string &path1, const std::string &path2) {
+        std::filesystem::path fullPath = path1;
+        fullPath /= path2;
+        return fullPath.string();
+    }
+
+    std::string int2str(int number) {
+        char str[64] = {0};
+        std::snprintf(str, 64, "%d", number);
+        std::string res(str);
+        return res;
+    }
 }

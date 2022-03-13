@@ -7,6 +7,7 @@
 
 #include <cmath>
 #include <vector>
+#include "filesystem"
 #include "opencv2/opencv.hpp"
 
 namespace rm {
@@ -46,9 +47,24 @@ namespace rm {
     /// \return f(x)/f'(x)
     double ProjectileMotionFD(double theta, std::vector<double> literals);
 
+    /// Return the distance between two given points.
+    /// \param pt1 Point one.
+    /// \param pt2 Point two.
+    /// \return Distance.
     float PointDistance(cv::Point2f pt1, cv::Point2f pt2);
+    // TODO: Point instead of Point2f?
 
+    /// Expand the cord by the given length.
+    /// \param pt1 First point of the cord.
+    /// \param pt2 Second point of the cord.
+    /// \param deltaLen The length to be expanded.
+    /// \param dst1 The first point after expanding.
+    /// \param dst2 The second point after expanding.
     void ExCord(cv::Point pt1, cv::Point pt2, int deltaLen, cv::Point &dst1, cv::Point &dst2);
+
+    std::string PathCombine(const std::string& path1, const std::string& path2);
+
+    std::string int2str(int number);
 }
 
 #endif //RM_STANDARD2022_UTILS_H

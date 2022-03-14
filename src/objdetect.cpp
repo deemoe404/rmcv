@@ -31,7 +31,7 @@ namespace rm {
 
     void
     FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float maxAngleDif, float errAngle,
-               float minBoxRatio, float maxBoxRatio, float lenRatio) {
+               float minBoxRatio, float maxBoxRatio, float lenRatio, cv::Size frameSize) {
         if (input.size() < 2) return;
         output.clear();
 
@@ -61,8 +61,19 @@ namespace rm {
                 float boxRatio = ((heightI + heightJ) / 2) / distance;
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
-                output.push_back(rm::Armour({input[i], input[j]}, rm::ARMOUR_SMALL));
+                cv::Point centerArmour((input[i].center.x + input[j].center.x) / 2,
+                                       (input[i].center.y + input[j].center.y) / 2);
+                cv::Point centerFrame(frameSize.width / 2, frameSize.height / 2);
+
+                output.push_back(rm::Armour({input[i], input[j]}, rm::ARMOUR_SMALL,
+                                            rm::PointDistance(centerArmour, centerFrame)));
             }
+        }
+
+        if (!output.empty()) {
+            std::sort(output.begin(), output.end(), [](rm::Armour armour1, rm::Armour armour2) {
+                return armour1.distance2D < armour2.distance2D;
+            });
         }
     }
 

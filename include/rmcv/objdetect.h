@@ -13,7 +13,7 @@ namespace rm {
 
     void
     FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float maxAngleDif, float errAngle,
-               float minBoxRatio, float maxBoxRatio, float lenRatio);
+               float minBoxRatio, float maxBoxRatio, float lenRatio, cv::Size frameSize = {1920, 1080});
 
     /// Use PNP algorithm to estimate the pose in 3D of Armour.
     /// \param target Armour which changes is to make on.

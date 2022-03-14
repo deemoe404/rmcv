@@ -49,11 +49,13 @@ namespace rm {
         rm::ForceType forceType = rm::FORCE_STANDARD;
         rm::ArmourType armourType = rm::ARMOUR_SMALL;
         double airTime = 0;
+        double distance2D = 0;
         float pitch = 0;
         float yaw = 0;
         char rank = -1;
 
-        explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType type = rm::ARMOUR_SMALL);
+        explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType = rm::ARMOUR_SMALL,
+                        double distance2D = 0);
     };
 
     class Package {

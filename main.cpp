@@ -45,16 +45,20 @@ int main() {
         while (frameStatus) {
             if (!armourPackageQueue.Empty()) continue;
             auto package = rawPackageQueue.pop();
-            rm::Package armourPackage(package->camp, package->mode, request.speed, request.pitch.data, package->frame,
-                                      package->binary);
 
             if (!package->binary.empty()) {
+                rm::Package armourPackage(package->camp, package->mode, request.speed, request.pitch.data,
+                                          package->frame, package->binary);
+
+                // Find contours
                 std::vector<std::vector<cv::Point>> contours;
                 cv::findContours(package->binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
+                // Fit armours
                 std::vector<rm::LightBar> lightBars;
                 rm::FindLightBars(contours, lightBars, 3, 19, 20, 10);
-                rm::FindArmour(lightBars, armourPackage.armours, 20, 10, 0.3, 0.7, 0.75);
+                rm::FindArmour(lightBars, armourPackage.armours, 20, 10, 0.3, 0.7, 0.75,
+                               {package->frame.cols, package->frame.rows});
 
                 armourPackageQueue.push(armourPackage);
             }

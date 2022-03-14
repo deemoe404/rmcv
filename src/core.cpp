@@ -13,7 +13,8 @@ namespace rm {
         size.width = min(box.size.height, box.size.width);
     }
 
-    Armour::Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType type) : armourType(type) {
+    Armour::Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType, double distance2D) : armourType(
+            armourType), distance2D(distance2D) {
         if (lightBars.size() != 2) {
             throw std::runtime_error("Armour must be initialized with 2 rm::LightBar (s).");
         }

@@ -47,7 +47,7 @@ namespace rm {
                 float errorI = abs(
                         input[i].angle > 90 ? abs(input[i].angle - angle) - 90 : abs(180 - input[i].angle - angle) -
                                                                                  90);
-                float errorJ =  abs(
+                float errorJ = abs(
                         input[j].angle > 90 ? abs(input[j].angle - angle) - 90 : abs(180 - input[j].angle - angle) -
                                                                                  90);
                 if (errorI > errAngle || errorJ > errAngle) continue;
@@ -83,13 +83,13 @@ namespace rm {
         target.rvecs = cv::Mat::zeros(3, 1, CV_64FC1);
         target.tvecs = cv::Mat::zeros(3, 1, CV_64FC1);
 
-        std::vector<cv::Point3f> exactPoint{cv::Point3f(0, 0, 0), cv::Point3f(0, 0, exactSize.y),
-                                            cv::Point3f(exactSize.x, 0, exactSize.y), cv::Point3f(exactSize.x, 0, 0)};
+        std::vector<cv::Point3f> exactPoint{cv::Point3f(0, 0, exactSize.y), cv::Point3f(0, 0, 0),
+                                            cv::Point3f(exactSize.x, 0, 0), cv::Point3f(exactSize.x, 0, exactSize.y)};
 
-        std::vector<cv::Point2f> tdCoordinate{cv::Point2f(target.vertices[0].x, target.vertices[0].y),
-                                              cv::Point2f(target.vertices[1].x, target.vertices[1].y),
-                                              cv::Point2f(target.vertices[2].x, target.vertices[2].y),
-                                              cv::Point2f(target.vertices[3].x, target.vertices[3].y)};
+        std::vector<cv::Point2f> tdCoordinate{cv::Point2f((float) target.vertices[0].x, (float) target.vertices[0].y),
+                                              cv::Point2f((float) target.vertices[1].x, (float) target.vertices[1].y),
+                                              cv::Point2f((float) target.vertices[2].x, (float) target.vertices[2].y),
+                                              cv::Point2f((float) target.vertices[3].x, (float) target.vertices[3].y)};
 
         cv::solvePnP(exactPoint, tdCoordinate, cameraMatrix, distCoeffs, target.rvecs, target.tvecs, false,
                      cv::SOLVEPNP_SQPNP);

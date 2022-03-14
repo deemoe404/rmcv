@@ -21,6 +21,7 @@ namespace rm {
     /// \param distCoeffs
     /// \param exactSize Real size of the Armour, unit in mm.
     void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Point2f &exactSize);
+    // TODO: to size
 
     /// Calculate the delta pitch, delta yaw and estimated time on air.
     /// \param target Armour which changes is to make on.

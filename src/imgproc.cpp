@@ -46,16 +46,16 @@ namespace rm {
     }
 
     void ExtractColor(cv::Mat &input, cv::Mat &output, rm::CampType enemy) {
-        cv::Mat hsv;
-        cv::cvtColor(input, hsv, cv::COLOR_BGR2HSV);
+        std::vector<cv::Mat> channels;
+        cv::split(input, channels);
 
         if (enemy == rm::CAMP_BLUE) {
-            // TODO: test blue extraction
+            cv::Mat gray = channels[0] - channels[2];
+            cv::inRange(gray, 140, 255, output);
+            auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
+            cv::morphologyEx(output, output, cv::MORPH_CLOSE, kernel);
         } else if (enemy == rm::CAMP_RED) {
             // TODO: test red extraction
         }
-
-        cv::Mat bin;
-        cv::adaptiveThreshold(bin, bin, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 25, 5);
     }
 }

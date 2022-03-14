@@ -5,7 +5,8 @@
 #ifndef RM_STANDARD2022_RMCV_H
 #define RM_STANDARD2022_RMCV_H
 
-#include "rmcv/core/core.h"
+#include "core/core.h"
+#include "mlp/mlp.h"
 #include "imgproc.h"
 #include "objdetect.h"
 

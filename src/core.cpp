@@ -40,41 +40,9 @@ namespace rm {
         iconBox = cv::boundingRect(std::vector<cv::Point>({icon[0], icon[1], icon[2], icon[3]}));
     }
 
-    template<typename DATATYPE, typename SEQUENCE>
-    ParallelQueue<DATATYPE, SEQUENCE>::ParallelQueue(const ParallelQueue &other) {
-        std::lock_guard<std::mutex> lg(other.m_mutex);
-        m_data = other.m_data;
-    }
-
-    template<typename DATATYPE, typename SEQUENCE>
-    void ParallelQueue<DATATYPE, SEQUENCE>::push(const DATATYPE &data) {
-        std::lock_guard<std::mutex> lg(m_mutex);
-        m_data.push(data);
-        m_cond.notify_one();
-    }
-
-    template<typename DATATYPE, typename SEQUENCE>
-    void ParallelQueue<DATATYPE, SEQUENCE>::push(DATATYPE &&data) {
-        std::lock_guard<std::mutex> lg(m_mutex);
-        m_data.push(std::move(data));
-        m_cond.notify_one();
-    }
-
-    template<typename DATATYPE, typename SEQUENCE>
-    std::shared_ptr<DATATYPE> ParallelQueue<DATATYPE, SEQUENCE>::tryPop() {
-        std::lock_guard<std::mutex> lg(m_mutex);
-        if (m_data.empty()) return {};
-        auto res = std::make_shared<DATATYPE>(m_data.front());
-        m_data.pop();
-        return res;
-    }
-
-    template<typename DATATYPE, typename SEQUENCE>
-    std::shared_ptr<DATATYPE> ParallelQueue<DATATYPE, SEQUENCE>::pop() {
-        std::unique_lock<std::mutex> lg(m_mutex);
-        m_cond.wait(lg, [this] { return !m_data.empty(); });
-        auto res = std::make_shared<DATATYPE>(std::move(m_data.front()));
-        m_data.pop();
-        return res;
+    Package::Package(rm::CampType camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat &inputFrame,
+                     const cv::Mat &inputBinary) : camp(camp), mode(mode), speed(speed), pitch(pitch) {
+        inputFrame.copyTo(this->frame);
+        inputBinary.copyTo(this->binary);
     }
 }

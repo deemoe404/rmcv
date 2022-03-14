@@ -6,14 +6,10 @@
 #define RM_STANDARD2022_CORE_H
 
 #include "opencv2/opencv.hpp"
+#include "daheng/daheng.h"
 #include "utils.h"
 #include "serialport.h"
-#include "daheng/daheng.h"
-#include <mutex>
-#include <condition_variable>
-#include <deque>
-#include <queue>
-#include <memory>
+#include "parallequeue.hpp"
 
 namespace rm {
     enum ArmourType {
@@ -26,6 +22,10 @@ namespace rm {
 
     enum CampType {
         CAMP_RED = 0, CAMP_BLUE = 1
+    };
+
+    enum AimMode {
+        AIM_COMBAT = 0, AIM_BUFF = 1
     };
 
     class LightBar {
@@ -56,31 +56,18 @@ namespace rm {
         explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType type = rm::ARMOUR_SMALL);
     };
 
-    template<typename DATATYPE, typename SEQUENCE = std::deque<DATATYPE>>
-    class ParallelQueue {
-    private:
-        std::condition_variable m_cond;
-        std::queue<DATATYPE, SEQUENCE> m_data;
-        mutable std::mutex m_mutex;
-
+    class Package {
     public:
-        ParallelQueue() = default;
+        rm::CampType camp = rm::CAMP_RED;  // Self camp
+        rm::AimMode mode = rm::AIM_COMBAT; // Aim mode
+        unsigned char speed = 0;                    // Bullet speed
+        float pitch = 0;                   // Pitch angle
+        cv::Mat frame;
+        cv::Mat binary;
+        std::vector<rm::Armour> armours;
 
-        ParallelQueue(const ParallelQueue &other);
-
-        ParallelQueue(ParallelQueue &&) = delete;
-
-        ~ParallelQueue() = default;
-
-        ParallelQueue &operator=(const ParallelQueue &) = delete;
-
-        void push(const DATATYPE &data);
-
-        void push(DATATYPE &&data);
-
-        std::shared_ptr<DATATYPE> tryPop();
-
-        std::shared_ptr<DATATYPE> pop();
+        Package(rm::CampType camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat &inputFrame,
+                const cv::Mat &inputBinary);
     };
 
 }

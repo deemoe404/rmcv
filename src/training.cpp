@@ -5,21 +5,32 @@
 #include "rmcv/mlp/training.h"
 
 namespace rm::mlp {
-    // TODO: Path combine
-    void Labeling(const std::string &folder, int fileCounts) {
+    void CaptureImage(const string &path, Mat &input, rm::mlp::CaptureType type, int label) {
+        int tickCount = (int) ((double) cv::getTickCount() / cv::getTickFrequency());
+        std::string fullPath, filePath;
+        if (type == rm::mlp::CAPTURE_MIXED) {
+            fullPath = path;
+        } else if (type == rm::mlp::CAPTURE_LABEL) {
+            fullPath = rm::PathCombine(path, rm::int2str(label) + "/");
+        }
+        mkdir(fullPath.c_str(), S_IRUSR | S_IWUSR | S_IXUSR | S_IRWXG | S_IRWXO);
+        filePath = rm::PathCombine(fullPath, rm::int2str(tickCount) + ".jpg");
+        cv::imwrite(filePath, input);
+    }
+
+    void Labeling(const std::string &path, int fileCounts) {
         cv::Mat image;
         while (fileCounts--) {
             std::string filename = int2str(fileCounts) + ".jpg";
-            image = cv::imread(folder + filename);
-            cv::imshow("preview", image);
-            std::string key = int2str(cv::waitKey(0) - 48);
-            std::cout << key << std::endl;
-            cv::imwrite(folder + key + "/" + filename, image);
+            image = cv::imread(path + filename);
+            cv::imshow("Plz input label (0~9).", image);
+            std::string key = int2str(cv::waitKey(0) - 48) + "/" + filename;
+            cv::imwrite(rm::PathCombine(path, key), image);
         }
     }
 
-    void TrainMLP(const std::string &path, const std::vector<int> &labels, int imgCount,
-                       cv::Ptr<cv::ml::ANN_MLP> &model) {
+    void
+    TrainMLP(const std::string &path, const std::vector<int> &labels, int imgCount, cv::Ptr<cv::ml::ANN_MLP> &model) {
         cv::Mat first = cv::imread(rm::PathCombine(path, rm::int2str(labels[0]) + "/1.jpg"));
         int images = imgCount * (int) labels.size(), pixels = first.cols * first.rows;
         float imgData[images][pixels];

@@ -1,135 +1,97 @@
 #include <iostream>
 #include <thread>
 #include "rmcv/rmcv.h"
-#include "opencv2/ml.hpp"
-
-#include "rmcv/mlp/training.h"
-
-std::string ftos(int nunber, int afterpoint) {
-    char str[64] = {0};
-    std::snprintf(str, 64, "%d", nunber);
-    std::string res(str);
-    return res;
-}
 
 int main() {
-    rm::mlp::Labeling("/home/yaione/Desktop/icons/", 16410);
+    rm::SerialPort serialPort;
+    bool serialPortStatus = serialPort.Initialize();
+    Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("test.xml");
+    cv::Mat cameraMatrix = (cv::Mat_<float>(3, 3)
+            << 227.5754394592698, 0, 961.2917903511311, 0, 224.9141431170980, 542.0294949020054, 0, 0, 1);
+    cv::Mat distCoeffs = (cv::Mat_<float>(1, 5)
+            << -0.005276031771503, 0.0000274253772898775, 0, 0, 0.00000245864193872025);
 
-//    DahengCamera camera;
-//    int key, count = 0;
-//
-//    if (camera.dahengCameraInit((char *) "KE0210030295", 2500, 210)) {
-//        Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("/home/yaione/Desktop/test.xml");
-//        while (key != 'q') {
-//            cv::Mat frames = camera.getFrame();
-//            std::vector<cv::Mat> channels;
-//            cv::split(frames, channels);
-//            cv::Mat gray = channels[0] - channels[2];
-//            cv::Mat bin;
-//
-//            // Blue: bin[140,255], area[10), lb{ratio[3,15], ta(20]}
-//            cv::inRange(gray, 140, 255, bin);
-//            auto kernal = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
-//            cv::morphologyEx(bin, bin, cv::MORPH_CLOSE, kernal);
-//            std::vector<std::vector<cv::Point>> contours;
-//            cv::findContours(bin, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE); // no roi
-//
-////            for(int i = 0;i < contours.size();i++){
-////                if(cv::contourArea(contours[i]) < 10) continue;
-////                printf("%f\n", cv::contourArea(contours[i]));
-////                cv::drawContours(frames, contours, i, cv::Scalar(0, 0, 255), 1);
-////            }
-//
-//            std::vector<rm::LightBar> lbs;
-//            rm::FindLightBars(contours, lbs, 3, 19, 20, 10);
-////            std::vector<std::vector<cv::Point>> tmp;
-////            for (auto &lb: lbs) {
-////                std::vector<cv::Point> tmp2;
-////                tmp2.push_back(lb.vertices[0]);
-////                tmp2.push_back(lb.vertices[1]);
-////                tmp2.push_back(lb.vertices[2]);
-////                tmp2.push_back(lb.vertices[3]);
-////                tmp.push_back(tmp2);
-////            }
-////            cv::drawContours(frames, tmp, -1, {0, 0, 255}, 1);
-//
-//            std::vector<rm::Armour> ams;
-//            rm::FindArmour(lbs, ams, 20, 10, 0.3, 0.7, 0.8);
-////            std::vector<std::vector<cv::Point>> tmp3;
-////            for (auto &am: ams) {
-////                std::vector<cv::Point> tmp2;
-////                tmp2.push_back(am.vertices[0]);
-////                tmp2.push_back(am.vertices[1]);
-////                tmp2.push_back(am.vertices[2]);
-////                tmp2.push_back(am.vertices[3]);
-////                tmp3.push_back(tmp2);
-////                cv::drawContours(frames, tmp3, -1, {0, 255, 255}, 3);
-////            }
-//
-//            for (auto &am: ams) {
-//                cv::Mat calcal;
-//
-//                rm::CalcRatio(frames, calcal, am.icon, am.iconBox, {30, 30});
-//                rm::CalcGamma(calcal, calcal, 0.05);
-//
-//                std::vector<cv::Mat> channels2;
-//                cv::split(calcal, channels2);
-//                cv::Mat grayAM = channels2[2];
-////                grayAM.convertTo(grayAM, CV_32FC1);
-////                Mat response;
-////                cv::Mat test = grayAM.reshape(0, 1);
-//
-////                model->predict(test, response);
-////                if (response.at<float>(0, 0) > 0.99) {
-////                    printf("005\n");
-////                    for (int i = 0; i < 4; i++) {
-////                        cv::line(frames, am.vertices[i], am.vertices[(i + 1) % 4], cv::Scalar(0, 0, 255));
-////                    }
-////                }
-//
-//                cv::imwrite("/home/yaione/Desktop/icons/" + ftos(count, 0) + ".jpg", grayAM);
-//                count++;
-//                cv::imshow("aa", grayAM);
-//            }
-//
-//
-////            cv::imshow("bin", bin);
-//            cv::imshow("frame", frames);
-//
-//            key = cv::waitKey(1);
-//        }
-//    }
+    // Serial port request receiving thread
+    rm::Request request{0, 0, 18, 0};
+    thread serialPortThread([&]() {
+        while (serialPortStatus) {
+            serialPort.Receive(request);
+        }
+        std::cout << "Serial port closed." << std::endl;
+    });
 
-//    rm::SerialPort sp{};
-//    sp.Initialize();
-//
-//    rm::Response response{};
-//    response.yaw.data = 20.0;
-//    response.pitch.data = 30.0;
-//    response.rank = 3;
-//
-//    rm::Request request{};
-//
-//    thread t1([&]() {
-//        while (true) {
-//            std::cout << "send status: " << sp.Send(response) << std::endl;
-//        }
-//    });
-//
-//    thread t2([&]() {
-//        while (true) {
-//            if (sp.Receive(request)) {
-//                std::cout << "received: ";
-//                std::cout << "p: " << request.pitch.data << "  ";
-//                std::cout << "camp: " << request.camp << "  ";
-//                std::cout << "mode: " << request.mode << "  ";
-//                std::cout << "speed: " << request.speed << std::endl;
-//            }
-//        }
-//    });
-//
-//    t1.join();
-//    t2.join();
-//
-//    return 0;
+    // Frame capture thread
+    rm::ParallelQueue<rm::Package> rawPackageQueue;
+    rm::DahengCamera camera;
+    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210030295", 2500, 210);
+    thread rawPackageThread([&]() {
+        while (cameraStatus) {
+            if (!rawPackageQueue.Empty()) continue;
+            cv::Mat frame = camera.getFrame();
+            if (!frame.empty()) {
+                auto camp = static_cast<rm::CampType>(request.camp);
+                auto mode = static_cast<rm::AimMode>(request.mode);
+                cv::Mat binary;
+                rm::ExtractColor(frame, binary, rm::CAMP_BLUE);
+                rawPackageQueue.push(rm::Package(camp, mode, request.speed, request.pitch.data, frame, binary));
+            }
+        }
+    });
+
+    //
+    rm::ParallelQueue<rm::Package> armourPackageQueue;
+    bool frameStatus = true;
+    thread armourPackageThread([&]() {
+        while (frameStatus) {
+            if (!armourPackageQueue.Empty()) continue;
+            auto package = rawPackageQueue.pop();
+            rm::Package armourPackage(package->camp, package->mode, request.speed, request.pitch.data, package->frame,
+                                      package->binary);
+
+            if (!package->binary.empty()) {
+                std::vector<std::vector<cv::Point>> contours;
+                cv::findContours(package->binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+
+                std::vector<rm::LightBar> lightBars;
+                rm::FindLightBars(contours, lightBars, 3, 19, 20, 10);
+                rm::FindArmour(lightBars, armourPackage.armours, 20, 10, 0.3, 0.7, 0.75);
+
+                armourPackageQueue.push(armourPackage);
+            }
+        }
+    });
+
+    thread solveThread([&]() {
+        while (frameStatus) {
+            auto package = armourPackageQueue.pop();
+            for (auto &armour: package->armours) {
+                cv::Mat icon;
+                rm::CalcRatio(package->frame, icon, armour.icon, armour.iconBox, {30, 30});
+                rm::CalcGamma(icon, icon, 0.05);
+                std::vector<cv::Mat> channels;
+                cv::split(icon, channels);
+                cv::Mat gray = channels[2];
+                gray.convertTo(gray, CV_32FC1);
+                Mat response;
+                cv::Mat rows = gray.reshape(0, 1);
+                model->predict(rows, response);
+                if (response.at<float>(0, 1) > 0.9) {
+                    cv::imshow("aaa", icon);
+                    cv::waitKey(1);
+                    cv::Point2f exactSize(56, 123.5);
+                    rm::SolveArmourPose(armour, cameraMatrix, distCoeffs, exactSize);
+                    std::cout << "0:" << armour.tvecs.at<double>(0) << "1:" << armour.tvecs.at<double>(1) << "2:"
+                              << armour.tvecs.at<double>(2) << std::endl;
+                    continue;
+                }
+            }
+        }
+    });
+
+    serialPortThread.join();
+    rawPackageThread.join();
+    armourPackageThread.join();
+    solveThread.join();
+
+    return 0;
 }

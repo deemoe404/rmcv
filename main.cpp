@@ -2,14 +2,49 @@
 #include <thread>
 #include "rmcv/rmcv.h"
 
+void print(Mat &mat, int prec) {
+    for (int i = 0; i < mat.size().height; i++) {
+        cout << "[ ";
+        for (int j = 0; j < mat.size().width; j++) {
+            cout << fixed << setw(2) << setprecision(prec) << mat.at<double>(i, j);
+            if (j != mat.size().width - 1)
+                cout << ", ";
+            else
+                cout << " ]" << endl;
+        }
+    }
+}
+
+void codeRotateByZ(double x, double y, double thetaz, double &outx, double &outy) {
+    double x1 = x;
+    double y1 = y;
+    double rz = thetaz * CV_PI / 180;
+    outx = cos(rz) * x1 - sin(rz) * y1;
+    outy = sin(rz) * x1 + cos(rz) * y1;
+}
+
+void codeRotateByY(double x, double z, double thetay, double &outx, double &outz) {
+    double x1 = x;
+    double z1 = z;
+    double ry = thetay * CV_PI / 180;
+    outx = cos(ry) * x1 + sin(ry) * z1;
+    outz = cos(ry) * z1 - sin(ry) * x1;
+}
+
+void codeRotateByX(double y, double z, double thetax, double &outy, double &outz) {
+    double y1 = y;
+    double z1 = z;
+    double rx = thetax * CV_PI / 180;
+    outy = cos(rx) * y1 - sin(rx) * z1;
+    outz = cos(rx) * z1 + sin(rx) * y1;
+}
+
 int main() {
     rm::SerialPort serialPort;
     bool serialPortStatus = serialPort.Initialize();
     Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("test.xml");
-    cv::Mat cameraMatrix = (cv::Mat_<float>(3, 3)
-            << 227.5754394592698, 0, 961.2917903511311, 0, 224.9141431170980, 542.0294949020054, 0, 0, 1);
-    cv::Mat distCoeffs = (cv::Mat_<float>(1, 5)
-            << -0.005276031771503, 0.0000274253772898775, 0, 0, 0.00000245864193872025);
+    cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
+    cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -0.107365897147967, 0.353460341713276, 0, 0, -0.370048735508088);
 
     // Serial port request receiving thread
     rm::Request request{0, 0, 18, 0};
@@ -80,12 +115,42 @@ int main() {
                 cv::Mat rows = gray.reshape(0, 1);
                 model->predict(rows, response);
                 if (response.at<float>(0, 1) > 0.9) {
-                    cv::imshow("aaa", icon);
-                    cv::waitKey(1);
-                    cv::Point2f exactSize(56, 123.5);
+
+                    cv::Point2f exactSize(4.8, 12.3);
                     rm::SolveArmourPose(armour, cameraMatrix, distCoeffs, exactSize);
-                    std::cout << "0:" << armour.tvecs.at<double>(0) << "1:" << armour.tvecs.at<double>(1) << "2:"
-                              << armour.tvecs.at<double>(2) << std::endl;
+
+                    std::vector<std::vector<cv::Point>> tmp3;
+                    std::vector<cv::Point> tmp2;
+                    tmp2.push_back(armour.vertices[0]);
+                    tmp2.push_back(armour.vertices[1]);
+                    tmp2.push_back(armour.vertices[2]);
+                    tmp2.push_back(armour.vertices[3]);
+                    tmp3.push_back(tmp2);
+                    cv::circle(package->frame, armour.vertices[2], 10, {0, 0, 255});
+                    cv::drawContours(package->frame, tmp3, -1, {0, 255, 255}, 3);
+
+                    cv::imshow("aaa", package->frame);
+                    cv::waitKey(1);
+
+                    cv::Mat test2;
+                    cv::Rodrigues(armour.rvecs, test2);
+                    double test = sqrt(pow(armour.tvecs.at<double>(0, 0), 2) + pow(armour.tvecs.at<double>(0, 1), 2) +
+                                       pow(armour.tvecs.at<double>(0, 2), 2));
+
+                    double thetaZ = atan2(test2.ptr<double>(1)[0], test2.ptr<double>(0)[0]) * 180 / CV_PI;
+                    double thetaY = atan2(-test2.ptr<double>(2)[0],
+                                          sqrt(pow(test2.ptr<double>(2)[0], 2) + pow(test2.ptr<double>(2)[2], 2))) *
+                                    180 / CV_PI;
+                    double thetaX = atan2(test2.ptr<double>(2)[1], test2.ptr<double>(2)[2]) * 180 / CV_PI;
+
+                    double tx = armour.tvecs.ptr<double>(0)[0];
+                    double ty = armour.tvecs.ptr<double>(0)[1];
+                    double tz = armour.tvecs.ptr<double>(0)[2];
+                    codeRotateByZ(tx, ty, -1 * thetaZ, tx, ty);
+                    codeRotateByY(tx, tz, -1 * thetaY, tx, tz);
+                    codeRotateByX(ty, tz, -1 * thetaX, ty, tz);
+                    std::cout << test << std::endl;
+//                    print(test2, 3);
                     continue;
                 }
             }

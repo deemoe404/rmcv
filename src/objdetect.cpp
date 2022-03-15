@@ -91,18 +91,21 @@ namespace rm {
     }
 
     void SolveArmourPose(Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Point2f &exactSize) {
-        target.rvecs = cv::Mat::zeros(3, 1, CV_64FC1);
-        target.tvecs = cv::Mat::zeros(3, 1, CV_64FC1);
+//        target.rvecs = cv::Mat::zeros(3, 1, CV_64FC1);
+//        target.tvecs = cv::Mat::zeros(3, 1, CV_64FC1);
 
-        std::vector<cv::Point3f> exactPoint{cv::Point3f(0, 0, exactSize.y), cv::Point3f(0, 0, 0),
-                                            cv::Point3f(exactSize.x, 0, 0), cv::Point3f(exactSize.x, 0, exactSize.y)};
+//        std::vector<cv::Point3f> exactPoint{cv::Point3f(0, 0, exactSize.y), cv::Point3f(0, 0, 0),
+//                                            cv::Point3f(exactSize.x, 0, 0), cv::Point3f(exactSize.x, 0, exactSize.y)};
 
-        std::vector<cv::Point2f> tdCoordinate{cv::Point2f((float) target.vertices[0].x, (float) target.vertices[0].y),
-                                              cv::Point2f((float) target.vertices[1].x, (float) target.vertices[1].y),
-                                              cv::Point2f((float) target.vertices[2].x, (float) target.vertices[2].y),
-                                              cv::Point2f((float) target.vertices[3].x, (float) target.vertices[3].y)};
+        std::vector<cv::Point3f> exactPoint{cv::Point3f(-exactSize.x / 2, exactSize.y / 2, 0),
+                                            cv::Point3f(exactSize.x / 2, exactSize.y / 2, 0),
+                                            cv::Point3f(exactSize.x / 2, -exactSize.y / 2, 0),
+                                            cv::Point3f(-exactSize.x / 2, -exactSize.y / 2, 0)};
+
+        std::vector<cv::Point2f> tdCoordinate{target.vertices[1], target.vertices[2], target.vertices[3],
+                                              target.vertices[0]};
 
         cv::solvePnP(exactPoint, tdCoordinate, cameraMatrix, distCoeffs, target.rvecs, target.tvecs, false,
-                     cv::SOLVEPNP_SQPNP);
+                     cv::SOLVEPNP_AP3P);
     }
 }

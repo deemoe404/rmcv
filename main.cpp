@@ -58,7 +58,7 @@ int main() {
     // Frame capture thread
     rm::ParallelQueue<rm::Package> rawPackageQueue;
     rm::DahengCamera camera;
-    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210030295", 2500, 210);
+    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 2500, 210);
     thread rawPackageThread([&]() {
         while (cameraStatus) {
             if (!rawPackageQueue.Empty()) continue;
@@ -126,6 +126,7 @@ int main() {
                     tmp2.push_back(armour.vertices[2]);
                     tmp2.push_back(armour.vertices[3]);
                     tmp3.push_back(tmp2);
+                    cv::circle(package->frame, armour.vertices[1], 10, {0, 0, 255});
                     cv::circle(package->frame, armour.vertices[2], 10, {0, 0, 255});
                     cv::drawContours(package->frame, tmp3, -1, {0, 255, 255}, 3);
 
@@ -149,7 +150,7 @@ int main() {
                     codeRotateByZ(tx, ty, -1 * thetaZ, tx, ty);
                     codeRotateByY(tx, tz, -1 * thetaY, tx, tz);
                     codeRotateByX(ty, tz, -1 * thetaX, ty, tz);
-                    std::cout << test << std::endl;
+                    std::cout << test << "    " << armour.tvecs.ptr<double>(0)[2] << std::endl;
 //                    print(test2, 3);
                     continue;
                 }

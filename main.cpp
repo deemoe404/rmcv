@@ -90,7 +90,7 @@ int main() {
 
                 // TODO: find the top one and push to
                 if (result.at<float>(0, 1) > 0.9) { // TODO: !none->target! else remove at
-                    rm::SolveArmourPose(armour, cameraMatrix, distCoeffs, {5.5, 12.5});
+                    rm::SolveArmourPose(armour, cameraMatrix, distCoeffs, {12.5, 5.5});
                     rm::SolveAirTrack(armour, 9.8, 30, 18, 0);
                     response.pitch.data = armour.pitch;
                     response.yaw.data = armour.yaw;

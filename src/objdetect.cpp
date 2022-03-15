@@ -97,15 +97,15 @@ namespace rm {
 //        std::vector<cv::Point3f> exactPoint{cv::Point3f(0, 0, exactSize.y), cv::Point3f(0, 0, 0),
 //                                            cv::Point3f(exactSize.x, 0, 0), cv::Point3f(exactSize.x, 0, exactSize.y)};
 
-        std::vector<cv::Point3f> exactPoint{cv::Point3f(-exactSize.x / 2, exactSize.y / 2, 0),
-                                            cv::Point3f(exactSize.x / 2, exactSize.y / 2, 0),
-                                            cv::Point3f(exactSize.x / 2, -exactSize.y / 2, 0),
-                                            cv::Point3f(-exactSize.x / 2, -exactSize.y / 2, 0)};
+        std::vector<cv::Point3f> exactPoint{cv::Point3f(-exactSize.x / 2.0f, exactSize.y / 2.0f, 0),
+                                            cv::Point3f(exactSize.x / 2.0f, exactSize.y / 2.0f, 0),
+                                            cv::Point3f(exactSize.x / 2.0f, -exactSize.y / 2.0f, 0),
+                                            cv::Point3f(-exactSize.x / 2.0f, -exactSize.y / 2.0f, 0)};
 
         std::vector<cv::Point2f> tdCoordinate{target.vertices[1], target.vertices[2], target.vertices[3],
                                               target.vertices[0]};
 
         cv::solvePnP(exactPoint, tdCoordinate, cameraMatrix, distCoeffs, target.rvecs, target.tvecs, false,
-                     cv::SOLVEPNP_AP3P);
+                     cv::SOLVEPNP_IPPE_SQUARE);
     }
 }

@@ -90,17 +90,11 @@ namespace rm {
         input.airTime = d / v0 * cos(shootTheta);
     }
 
-    void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Point2f &exactSize) {
-//        target.rvecs = cv::Mat::zeros(3, 1, CV_64FC1);
-//        target.tvecs = cv::Mat::zeros(3, 1, CV_64FC1);
-
-//        std::vector<cv::Point3f> exactPoint{cv::Point3f(0, 0, exactSize.y), cv::Point3f(0, 0, 0),
-//                                            cv::Point3f(exactSize.x, 0, 0), cv::Point3f(exactSize.x, 0, exactSize.y)};
-
-        std::vector<cv::Point3f> exactPoint{cv::Point3f(-exactSize.x / 2.0f, exactSize.y / 2.0f, 0),
-                                            cv::Point3f(exactSize.x / 2.0f, exactSize.y / 2.0f, 0),
-                                            cv::Point3f(exactSize.x / 2.0f, -exactSize.y / 2.0f, 0),
-                                            cv::Point3f(-exactSize.x / 2.0f, -exactSize.y / 2.0f, 0)};
+    void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Size2f exactSize) {
+        std::vector<cv::Point3f> exactPoint{cv::Point3f(-exactSize.width / 2.0f, exactSize.height / 2.0f, 0),
+                                            cv::Point3f(exactSize.width / 2.0f, exactSize.height / 2.0f, 0),
+                                            cv::Point3f(exactSize.width / 2.0f, -exactSize.height / 2.0f, 0),
+                                            cv::Point3f(-exactSize.width / 2.0f, -exactSize.height / 2.0f, 0)};
 
         std::vector<cv::Point2f> tdCoordinate{target.vertices[1], target.vertices[2], target.vertices[3],
                                               target.vertices[0]};

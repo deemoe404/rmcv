@@ -90,7 +90,7 @@ namespace rm {
         input.airTime = d / v0 * cos(shootTheta);
     }
 
-    void SolveArmourPose(Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Point2f &exactSize) {
+    void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Point2f &exactSize) {
 //        target.rvecs = cv::Mat::zeros(3, 1, CV_64FC1);
 //        target.tvecs = cv::Mat::zeros(3, 1, CV_64FC1);
 

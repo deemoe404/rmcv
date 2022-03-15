@@ -35,7 +35,7 @@ namespace rm {
         cv::Size2f size;
         float angle;
 
-        explicit LightBar(cv::RotatedRect box, float angle);
+        LightBar(cv::RotatedRect box, float angle);
     };
 
     class Armour {
@@ -54,7 +54,7 @@ namespace rm {
         float yaw = 0;
         char rank = -1;
 
-        explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType = rm::ARMOUR_SMALL,
+        Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType = rm::ARMOUR_SMALL,
                         double distance2D = 0);
     };
 

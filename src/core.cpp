@@ -46,4 +46,11 @@ namespace rm {
         inputFrame.copyTo(this->frame);
         inputBinary.copyTo(this->binary);
     }
+
+    Package::Package(const shared_ptr<rm::Package> &input) : camp(input->camp), mode(input->mode), speed(input->speed),
+                                                             pitch(input->pitch) {
+        input->frame.copyTo(this->frame);
+        input->binary.copyTo(this->binary);
+        this->armours = std::vector<rm::Armour>(input->armours);
+    }
 }

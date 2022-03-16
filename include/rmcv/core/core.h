@@ -48,14 +48,15 @@ namespace rm {
         cv::Mat tvecs;
         rm::ForceType forceType = rm::FORCE_STANDARD;
         rm::ArmourType armourType = rm::ARMOUR_SMALL;
+        rm::CampType campType = rm::CAMP_BLUE;
         double airTime = 0;
-        double distance2D = 0;
+        double distance2D = 0; // Distance to the center of the frame
         float pitch = 0;
         float yaw = 0;
         char rank = -1;
 
-        Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType = rm::ARMOUR_SMALL,
-                        double distance2D = 0);
+        explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType = rm::ARMOUR_SMALL,
+                        rm::CampType campType = rm::CAMP_BLUE, double distance2D = 0);
     };
 
     class Package {

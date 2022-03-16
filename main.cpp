@@ -26,11 +26,10 @@ int main() {
         while (cameraStatus) {
             if (!rawPackageQueue.Empty()) continue;
             cv::Mat frame = camera.getFrame();
-
             if (!frame.empty()) {
                 // Extract color
                 cv::Mat binary;
-                rm::ExtractColor(frame, binary, rm::CAMP_BLUE);
+                rm::ExtractColor(frame, binary, static_cast<rm::CampType>(request.camp));
                 rawPackageQueue.push(
                         rm::Package(static_cast<rm::CampType>(request.camp), static_cast<rm::AimMode>(request.mode),
                                     request.speed, request.pitch.data, frame, binary));

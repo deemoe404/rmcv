@@ -46,8 +46,7 @@ int main() {
             auto package = rawPackageQueue.pop();
 
             if (!package->binary.empty()) {
-                rm::Package armourPackage(package->camp, package->mode, request.speed, request.pitch.data,
-                                          package->frame, package->binary);
+                rm::Package result(package);
 
                 // Find contours
                 std::vector<std::vector<cv::Point>> contours;
@@ -56,51 +55,56 @@ int main() {
                 // Fit armours
                 std::vector<rm::LightBar> lightBars;
                 rm::FindLightBars(contours, lightBars, 3, 19, 20, 10);
-                rm::FindArmour(lightBars, armourPackage.armours, 20, 10, 0.3, 0.7, 0.75,
+                rm::FindArmour(lightBars, result.armours, 20, 10, 0.3, 0.7, 0.75,
                                {package->frame.cols, package->frame.rows});
 
-                armourPackageQueue.push(armourPackage);
+                armourPackageQueue.push(result);
             }
         }
     });
 
-    rm::ParallelQueue<rm::Armour> targetQueue;
-    rm::Response response{0, 0, 0};
+    rm::ParallelQueue<rm::Package> targetQueue;
     Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("test.xml");
-    cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
-    cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -0.107365897147967, 0.353460341713276, 0, 0, -0.370048735508088);
     // MLP predicting thread
     thread MLPThread([&]() {
         while (frameStatus) {
+            if (!targetQueue.Empty()) continue;
             auto package = armourPackageQueue.pop();
-            for (auto &armour: package->armours) {
-                // TODO: Pack a class in objdetect, objdetect include mlp.h
-                //       use parallel_for_ to predict all armour at the same time?!
-                cv::Mat icon;
-                rm::CalcRatio(package->frame, icon, armour.icon, armour.iconBox, {30, 30});
-                rm::CalcGamma(icon, icon, 0.05);
-                std::vector<cv::Mat> channels;
-                cv::split(icon, channels);
-                cv::Mat gray = channels[2];
-                gray.convertTo(gray, CV_32FC1);
-                Mat result;
-                cv::Mat rows = gray.reshape(0, 1);
-                model->predict(rows, result);
+            rm::Package result(package);
 
-                // TODO: find the top one and push to
-                if (result.at<float>(0, 1) > 0.9) { // TODO: !none->target! else remove at
-                    rm::SolveArmourPose(armour, cameraMatrix, distCoeffs, {12.5, 5.5});
-                    rm::SolveAirTrack(armour, 9.8, 30, 18, 0);
-                    response.pitch.data = armour.pitch;
-                    response.yaw.data = armour.yaw;
-                    if (!serialPort.Send(response)) {
-                        std::cout << "Serial port send failed." << std::endl;
+            cv::parallel_for_(cv::Range(0, (int) package->armours.size()), [&](const cv::Range &range) {
+                for (int i = range.start; i < range.end; i++) {
+                    cv::Mat icon;
+                    rm::CalcRatio(package->frame, icon, package->armours[i].icon, package->armours[i].iconBox,
+                                  {30, 30});
+                    rm::CalcGamma(icon, icon, 0.05);
+                    std::vector<cv::Mat> channels;
+                    cv::split(icon, channels);
+                    cv::Mat gray = channels[2];
+                    gray.convertTo(gray, CV_32FC1);
+                    Mat cp;
+                    cv::Mat rows = gray.reshape(0, 1);
+                    model->predict(rows, cp);
+
+                    int highest = 0;
+                    for (; highest < cp.cols; highest++) {
+                        if (cp.ptr<float>(0)[highest] > 0) {
+                            break;
+                        }
                     }
-                    continue;
+                    result.armours[i].forceType = static_cast<rm::ForceType>(highest);
                 }
-            }
+            }, cv::getNumberOfCPUs());
+            targetQueue.push(result);
         }
     });
+
+    // TODO: New thread
+    //       go through package.armour, find the target closest to the frame center
+    //       call solvePose & solveAir function to get p,y axis, then send to port
+    rm::Response response{0, 0, 0};
+    cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
+    cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -0.107365897147967, 0.353460341713276, 0, 0, -0.370048735508088);
 
     serialPortThread.join();
     rawPackageThread.join();

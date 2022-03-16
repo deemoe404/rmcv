@@ -17,14 +17,14 @@ namespace rm {
     };
 
     enum ForceType {
-        FORCE_HERO = 0,       // Big armour
-        FORCE_ENGINEER = 1,   // Small armour
-        FORCE_STANDARD_3 = 2, // Small armour
-        FORCE_STANDARD_4 = 3, // Small armour
-        FORCE_STANDARD_5 = 4, // Small armour
-        FORCE_SENTRY = 5,     // Big armour
-        BUILD_BASE = 6,       // Big armour
-        BUILD_OUTPOST = 7,    // Small armour
+        FORCE_HERO = 0,       // Big armour 1
+        FORCE_ENGINEER = 1,   // Small armour 2
+        FORCE_STANDARD_3 = 2, // Small armour 3
+        FORCE_STANDARD_4 = 3, // Small armour 4
+        FORCE_STANDARD_5 = 4, // Small armour 5
+        FORCE_SENTRY = 5,     // Big armour icon
+        BUILD_BASE = 6,       // Big armour icon
+        BUILD_OUTPOST = 7,    // Small armour icon
         FORCE_UNKNOWN = 8
     };
 
@@ -48,16 +48,21 @@ namespace rm {
 
     class Armour {
     public:
-        cv::Point vertices[4]; // Vertices around two light bars
-        cv::Point icon[4];     // Vertices around icon
-        cv::Rect box;          // Bounding rect
-        cv::Rect iconBox;      // Icon rect
-        double distance2D = 0; // Distance to the center of the frame
+        cv::Point vertices[4];    // Vertices around two light bars
+        cv::Point icon[4];        // Vertices around icon
+        cv::Rect box;             // Bounding rect
+        cv::Rect iconBox;         // Icon rect
+        double distance2D = 0;    // Distance to the center of the frame
+        double airTime = 0;       // Estimate time before hitting target
+        float pitch = 0, yaw = 0; // Angle error in pitch & yaw
+        char rank = -1;           // Help full-auto force in making decision
         rm::ForceType forceType = rm::FORCE_STANDARD_5;
         rm::ArmourType armourType = rm::ARMOUR_SMALL;
         rm::CampType campType = rm::CAMP_BLUE;
         cv::Mat rvecs;
         cv::Mat tvecs;
+        cv::Point2f error;
+
 
         explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType = rm::ARMOUR_SMALL,
                         rm::CampType campType = rm::CAMP_BLUE, double distance2D = 0);

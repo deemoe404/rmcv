@@ -17,7 +17,15 @@ namespace rm {
     };
 
     enum ForceType {
-        FORCE_HERO = 0, FORCE_STANDARD = 1, FORCE_ENGINEER = 2, FORCE_AERIAL = 3, FORCE_SENTRY = 4
+        FORCE_HERO = 0,       // Big armour
+        FORCE_ENGINEER = 1,   // Small armour
+        FORCE_STANDARD_3 = 2, // Small armour
+        FORCE_STANDARD_4 = 3, // Small armour
+        FORCE_STANDARD_5 = 4, // Small armour
+        FORCE_SENTRY = 5,     // Big armour
+        BUILD_BASE = 6,       // Big armour
+        BUILD_OUTPOST = 7,    // Small armour
+        FORCE_UNKNOWN = 8
     };
 
     enum CampType {
@@ -44,16 +52,12 @@ namespace rm {
         cv::Point icon[4];     // Vertices around icon
         cv::Rect box;          // Bounding rect
         cv::Rect iconBox;      // Icon rect
-        cv::Mat rvecs;
-        cv::Mat tvecs;
-        rm::ForceType forceType = rm::FORCE_STANDARD;
+        double distance2D = 0; // Distance to the center of the frame
+        rm::ForceType forceType = rm::FORCE_STANDARD_5;
         rm::ArmourType armourType = rm::ARMOUR_SMALL;
         rm::CampType campType = rm::CAMP_BLUE;
-        double airTime = 0;
-        double distance2D = 0; // Distance to the center of the frame
-        float pitch = 0;
-        float yaw = 0;
-        char rank = -1;
+        cv::Mat rvecs;
+        cv::Mat tvecs;
 
         explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType = rm::ARMOUR_SMALL,
                         rm::CampType campType = rm::CAMP_BLUE, double distance2D = 0);
@@ -63,7 +67,7 @@ namespace rm {
     public:
         rm::CampType camp = rm::CAMP_RED;  // Self camp
         rm::AimMode mode = rm::AIM_COMBAT; // Aim mode
-        unsigned char speed = 0;                    // Bullet speed
+        unsigned char speed = 0;           // Bullet speed
         float pitch = 0;                   // Pitch angle
         cv::Mat frame;
         cv::Mat binary;
@@ -71,6 +75,8 @@ namespace rm {
 
         Package(rm::CampType camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat &inputFrame,
                 const cv::Mat &inputBinary);
+
+        explicit Package(const shared_ptr<rm::Package> &input);
     };
 
 }

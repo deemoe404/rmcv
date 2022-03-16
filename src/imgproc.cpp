@@ -55,7 +55,10 @@ namespace rm {
             auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
             cv::morphologyEx(output, output, cv::MORPH_CLOSE, kernel);
         } else if (enemy == rm::CAMP_RED) {
-            // TODO: test red extraction
+            cv::Mat gray = channels[2] - channels[0];
+            cv::inRange(gray, 140, 255, output);
+            auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
+            cv::morphologyEx(output, output, cv::MORPH_CLOSE, kernel);
         }
     }
 }

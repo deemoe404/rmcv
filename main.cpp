@@ -4,7 +4,46 @@
 
 // TODO: everything use float, except PnP(double) (needs more investigation)
 
-int main() {
+int main(int argc, char *argv[]) {
+    int count = 0;
+
+    if (argc > 1) {
+        rm::DahengCamera camera;
+        bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 2500, 210);
+        while (cameraStatus) {
+            cv::Mat frame = camera.getFrame();
+            if (frame.empty()) cameraStatus = false;
+            else {
+                cv::Mat binary;
+                rm::ExtractColor(frame, binary, rm::CAMP_BLUE);
+                std::vector<std::vector<cv::Point>> contours;
+                cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+
+                // Fit armours
+                std::vector<rm::LightBar> lightBars;
+                std::vector<rm::Armour> armours;
+                rm::FindLightBars(contours, lightBars, 3, 19, 20, 10);
+                rm::FindArmour(lightBars, armours, 20, 10, 0.3, 0.7, 0.75, {frame.cols, frame.rows}, rm::CAMP_BLUE);
+
+                if (!armours.empty()) {
+                    cv::Mat icon;
+                    rm::CalcRatio(frame, icon, armours[0].icon, armours[0].iconBox, {30, 30});
+                    rm::CalcGamma(icon, icon, 0.05);
+                    std::vector<cv::Mat> channels;
+                    cv::split(icon, channels);
+                    cv::Mat gray = channels[2];
+//                    cv::cvtColor(icon,icon,COLOR_BGR2GRAY);
+                    gray.convertTo(gray, CV_32FC1);
+
+                    cv::imshow("test", gray);
+                    cv::imwrite("/home/yaione/Desktop/test/1/" + rm::int2str(count) + ".jpg", gray);
+                    count++;
+                    cv::waitKey(1);
+                }
+            }
+        }
+    }
+
     rm::SerialPort serialPort;
     rm::Request request{0, 0, 18, 0};
     bool serialPortStatus = serialPort.Initialize();
@@ -56,7 +95,7 @@ int main() {
                 std::vector<rm::LightBar> lightBars;
                 rm::FindLightBars(contours, lightBars, 3, 19, 20, 10);
                 rm::FindArmour(lightBars, result.armours, 20, 10, 0.3, 0.7, 0.75,
-                               {package->frame.cols, package->frame.rows});
+                               {package->frame.cols, package->frame.rows}, package->camp);
 
                 armourPackageQueue.push(result);
             }
@@ -86,30 +125,57 @@ int main() {
                     cv::Mat rows = gray.reshape(0, 1);
                     model->predict(rows, cp);
 
-                    int highest = 0;
-                    for (; highest < cp.cols; highest++) {
-                        if (cp.ptr<float>(0)[highest] > 0) {
-                            break;
+                    int index = 0;
+                    float highest = 0;
+                    for (int j = 0; j < cp.cols; j++) {
+                        if (cp.ptr<float>(0)[j] > highest) {
+                            index = j;
                         }
                     }
-                    result.armours[i].forceType = static_cast<rm::ForceType>(highest);
+                    result.armours[i].forceType =
+                            cp.ptr<float>(0)[index] > 0.8 ? static_cast<rm::ForceType>(index) : rm::FORCE_UNKNOWN;
                 }
-            }, cv::getNumberOfCPUs());
+            }, cv::getNumThreads());
             targetQueue.push(result);
         }
     });
 
-    // TODO: New thread
-    //       go through package.armour, find the target closest to the frame center
-    //       call solvePose & solveAir function to get p,y axis, then send to port
     rm::Response response{0, 0, 0};
     cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
     cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -0.107365897147967, 0.353460341713276, 0, 0, -0.370048735508088);
+    thread solveThread([&]() {
+        int lastTarget = 1;
+        while (frameStatus) {
+            auto package = targetQueue.pop();
+            int index = -1;
+            for (int i = 0; i < package->armours.size(); i++) {
+                if (package->armours[i].forceType == lastTarget) {
+                    index = i;
+                    continue;
+                } else if (package->armours[i].forceType != rm::FORCE_UNKNOWN && index < 0) {
+                    index = i;
+                    lastTarget = package->armours[i].forceType;
+                }
+            }
+            if (index != -1) {
+                rm::SolveArmourPose(package->armours[index], cameraMatrix, distCoeffs, {12.5, 5.5});
+                rm::SolveAirTrack(package->armours[index], 9.8, package->speed, 10, package->pitch);
+                response.pitch.data = package->armours[index].pitch;
+                response.yaw.data = package->armours[index].yaw;
+                response.rank = package->armours[index].rank;
+
+                if (!serialPort.Send(response)) {
+                    std::cout << response.pitch.data << std::endl;
+                }
+            }
+        }
+    });
 
     serialPortThread.join();
     rawPackageThread.join();
     armourPackageThread.join();
     MLPThread.join();
+    solveThread.join();
 
     return 0;
 }

@@ -31,39 +31,42 @@ namespace rm {
 
     void
     FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float maxAngleDif, float errAngle,
-               float minBoxRatio, float maxBoxRatio, float lenRatio, cv::Size frameSize, rm::CampType campType) {
-        if (input.size() < 2) return;
+               float minBoxRatio, float maxBoxRatio, float lenRatio, float sizeThresh, cv::Size frameSize,
+               rm::CampType campType) {
         output.clear();
+        if (input.size() < 2) return;
+
+        // sort lightBars ascending by x
+        std::sort(input.begin(), input.end(), [](const rm::LightBar &lightBar1, const rm::LightBar &lightBar2) {
+            return lightBar1.center.x < lightBar2.center.x;
+        });
 
         for (int i = 0; i < input.size() - 1; i++) {
-            for (int j = i + 1; j < input.size(); j++) {
-                // Poor angle between two light bar
-                float angleDif = abs(input[i].angle - input[j].angle);
-                if (angleDif > maxAngleDif) continue;
+            // Poor angle between two light bar
+            float angleDif = abs(input[i].angle - input[i + 1].angle);
+            if (angleDif > maxAngleDif) continue;
 
-                int y = abs(input[i].center.y - input[j].center.y);
-                int x = abs(input[i].center.x - input[j].center.x);
-                float angle = (float) atan2(y, x) * 180 / (float) CV_PI;
-                float errorI = abs(
-                        input[i].angle > 90 ? abs(input[i].angle - angle) - 90 : abs(180 - input[i].angle - angle) -
-                                                                                 90);
-                float errorJ = abs(
-                        input[j].angle > 90 ? abs(input[j].angle - angle) - 90 : abs(180 - input[j].angle - angle) -
-                                                                                 90);
-                if (errorI > errAngle || errorJ > errAngle) continue;
+            int y = abs(input[i].center.y - input[i + 1].center.y);
+            int x = abs(input[i].center.x - input[i + 1].center.x);
+            float angle = (float) atan2(y, x) * 180 / (float) CV_PI;
+            float errorI = abs(
+                    input[i].angle > 90 ? abs(input[i].angle - angle) - 90 : abs(180 - input[i].angle - angle) - 90);
+            float errorJ = abs(input[i + 1].angle > 90 ? abs(input[i + 1].angle - angle) - 90 :
+                               abs(180 - input[i + 1].angle - angle) - 90);
+            if (errorI > errAngle || errorJ > errAngle) continue;
 
-                float heightI = input[i].size.height;
-                float heightJ = input[j].size.height;
-                float ratio = std::min(heightI, heightJ) / std::max(heightI, heightJ);
-                if (ratio < lenRatio) continue;
+            float heightI = input[i].size.height;
+            float heightJ = input[i + 1].size.height;
+            float ratio = std::min(heightI, heightJ) / std::max(heightI, heightJ);
+            if (ratio < lenRatio) continue;
 
-                float distance = rm::PointDistance(input[i].center, input[j].center);
-                float boxRatio = ((heightI + heightJ) / 2) / distance;
-                if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
+            float distance = rm::PointDistance(input[i].center, input[i + 1].center);
+            float boxRatio = ((heightI + heightJ) / 2) / distance;
+            if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
-                cv::Point centerArmour((input[i].center.x + input[j].center.x) / 2,
-                                       (input[i].center.y + input[j].center.y) / 2);
-                cv::Point centerFrame(frameSize.width / 2, frameSize.height / 2);
+            cv::Point centerArmour((input[i].center.x + input[i + 1].center.x) / 2,
+                                   (input[i].center.y + input[i + 1].center.y) / 2);
+            cv::Point centerFrame(frameSize.width / 2, frameSize.height / 2);
 
                 // TODO: judge big/small armour
                 output.push_back(rm::Armour({input[i], input[j]}, rm::ARMOUR_SMALL, campType,

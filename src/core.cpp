@@ -37,6 +37,15 @@ namespace rm {
         ExCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
         ExCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
 
+        if (armourType == rm::ARMOUR_BIG) {
+            float distanceU = rm::PointDistance(vertices[1], vertices[2]);
+            float distanceD = rm::PointDistance(vertices[0], vertices[3]);
+            int offsetU = (int) round((distanceU / 1.6785f - distanceU) / 2);
+            int offsetD = (int) round((distanceD / 1.6785f - distanceD) / 2);
+            ExCord(icon[1], icon[2], offsetU, icon[1], icon[2]);
+            ExCord(icon[0], icon[3], offsetD, icon[0], icon[3]);
+        }
+
         box = cv::boundingRect(std::vector<cv::Point>({vertices[0], vertices[1], vertices[2], vertices[3]}));
         iconBox = cv::boundingRect(std::vector<cv::Point>({icon[0], icon[1], icon[2], icon[3]}));
     }

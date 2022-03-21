@@ -68,10 +68,9 @@ namespace rm {
                                    (input[i].center.y + input[i + 1].center.y) / 2);
             cv::Point centerFrame(frameSize.width / 2, frameSize.height / 2);
 
-                // TODO: judge big/small armour
-                output.push_back(rm::Armour({input[i], input[j]}, rm::ARMOUR_SMALL, campType,
-                                            rm::PointDistance(centerArmour, centerFrame)));
-            }
+            output.push_back(
+                    rm::Armour({input[i], input[i + 1]}, boxRatio < sizeThresh ? rm::ARMOUR_BIG : rm::ARMOUR_SMALL,
+                               campType, rm::PointDistance(centerArmour, centerFrame)));
         }
 
         if (!output.empty()) {

@@ -136,15 +136,11 @@ int main(int argc, char *argv[]) {
                     cv::Mat rows = gray.reshape(0, 1);
                     model->predict(rows, cp);
 
-                    int index = 0;
-                    float highest = 0;
-                    for (int j = 0; j < cp.cols; j++) {
-                        if (cp.ptr<float>(0)[j] > highest) {
-                            index = j;
-                        }
-                    }
+                    double maxValue = 0;
+                    int maxIndex = 0;
+                    cv::minMaxIdx(cp, nullptr, &maxValue, nullptr, &maxIndex);
                     result.armours[i].forceType =
-                            cp.ptr<float>(0)[index] > 0 ? static_cast<rm::ForceType>(index) : rm::FORCE_UNKNOWN;
+                            maxValue > 0.9 ? static_cast<rm::ForceType>(maxIndex) : rm::FORCE_UNKNOWN;
                     std::cout << result.armours[i].forceType << std::endl;
                 }
             }, cv::getNumThreads());

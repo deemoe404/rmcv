@@ -6,6 +6,7 @@
 
 namespace rm {
     void CalcRatio(cv::Mat &input, cv::Mat &output, cv::Point vertices[4], cv::Rect box, cv::Size outSize) {
+        // handel the case of vertices out of screen
         bool overSized = false;
         for (int i = 0; i < 4; i++) {
             if (vertices[i].x < 0 || vertices[i].y < 0 || vertices[i].x > input.cols - 1 ||
@@ -25,13 +26,13 @@ namespace rm {
         cv::Point2f srcPts[3] = {{(float) (vertices[1].x - box.x), (float) (vertices[1].y - box.y)},
                                  {(float) (vertices[2].x - box.x), (float) (vertices[2].y - box.y)},
                                  {(float) (vertices[0].x - box.x), (float) (vertices[0].y - box.y)}};
-
         cv::Point2f dstPts[3] = {{0,                   0},
                                  {(float) (box.width), 0},
                                  {0,                   (float) (box.height)}};
-
-        cv::Mat warp = cv::getAffineTransform(srcPts, dstPts);
+        auto warp = cv::getAffineTransform(srcPts, dstPts);
         cv::warpAffine(input(box), output, warp, output.size());
+
+        // resize to the dst size
         cv::resize(output, output, outSize);
     }
 
@@ -42,6 +43,7 @@ namespace rm {
             p[i] = cv::saturate_cast<uchar>(pow(i / 255.0, gamma) * 255.0);
         }
 
+        // search for LUT table
         cv::LUT(input, lookUpTable, output);
     }
 
@@ -49,16 +51,12 @@ namespace rm {
         std::vector<cv::Mat> channels;
         cv::split(input, channels);
 
-        if (enemy == rm::CAMP_BLUE) {
-            cv::Mat gray = channels[0] - channels[2];
-            cv::inRange(gray, 80, 255, output);
-            auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
-            cv::morphologyEx(output, output, cv::MORPH_CLOSE, kernel);
-        } else if (enemy == rm::CAMP_RED) {
-            cv::Mat gray = channels[2] - channels[0];
-            cv::inRange(gray, 80, 255, output);
-            auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
-            cv::morphologyEx(output, output, cv::MORPH_CLOSE, kernel);
-        }
+        // extract color
+        auto gray = channels[enemy == rm::CAMP_RED ? 2 : 0] - channels[enemy == rm::CAMP_RED ? 0 : 2];
+        cv::inRange(gray, 80, 255, output);
+
+        // enhance visual
+        auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
+        cv::morphologyEx(output, output, cv::MORPH_CLOSE, kernel);
     }
 }

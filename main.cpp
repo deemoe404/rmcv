@@ -5,18 +5,18 @@
 // TODO: everything use float, except PnP(double) (needs more investigation)
 
 int main(int argc, char *argv[]) {
-    int count = 0;
-
     // Debug mode
-    if (argc == 2) {
+    if (argc == 2 && (*argv[1] == 1 || *argv[1] == 0)) {
+        auto camp = *argv[1] == 0 ? rm::CAMP_RED : rm::CAMP_BLUE;
         rm::DahengCamera camera;
         bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 3500, 210);
         while (cameraStatus) {
             cv::Mat frame = camera.getFrame();
-            if (frame.empty()) cameraStatus = false;
-            else {
+            if (frame.empty()) {
+                cameraStatus = false;
+            } else {
                 cv::Mat binary;
-                rm::ExtractColor(frame, binary, rm::CAMP_BLUE);
+                rm::ExtractColor(frame, binary, camp);
                 std::vector<std::vector<cv::Point>> contours;
                 cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
@@ -24,8 +24,7 @@ int main(int argc, char *argv[]) {
                 std::vector<rm::LightBar> lightBars;
                 std::vector<rm::Armour> armours;
                 rm::FindLightBars(contours, lightBars, 2, 19, 20, 10);
-                rm::FindArmour(lightBars, armours, 20, 15, 0.22, 0.5, 0.75, 0.24, {frame.cols, frame.rows},
-                               rm::CAMP_BLUE);
+                rm::FindArmour(lightBars, armours, 20, 15, 0.22, 0.5, 0.75, 0.24, {frame.cols, frame.rows}, camp);
 
                 if (!armours.empty()) {
                     cv::Mat icon;
@@ -37,10 +36,9 @@ int main(int argc, char *argv[]) {
                     icon.convertTo(icon, CV_32FC1);
 
                     cv::imshow("test", icon);
-                    rm::debug::DrawArmours(armours, frame, -1);
-
                 }
 
+                rm::debug::DrawArmours(armours, frame, -1);
                 rm::debug::DrawLightBars(lightBars, frame, -1);
                 cv::imshow("frame", frame);
                 cv::imshow("binary", binary);

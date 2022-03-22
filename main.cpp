@@ -10,13 +10,13 @@ int main(int argc, char *argv[]) {
     // Debug mode
     if (argc == 2) {
         rm::DahengCamera camera;
-        bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 2500, 210);
+        bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 3500, 210);
         while (cameraStatus) {
             cv::Mat frame = camera.getFrame();
             if (frame.empty()) cameraStatus = false;
             else {
                 cv::Mat binary;
-                rm::ExtractColor(frame, binary, static_cast<rm::CampType>(*argv[1]));
+                rm::ExtractColor(frame, binary, rm::CAMP_BLUE);
                 std::vector<std::vector<cv::Point>> contours;
                 cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
@@ -24,34 +24,33 @@ int main(int argc, char *argv[]) {
                 std::vector<rm::LightBar> lightBars;
                 std::vector<rm::Armour> armours;
                 rm::FindLightBars(contours, lightBars, 2, 19, 20, 10);
-                rm::FindArmour(lightBars, armours, 20, 15, 0.19, 0.7, 0.75, 0.34, {frame.cols, frame.rows},
+                rm::FindArmour(lightBars, armours, 20, 15, 0.22, 0.5, 0.75, 0.24, {frame.cols, frame.rows},
                                rm::CAMP_BLUE);
 
                 if (!armours.empty()) {
                     cv::Mat icon;
                     rm::CalcRatio(frame, icon, armours[0].icon, armours[0].iconBox, {30, 30});
                     rm::CalcGamma(icon, icon, 0.05);
-                    std::vector<cv::Mat> channels;
-                    cv::split(icon, channels);
-                    cv::Mat gray = channels[*argv[1] == '1' ? 2 : 0];
-                    gray.convertTo(gray, CV_32FC1);
+//                    std::vector<cv::Mat> channels;
+//                    cv::split(icon, channels);
+//                    cv::Mat gray = channels[*argv[1] == '1' ? 2 : 0];
+                    icon.convertTo(icon, CV_32FC1);
 
-                    cv::imshow("test", gray);
-//                    cv::imwrite("/home/yaione/Desktop/test/7/" + rm::int2str(count) + ".jpg", gray);
-//                    count++;
-                    std::cout << armours[0].armourType << std::endl;
+                    cv::imshow("test", icon);
+                    rm::debug::DrawArmours(armours, frame, -1);
+
                 }
 
-                rm::debug::DrawArmours(armours, frame, -1);
                 rm::debug::DrawLightBars(lightBars, frame, -1);
                 cv::imshow("frame", frame);
+                cv::imshow("binary", binary);
                 cv::waitKey(1);
             }
         }
     }
 
     rm::SerialPort serialPort;
-    rm::Request request{1, 0, 18, 0};
+    rm::Request request{0, 0, 18, 0};
     bool serialPortStatus = serialPort.Initialize();
     // Serial port request receiving thread
     thread serialPortThread([&]() {
@@ -100,7 +99,7 @@ int main(int argc, char *argv[]) {
                 // Fit armours
                 std::vector<rm::LightBar> lightBars;
                 rm::FindLightBars(contours, lightBars, 2, 19, 20, 10);
-                rm::FindArmour(lightBars, result.armours, 20, 15, 0.19, 0.7, 0.75, 0.34,
+                rm::FindArmour(lightBars, result.armours, 20, 15, 0.22, 0.5, 0.75, 0.24,
                                {package->frame.cols, package->frame.rows}, package->camp);
 
                 armourPackageQueue.push(result);
@@ -122,8 +121,9 @@ int main(int argc, char *argv[]) {
         while (frameStatus) {
             if (!targetQueue.Empty()) continue;
             auto package = armourPackageQueue.pop();
-            rm::Package result(package);
+            if (package->armours.empty()) continue;
 
+            rm::Package result(package);
             cv::parallel_for_(cv::Range(0, (int) package->armours.size()), [&](const cv::Range &range) {
                 for (int i = range.start; i < range.end; i++) {
                     cv::Mat icon;
@@ -147,9 +147,6 @@ int main(int argc, char *argv[]) {
                     }
                     result.armours[i].forceType =
                             cp.ptr<float>(0)[index] > 0 ? static_cast<rm::ForceType>(index) : rm::FORCE_UNKNOWN;
-
-                    cv::imshow("aaa", gray);
-                    cv::waitKey(1);
                     std::cout << result.armours[i].forceType << std::endl;
                 }
             }, cv::getNumThreads());

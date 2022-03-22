@@ -51,12 +51,12 @@ namespace rm {
 
         if (enemy == rm::CAMP_BLUE) {
             cv::Mat gray = channels[0] - channels[2];
-            cv::inRange(gray, 140, 255, output);
+            cv::inRange(gray, 80, 255, output);
             auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
             cv::morphologyEx(output, output, cv::MORPH_CLOSE, kernel);
         } else if (enemy == rm::CAMP_RED) {
             cv::Mat gray = channels[2] - channels[0];
-            cv::inRange(gray, 140, 255, output);
+            cv::inRange(gray, 80, 255, output);
             auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});
             cv::morphologyEx(output, output, cv::MORPH_CLOSE, kernel);
         }

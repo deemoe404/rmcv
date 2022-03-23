@@ -65,6 +65,9 @@ namespace rm {
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
 //                if ((float) abs(input[i].center.y - input[j].center.y) > distance / 6.0f)continue;
+//                if (min(input[i].size.width, input[j].size.width) / max(input[i].size.width, input[j].size.width) <
+//                    0.3)
+//                    continue;
 
                 cv::Point centerArmour((input[i].center.x + input[j].center.x) / 2,
                                        (input[i].center.y + input[j].center.y) / 2);
@@ -145,8 +148,8 @@ namespace rm {
         AxisRotateY(x, z, -1 * thetaY, x, z);
         AxisRotateX(y, z, -1 * thetaX, y, z);
 
-        output.ptr<float>(0)[0] = x * -1;
-        output.ptr<float>(0)[1] = y * -1;
-        output.ptr<float>(0)[2] = z * -1;
+        output.ptr<float>(0)[0] = (float) thetaX * -1;
+        output.ptr<float>(0)[1] = (float) thetaY * -1;
+        output.ptr<float>(0)[2] = (float) thetaZ * -1;
     }
 }

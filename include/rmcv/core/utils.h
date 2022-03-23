@@ -21,6 +21,12 @@ namespace rm {
     /// \param type Rectangle type.
     void VerticesRectify(cv::RotatedRect &input, cv::Point *output, RectType type);
 
+    ///
+    /// \param input
+    /// \param output
+    /// \param outRatio Aspect ratio.
+    void CalcPerspective(cv::Point2i input[4], cv::Point2i output[4], float outRatio);
+
     /// Use newton's iteration to approach the approx solve of function.
     /// \param fd The f(x)/f'(x) function of goal function.
     /// \param x0 x to start the iteration.
@@ -52,7 +58,10 @@ namespace rm {
     /// \param pt2 Point two.
     /// \return Distance.
     float PointDistance(cv::Point2f pt1, cv::Point2f pt2);
-    // TODO: Point instead of Point2f?
+
+    float PointDistance(cv::Point2i pt1, cv::Point2i pt2);
+
+    cv::Point2i LineCenter(cv::Point2i pt1, cv::Point2i pt2);
 
     /// Expand the cord by the given length.
     /// \param pt1 First point of the cord.

@@ -46,7 +46,7 @@ namespace rm {
             ExCord(icon[0], icon[3], offsetD, icon[0], icon[3]);
         }
 
-        box = cv::boundingRect(std::vector<cv::Point>({vertices[0], vertices[1], vertices[2], vertices[3]}));
+        rm::CalcPerspective(vertices, vertices, armourType == rm::ARMOUR_BIG ? 21.5 / 5.5 : 12.5 / 5.5);
         iconBox = cv::boundingRect(std::vector<cv::Point>({icon[0], icon[1], icon[2], icon[3]}));
     }
 

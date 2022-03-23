@@ -71,6 +71,10 @@ namespace rm {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
     }
 
+    float PointDistance(cv::Point2i pt1, cv::Point2i pt2) {
+        return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
+    }
+
     void ExCord(cv::Point pt1, cv::Point pt2, int deltaLen, cv::Point &dst1, cv::Point &dst2) {
         // Special case
         if (pt1.x == pt2.x) {
@@ -184,5 +188,27 @@ namespace rm {
         double rx = thetaX * CV_PI / 180;
         outY = cos(rx) * y1 - sin(rx) * z1;
         outZ = cos(rx) * z1 + sin(rx) * y1;
+    }
+
+    void CalcPerspective(cv::Point2i input[4], cv::Point2i output[4], float outRatio) {
+        float leftHeight = rm::PointDistance(input[0], input[1]);
+        float rightHeight = rm::PointDistance(input[2], input[3]);
+        float maxHeight = fmax(leftHeight, rightHeight);
+
+        cv::Size2i size((int) (maxHeight * outRatio), (int) maxHeight);
+        cv::Point2i center = rm::LineCenter(rm::LineCenter(input[0], input[1]), rm::LineCenter(input[2], input[3]));
+
+        output[0].x = center.x - size.width / 2;
+        output[0].y = center.y - size.height / 2;
+        output[1].x = center.x - size.width / 2;
+        output[1].y = center.y + size.height / 2;
+        output[2].x = center.x + size.width / 2;
+        output[2].y = center.y + size.height / 2;
+        output[3].x = center.x + size.width / 2;
+        output[3].y = center.y - size.height / 2;
+    }
+
+    cv::Point2i LineCenter(cv::Point2i pt1, cv::Point2i pt2) {
+        return {pt1.x / 2 + pt2.x / 2, pt1.y / 2 + pt2.y / 2};
     }
 }

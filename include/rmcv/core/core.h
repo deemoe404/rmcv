@@ -50,7 +50,6 @@ namespace rm {
     public:
         cv::Point vertices[4];    // Vertices around two light bars
         cv::Point icon[4];        // Vertices around icon
-        cv::Rect box;             // Bounding rect
         cv::Rect iconBox;         // Icon rect
         double distance2D = 0;    // Distance to the center of the frame
         double airTime = 0;       // Estimate time before hitting target

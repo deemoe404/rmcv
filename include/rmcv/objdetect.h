@@ -22,7 +22,6 @@ namespace rm {
     /// \param distCoeffs
     /// \param exactSize Real size of the Armour, unit in mm.
     void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Size2f exactSize);
-    // TODO: to size
 
     /// Calculate the delta pitch, delta yaw and estimated time on air.
     /// \param target Armour which changes is to make on.
@@ -31,6 +30,8 @@ namespace rm {
     /// \param hOffset Distance between camera and barrel, positive when barrel sets under camera.
     /// \param motorAngle Positive upwards, unit in radians.
     void SolveAirTrack(rm::Armour &target, double g, double v0, double hOffset, float motorAngle);
+
+    void SolveCameraPose(cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &output);
 }
 
 #endif //RM_STANDARD2022_OBJDETECT_H

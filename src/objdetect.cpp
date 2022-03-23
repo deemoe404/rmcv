@@ -97,6 +97,9 @@ namespace rm {
     }
 
     void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Size2f exactSize) {
+        target.rvecs = cv::Mat::zeros(3, 1, CV_64FC1);
+        target.tvecs = cv::Mat::zeros(3, 1, CV_64FC1);
+
         std::vector<cv::Point3f> exactPoint{cv::Point3f(-exactSize.width / 2.0f, exactSize.height / 2.0f, 0),
                                             cv::Point3f(exactSize.width / 2.0f, exactSize.height / 2.0f, 0),
                                             cv::Point3f(exactSize.width / 2.0f, -exactSize.height / 2.0f, 0),
@@ -107,5 +110,43 @@ namespace rm {
 
         cv::solvePnP(exactPoint, tdCoordinate, cameraMatrix, distCoeffs, target.rvecs, target.tvecs, false,
                      cv::SOLVEPNP_IPPE_SQUARE);
+    }
+
+    void SolveCameraPose(cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &output) {
+        output = cv::Mat::zeros(3, 1, CV_64FC1);
+
+        cv::Mat rotT = cv::Mat::eye(3, 3, CV_64F);
+        cv::Rodrigues(tvecs, rotT);
+
+        double rm[9];
+        cv::Mat rotM(3, 3, CV_64FC1, rm);
+        cv::Rodrigues(rvecs, rotM);
+        double r11 = rotM.ptr<double>(0)[0];
+        double r12 = rotM.ptr<double>(0)[1];
+        double r13 = rotM.ptr<double>(0)[2];
+        double r21 = rotM.ptr<double>(1)[0];
+        double r22 = rotM.ptr<double>(1)[1];
+        double r23 = rotM.ptr<double>(1)[2];
+        double r31 = rotM.ptr<double>(2)[0];
+        double r32 = rotM.ptr<double>(2)[1];
+        double r33 = rotM.ptr<double>(2)[2];
+
+        double thetaZ = atan2(r21, r11) / CV_PI * 180;
+        double thetaY = atan2(-1 * r31, sqrt(r32 * r32 + r33 * r33)) / CV_PI * 180;
+        double thetaX = atan2(r32, r33) / CV_PI * 180;
+
+        double tx = tvecs.ptr<double>(0)[0];
+        double ty = tvecs.ptr<double>(0)[1];
+        double tz = tvecs.ptr<double>(0)[2];
+
+        double x = tx, y = ty, z = tz;
+
+        AxisRotateZ(x, y, -1 * thetaZ, x, y);
+        AxisRotateY(x, z, -1 * thetaY, x, z);
+        AxisRotateX(y, z, -1 * thetaX, y, z);
+
+        output.ptr<float>(0)[0] = x * -1;
+        output.ptr<float>(0)[1] = y * -1;
+        output.ptr<float>(0)[2] = z * -1;
     }
 }

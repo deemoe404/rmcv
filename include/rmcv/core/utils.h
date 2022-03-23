@@ -62,9 +62,11 @@ namespace rm {
     /// \param dst2 The second point after expanding.
     void ExCord(cv::Point pt1, cv::Point pt2, int deltaLen, cv::Point &dst1, cv::Point &dst2);
 
-    std::string PathCombine(const std::string& path1, const std::string& path2);
+    std::string PathCombine(const std::string &path1, const std::string &path2);
 
     std::string int2str(int number);
+
+    void PrintMat(cv::Mat &input, int decimal = 0);
 }
 
 #endif //RM_STANDARD2022_UTILS_H

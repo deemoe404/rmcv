@@ -47,12 +47,12 @@ namespace rm {
         cv::LUT(input, lookUpTable, output);
     }
 
-    void ExtractColor(cv::Mat &input, cv::Mat &output, rm::CampType enemy) {
+    void ExtractColor(cv::Mat &input, cv::Mat &output, rm::CampType camp) {
         std::vector<cv::Mat> channels;
         cv::split(input, channels);
 
         // extract color
-        auto gray = channels[enemy == rm::CAMP_RED ? 2 : 0] - channels[enemy == rm::CAMP_RED ? 0 : 2];
+        auto gray = channels[camp == rm::CAMP_RED ? 0 : 2] - channels[camp == rm::CAMP_RED ? 2 : 0];
         cv::inRange(gray, 80, 255, output);
 
         // enhance visual

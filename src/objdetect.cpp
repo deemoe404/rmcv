@@ -64,7 +64,7 @@ namespace rm {
 //                std::cout << boxRatio << std::endl;
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
-                if ((float) abs(input[i].center.y - input[j].center.y) > distance / 6.0f)continue;
+//                if ((float) abs(input[i].center.y - input[j].center.y) > distance / 6.0f)continue;
 
                 cv::Point centerArmour((input[i].center.x + input[j].center.x) / 2,
                                        (input[i].center.y + input[j].center.y) / 2);

@@ -148,4 +148,17 @@ namespace rm {
         std::string res(str);
         return res;
     }
+
+    void PrintMat(cv::Mat &input, int decimal) {
+        for (int i = 0; i < input.size().height; i++) {
+            std::cout << "[ ";
+            for (int j = 0; j < input.size().width; j++) {
+                std::cout << std::fixed << std::setw(2) << std::setprecision(decimal) << input.at<float>(i, j);
+                if (j != input.size().width - 1)
+                    std::cout << ", ";
+                else
+                    std::cout << " ]" << std::endl;
+            }
+        }
+    }
 }

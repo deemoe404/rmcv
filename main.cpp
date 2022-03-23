@@ -6,8 +6,8 @@
 
 int main(int argc, char *argv[]) {
     // Debug mode
-    if (argc == 2 && (*argv[1] == 1 || *argv[1] == 0)) {
-        auto camp = *argv[1] == 0 ? rm::CAMP_RED : rm::CAMP_BLUE;
+    if (argc == 2 && (*argv[1] == '1' || *argv[1] == '0')) {
+        auto camp = *argv[1] == '0' ? rm::CAMP_RED : rm::CAMP_BLUE;
         rm::DahengCamera camera;
         bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 3500, 210);
         while (cameraStatus) {
@@ -23,25 +23,26 @@ int main(int argc, char *argv[]) {
                 // Fit armours
                 std::vector<rm::LightBar> lightBars;
                 std::vector<rm::Armour> armours;
-                rm::FindLightBars(contours, lightBars, 2, 19, 20, 10);
-                rm::FindArmour(lightBars, armours, 20, 15, 0.22, 0.5, 0.75, 0.24, {frame.cols, frame.rows}, camp);
+                rm::FindLightBars(contours, lightBars, 2, 19, 90, 10);
+                rm::FindArmour(lightBars, armours, 20, 8, 0.16, 0.5, 0.8, 0.24, {frame.cols, frame.rows}, camp);
 
                 if (!armours.empty()) {
                     cv::Mat icon;
                     rm::CalcRatio(frame, icon, armours[0].icon, armours[0].iconBox, {30, 30});
                     rm::CalcGamma(icon, icon, 0.05);
-//                    std::vector<cv::Mat> channels;
-//                    cv::split(icon, channels);
-//                    cv::Mat gray = channels[*argv[1] == '1' ? 2 : 0];
-                    icon.convertTo(icon, CV_32FC1);
+                    std::vector<cv::Mat> channels;
+                    cv::split(icon, channels);
+                    cv::Mat gray = channels[*argv[1] == '1' ? 2 : 0] + channels[1];
+                    gray.convertTo(gray, CV_32FC1);
+                    cv::imshow("test", gray);
 
-                    cv::imshow("test", icon);
+//                    cv::imwrite("/home/yaione/Desktop/sbdum2.jpg", icon);
                 }
 
-                rm::debug::DrawArmours(armours, frame, -1);
-                rm::debug::DrawLightBars(lightBars, frame, -1);
-                cv::imshow("frame", frame);
-                cv::imshow("binary", binary);
+//                rm::debug::DrawArmours(armours, frame, -1);
+//                rm::debug::DrawLightBars(lightBars, frame, -1);
+//                cv::imshow("frame", frame);
+//                cv::imshow("binary", binary);
                 cv::waitKey(1);
             }
         }
@@ -62,7 +63,7 @@ int main(int argc, char *argv[]) {
 
     rm::ParallelQueue<rm::Package> rawPackageQueue;
     rm::DahengCamera camera;
-    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 2500, 210);
+    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 3500, 210);
     // Frame capture thread
     thread rawPackageThread([&]() {
         while (cameraStatus) {
@@ -96,8 +97,8 @@ int main(int argc, char *argv[]) {
 
                 // Fit armours
                 std::vector<rm::LightBar> lightBars;
-                rm::FindLightBars(contours, lightBars, 2, 19, 20, 10);
-                rm::FindArmour(lightBars, result.armours, 20, 15, 0.22, 0.5, 0.75, 0.24,
+                rm::FindLightBars(contours, lightBars, 2, 19, 65, 10);
+                rm::FindArmour(lightBars, result.armours, 20, 8, 0.22, 0.5, 0.8, 0.24,
                                {package->frame.cols, package->frame.rows}, package->camp);
 
                 armourPackageQueue.push(result);
@@ -130,17 +131,20 @@ int main(int argc, char *argv[]) {
                     rm::CalcGamma(icon, icon, 0.05);
                     std::vector<cv::Mat> channels;
                     cv::split(icon, channels);
-                    cv::Mat gray = channels[2];
+                    cv::Mat gray = channels[package->camp == rm::CAMP_RED ? 0 : 2];
                     gray.convertTo(gray, CV_32FC1);
                     Mat cp;
                     cv::Mat rows = gray.reshape(0, 1);
                     model->predict(rows, cp);
 
                     double maxValue = 0;
-                    int maxIndex = 0;
-                    cv::minMaxIdx(cp, nullptr, &maxValue, nullptr, &maxIndex);
+                    int maxIndex[2] = {0};
+                    cv::minMaxIdx(cp, nullptr, &maxValue, nullptr, maxIndex);
+
                     result.armours[i].forceType =
-                            maxValue > 0.9 ? static_cast<rm::ForceType>(maxIndex) : rm::FORCE_UNKNOWN;
+                            maxValue > 0.9 ? static_cast<rm::ForceType>(maxIndex[1]) : rm::FORCE_UNKNOWN;
+                    print(cp);
+                    std::cout << std::endl;
                     std::cout << result.armours[i].forceType << std::endl;
                 }
             }, cv::getNumThreads());

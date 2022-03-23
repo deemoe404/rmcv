@@ -12,7 +12,7 @@ namespace rm {
 
     void CalcGamma(cv::Mat &input, cv::Mat &output, float gamma = 0.5f);
 
-    void ExtractColor(cv::Mat &input, cv::Mat &output, rm::CampType enemy);
+    void ExtractColor(cv::Mat &input, cv::Mat &output, rm::CampType camp);
 
     void EnhanceIcon();
 }

@@ -67,6 +67,12 @@ namespace rm {
     std::string int2str(int number);
 
     void PrintMat(cv::Mat &input, int decimal = 0);
+
+    void AxisRotateZ(double x, double y, double thetaZ, double &outX, double &outY);
+
+    void AxisRotateY(double x, double z, double thetaY, double &outX, double &outZ);
+
+    void AxisRotateX(double y, double z, double thetaX, double &outY, double &outZ);
 }
 
 #endif //RM_STANDARD2022_UTILS_H

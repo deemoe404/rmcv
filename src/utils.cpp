@@ -161,4 +161,28 @@ namespace rm {
             }
         }
     }
+
+    void AxisRotateZ(double x, double y, double thetaZ, double &outX, double &outY) {
+        double x1 = x;
+        double y1 = y;
+        double rz = thetaZ * CV_PI / 180;
+        outX = cos(rz) * x1 - sin(rz) * y1;
+        outY = sin(rz) * x1 + cos(rz) * y1;
+    }
+
+    void AxisRotateY(double x, double z, double thetaY, double &outX, double &outZ) {
+        double x1 = x;
+        double z1 = z;
+        double ry = thetaY * CV_PI / 180;
+        outX = cos(ry) * x1 + sin(ry) * z1;
+        outZ = cos(ry) * z1 - sin(ry) * x1;
+    }
+
+    void AxisRotateX(double y, double z, double thetaX, double &outY, double &outZ) {
+        double y1 = y;
+        double z1 = z;
+        double rx = thetaX * CV_PI / 180;
+        outY = cos(rx) * y1 - sin(rx) * z1;
+        outZ = cos(rx) * z1 + sin(rx) * y1;
+    }
 }

@@ -38,6 +38,19 @@ namespace rm {
 
         for (int i = 0; i < input.size() - 1; i++) {
             for (int j = i + 1; j < input.size(); j++) {
+                bool conflict = false;
+                for (int k = 0; k < input.size(); k++) {
+                    if (k != i && k != j) {
+                        if (input[k].center.x > min(input[i].center.x, input[j].center.x) &&
+                            input[k].center.x < max(input[i].center.x, input[j].center.x) &&
+                            input[k].center.y > min(input[i].vertices[1].y, input[j].vertices[1].y) &&
+                            input[k].center.y < max(input[i].vertices[0].y, input[j].vertices[0].y)) {
+                            conflict = true;
+                        }
+                    }
+                }
+                if (conflict)continue;
+
                 // Poor angle between two light bar
                 float angleDif = abs(input[i].angle - input[j].angle);
                 if (angleDif > maxAngleDif) continue;
@@ -61,13 +74,10 @@ namespace rm {
                 float compensate = sin(atan2(min(heightI, heightJ), max(heightI, heightJ)));
                 float distance = rm::PointDistance(input[i].center, input[j].center);
                 float boxRatio = (max(heightI, heightI)) / (distance / compensate);
-//                std::cout << boxRatio << std::endl;
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
-//                if ((float) abs(input[i].center.y - input[j].center.y) > distance / 6.0f)continue;
-//                if (min(input[i].size.width, input[j].size.width) / max(input[i].size.width, input[j].size.width) <
-//                    0.3)
-//                    continue;
+                if (input[i].center.y - input[j].center.y > (int) ((input[i].size.height + input[j].size.height) / 2.5))
+                    continue;
 
                 cv::Point centerArmour((input[i].center.x + input[j].center.x) / 2,
                                        (input[i].center.y + input[j].center.y) / 2);
@@ -76,6 +86,7 @@ namespace rm {
                 output.push_back(
                         rm::Armour({input[i], input[j]}, boxRatio < sizeThresh ? rm::ARMOUR_BIG : rm::ARMOUR_SMALL,
                                    campType, rm::PointDistance(centerArmour, centerFrame)));
+
             }
         }
 
@@ -92,7 +103,7 @@ namespace rm {
 
         double dPitch = -atan2(h, d) + motorAngle;               // Horizontal related angle.
         double hWorld = d * tan(dPitch);                            // Ground related height.
-        double shootTheta = rm::NewtonIteration(rm::ProjectileMotionFD, {g, d, hWorld, v0});
+        double shootTheta = rm::NewtonIteration(rm::ProjectileMotionFD, {g, d, 0.28, v0});
 
         input.pitch = (float) shootTheta - motorAngle;
         input.yaw = (float) atan2(input.tvecs.ptr<double>(0)[0], input.tvecs.ptr<double>(0)[2]);
@@ -112,7 +123,7 @@ namespace rm {
                                               target.vertices[0]};
 
         cv::solvePnP(exactPoint, tdCoordinate, cameraMatrix, distCoeffs, target.rvecs, target.tvecs, false,
-                     cv::SOLVEPNP_IPPE_SQUARE);
+                     cv::SOLVEPNP_ITERATIVE);
     }
 
     void SolveCameraPose(cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &output) {

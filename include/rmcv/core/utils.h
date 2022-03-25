@@ -63,6 +63,8 @@ namespace rm {
 
     cv::Point2i LineCenter(cv::Point2i pt1, cv::Point2i pt2);
 
+    bool RectIntersect(int x01, int x02, int y01, int y02, int x11, int x12, int y11, int y12);
+
     /// Expand the cord by the given length.
     /// \param pt1 First point of the cord.
     /// \param pt2 Second point of the cord.

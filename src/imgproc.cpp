@@ -53,7 +53,7 @@ namespace rm {
 
         // extract color
         auto gray = channels[camp == rm::CAMP_RED ? 0 : 2] - channels[camp == rm::CAMP_RED ? 2 : 0];
-        cv::inRange(gray, 80, 255, output);
+        cv::inRange(gray, 65, 255, output);
 
         // enhance visual
         auto kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, {3, 3});

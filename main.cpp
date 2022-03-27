@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
     });
 
     rm::ParallelQueue<rm::Package> targetQueue;
-    Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("test2.xml");
+    Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("test.xml");
     cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
     cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -0.107365897147967, 0.353460341713276, 0, 0, -0.370048735508088);
     // MLP predicting thread

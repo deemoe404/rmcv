@@ -97,17 +97,23 @@ namespace rm {
         }
     }
 
-    void SolveAirTrack(rm::Armour &input, double g, double v0, double hOffset, float motorAngle) {
-        double h = (input.tvecs.ptr<double>(0)[1] - hOffset) / 100;
-        double d = input.tvecs.ptr<double>(0)[2] / 100;
+    void SolveAirTrack(rm::Armour &target, double g, double v0, double hOffset, float motorAngle) {
+        double h = (target.tvecs.ptr<double>(0)[1] - hOffset) / 100;
+        double d = target.tvecs.ptr<double>(0)[2] / 100;
 
         double dPitch = -atan2(h, d) + motorAngle;               // Horizontal related angle.
         double hWorld = d * tan(dPitch);                            // Ground related height.
-        double shootTheta = rm::NewtonIteration(rm::ProjectileMotionFD, {g, d, 0.28, v0});
+        double shootTheta = rm::NewtonIteration(rm::ProjectileMotionFD, {g, d, hWorld, v0});
 
-        input.pitch = (float) shootTheta - motorAngle;
-        input.yaw = (float) atan2(input.tvecs.ptr<double>(0)[0], input.tvecs.ptr<double>(0)[2]);
-        input.airTime = d / v0 * cos(shootTheta);
+        target.pitch = (float) shootTheta - motorAngle;
+        target.yaw = (float) atan2(target.tvecs.ptr<double>(0)[0], target.tvecs.ptr<double>(0)[2]);
+        target.airTime = d / v0 * cos(shootTheta);
+    }
+
+    void SolveAirTrack(Armour &target, double v0, double hOffset, double wOffset) {
+        target.pitch = (float) atan2(target.tvecs.ptr<double>(0)[1] - hOffset, target.tvecs.ptr<double>(0)[2]);
+        target.yaw = (float) atan2(target.tvecs.ptr<double>(0)[0] - wOffset, target.tvecs.ptr<double>(0)[2]);
+        target.airTime = target.tvecs.ptr<double>(0)[2] / v0;
     }
 
     void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Size2f exactSize) {
@@ -163,4 +169,5 @@ namespace rm {
         output.ptr<float>(0)[1] = (float) thetaY * -1;
         output.ptr<float>(0)[2] = (float) thetaZ * -1;
     }
+
 }

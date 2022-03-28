@@ -23,13 +23,20 @@ namespace rm {
     /// \param exactSize Real size of the Armour, unit in mm.
     void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Size2f exactSize);
 
-    /// Calculate the delta pitch, delta yaw and estimated time on air.
+    /// Calculate the delta pitch, delta yaw and estimated time on air using Newton Iteration.
     /// \param target Armour which changes is to make on.
     /// \param g Acceleration of gravity.
     /// \param v0 The initial speed of bullet.
     /// \param hOffset Distance between camera and barrel, positive when barrel sets under camera.
     /// \param motorAngle Positive upwards, unit in radians.
     void SolveAirTrack(rm::Armour &target, double g, double v0, double hOffset, float motorAngle);
+
+    /// Calculate the delta pitch, delta yaw and estimated time on air with no compensate.
+    /// \param target Armour which changes is to make on.
+    /// \param v0 The initial speed of bullet.
+    /// \param hOffset Distance between camera and barrel, positive when barrel sets under camera.
+    /// \param wOffset
+    void SolveAirTrack(rm::Armour &target, double v0, double hOffset = 0, double wOffset = 0);
 
     void SolveCameraPose(cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &output);
 }

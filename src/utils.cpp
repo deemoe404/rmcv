@@ -67,6 +67,17 @@ namespace rm {
         }
     }
 
+    double ProjectileAngle(double v0, double g, double d, double h) {
+        double a = (g * pow(d, 2.0)) / (2.0 * pow(v0, 2.0));
+        double b = d;
+        double c = a - h;
+
+        double x1 = ((-1 * b) + sqrt(pow(b, 2.0) - 4 * a * c)) / (2 * a);
+        double x2 = ((-1 * b) - sqrt(pow(b, 2.0) - 4 * a * c)) / (2 * a);
+
+        return atan(fmin(x1, x2));
+    }
+
     float PointDistance(cv::Point2f pt1, cv::Point2f pt2) {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
     }
@@ -212,14 +223,4 @@ namespace rm {
         return {pt1.x / 2 + pt2.x / 2, pt1.y / 2 + pt2.y / 2};
     }
 
-    bool RectIntersect(int x01, int x02, int y01, int y02, int x11, int x12, int y11, int y12) {
-        int zx = abs(x01 + x02 -x11 - x12);
-        int x  = abs(x01 - x02) + abs(x11 - x12);
-        int zy = abs(y01 + y02 - y11 - y12);
-        int y  = abs(y01 - y02) + abs(y11 - y12);
-        if(zx <= x && zy <= y)
-            return true;
-        else
-            return false;
-    }
 }

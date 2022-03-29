@@ -21,9 +21,9 @@ namespace rm {
     /// \param type Rectangle type.
     void VerticesRectify(cv::RotatedRect &input, cv::Point *output, RectType type);
 
-    ///
-    /// \param input
-    /// \param output
+    /// Calibrate given point sets in to specified aspect ratio.
+    /// \param input Origin point sets.
+    /// \param output Points sets in specified aspect ratio.
     /// \param outRatio Aspect ratio.
     void CalcPerspective(cv::Point2i input[4], cv::Point2i output[4], float outRatio);
 
@@ -45,7 +45,6 @@ namespace rm {
     double
     NewtonIteration(double (*fd)(double, std::vector<double>), const std::vector<double> &literals, double x0 = 0,
                     double error = 0.0001, int cycle = 1024);
-    // TODO: Add parameter of the order to the solve to accelerate the function.
 
     /// The f(x)/f'(x) function of projectile motion.
     /// \param theta The angle of the initial shot of the oblique throwing motion, in radians.
@@ -53,19 +52,33 @@ namespace rm {
     /// \return f(x)/f'(x)
     double ProjectileMotionFD(double theta, std::vector<double> literals);
 
+    /// Solve the estimate launch angle by parameters given.
+    /// \param v0 Initial speed of bullet.
+    /// \param g Acceleration of gravity.
+    /// \param d Horizontal distance.
+    /// \param h Height difference.
+    /// \return Estimated launch angle.
+    double ProjectileAngle(double v0, double g, double d, double h);
+
     /// Return the distance between two given points.
-    /// \param pt1 Point one.
-    /// \param pt2 Point two.
+    /// \param pt1 First point.
+    /// \param pt2 Second point.
     /// \return Distance.
     float PointDistance(cv::Point2f pt1, cv::Point2f pt2);
 
+    /// Return the distance between two given points.
+    /// \param pt1 First point.
+    /// \param pt2 Second point.
+    /// \return Distance.
     float PointDistance(cv::Point2i pt1, cv::Point2i pt2);
 
+    /// Return the midpoint between two given points.
+    /// \param pt1 First point.
+    /// \param pt2 Second point.
+    /// \return Midpoint.
     cv::Point2i LineCenter(cv::Point2i pt1, cv::Point2i pt2);
 
-    bool RectIntersect(int x01, int x02, int y01, int y02, int x11, int x12, int y11, int y12);
-
-    /// Expand the cord by the given length.
+    /// Expand the cord by the given length while center of the cord remain still.
     /// \param pt1 First point of the cord.
     /// \param pt2 Second point of the cord.
     /// \param deltaLen The length to be expanded.

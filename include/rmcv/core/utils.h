@@ -25,7 +25,7 @@ namespace rm {
     /// \param input Origin point sets.
     /// \param output Points sets in specified aspect ratio.
     /// \param outRatio Aspect ratio.
-    void CalcPerspective(cv::Point2i input[4], cv::Point2i output[4], float outRatio);
+    void CalcPerspective(cv::Point2i input[4], cv::Point2i output[4], float outRatio = 1.0f);
 
     /// Use newton's iteration to approach the approx solve of function.
     /// \param fd The f(x)/f'(x) function of goal function.

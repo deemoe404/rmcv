@@ -31,8 +31,7 @@ namespace rm {
 
     void
     FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float maxAngleDif, float errAngle,
-               float minBoxRatio, float maxBoxRatio, float lenRatio, float sizeThresh, cv::Size frameSize,
-               rm::CampType campType) {
+               float minBoxRatio, float maxBoxRatio, float lenRatio, cv::Size frameSize, rm::CampType campType) {
         output.clear();
         if (input.size() < 2) return;
 
@@ -76,7 +75,7 @@ namespace rm {
                 float boxRatio = (max(heightI, heightI)) / (distance / compensate);
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
-                if (input[i].center.y - input[j].center.y > (int) ((input[i].size.height + input[j].size.height) / 2.5))
+                if (input[i].center.y - input[j].center.y > (int) ((input[i].size.height + input[j].size.height) / 2))
                     continue;
 
                 cv::Point centerArmour((input[i].center.x + input[j].center.x) / 2,
@@ -84,9 +83,7 @@ namespace rm {
                 cv::Point centerFrame(frameSize.width / 2, frameSize.height / 2);
 
                 output.push_back(
-                        rm::Armour({input[i], input[j]}, boxRatio < sizeThresh ? rm::ARMOUR_BIG : rm::ARMOUR_SMALL,
-                                   campType, rm::PointDistance(centerArmour, centerFrame)));
-
+                        rm::Armour({input[i], input[j]}, campType, rm::PointDistance(centerArmour, centerFrame)));
             }
         }
 

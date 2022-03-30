@@ -12,10 +12,6 @@
 #include "parallequeue.hpp"
 
 namespace rm {
-    enum ArmourType {
-        ARMOUR_BIG = 0, ARMOUR_SMALL = 1
-    };
-
     enum ForceType {
         FORCE_HERO = 0,       // Big armour 1
         FORCE_ENGINEER = 1,   // Small armour 2
@@ -56,15 +52,14 @@ namespace rm {
         float pitch = 0, yaw = 0; // Angle error in pitch & yaw
         char rank = -1;           // Help full-auto force in making decision
         rm::ForceType forceType = rm::FORCE_STANDARD_5;
-        rm::ArmourType armourType = rm::ARMOUR_SMALL;
         rm::CampType campType = rm::CAMP_BLUE;
         cv::Mat rvecs;
         cv::Mat tvecs;
         cv::Point2f error;
 
 
-        explicit Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType = rm::ARMOUR_SMALL,
-                        rm::CampType campType = rm::CAMP_BLUE, double distance2D = 0);
+        explicit Armour(std::vector<rm::LightBar> lightBars, rm::CampType campType = rm::CAMP_BLUE,
+                        double distance2D = 0);
     };
 
     class Package {

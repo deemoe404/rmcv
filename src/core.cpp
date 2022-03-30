@@ -13,8 +13,9 @@ namespace rm {
         size.width = min(box.size.height, box.size.width);
     }
 
-    Armour::Armour(std::vector<rm::LightBar> lightBars, rm::ArmourType armourType, rm::CampType campType,
-                   double distance2D) : armourType(armourType), campType(campType), distance2D(distance2D) {
+    Armour::Armour(std::vector<rm::LightBar> lightBars, rm::CampType campType, double distance2D) : campType(campType),
+                                                                                                    distance2D(
+                                                                                                            distance2D) {
         if (lightBars.size() != 2) {
             throw std::runtime_error("Armour must be initialized with 2 rm::LightBar (s).");
         }
@@ -37,16 +38,7 @@ namespace rm {
         ExCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
         ExCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
 
-        if (armourType == rm::ARMOUR_BIG) {
-            float distanceU = rm::PointDistance(vertices[1], vertices[2]);
-            float distanceD = rm::PointDistance(vertices[0], vertices[3]);
-            int offsetU = (int) round((distanceU / 1.6785f - distanceU) / 2);
-            int offsetD = (int) round((distanceD / 1.6785f - distanceD) / 2);
-            ExCord(icon[1], icon[2], offsetU, icon[1], icon[2]);
-            ExCord(icon[0], icon[3], offsetD, icon[0], icon[3]);
-        }
-
-        rm::CalcPerspective(vertices, vertices, armourType == rm::ARMOUR_BIG ? 21.5 / 5.5 : 12.5 / 5.5);
+        rm::CalcPerspective(vertices, vertices);
         iconBox = cv::boundingRect(std::vector<cv::Point>({icon[0], icon[1], icon[2], icon[3]}));
     }
 

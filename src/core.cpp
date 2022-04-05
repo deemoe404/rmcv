@@ -6,11 +6,21 @@
 
 namespace rm {
     LightBar::LightBar(cv::RotatedRect box, float angle) : angle(angle) {
-        VerticesRectify(box, vertices, RECT_TALL);
+        VerticesRectify(box, this->vertices, RECT_TALL);
 
-        center = box.center;
-        size.height = max(box.size.height, box.size.width);
-        size.width = min(box.size.height, box.size.width);
+        this->center = box.center;
+        this->size.height = max(box.size.height, box.size.width);
+        this->size.width = min(box.size.height, box.size.width);
+    }
+
+    LightBar::LightBar(cv::RotatedRect box) {
+        VerticesRectify(box, this->vertices, RECT_TALL);
+
+        this->center = box.center;
+        this->size.height = max(box.size.height, box.size.width);
+        this->size.width = min(box.size.height, box.size.width);
+
+        this->angle = box.angle > 90 ? box.angle - 90 : box.angle + 90;
     }
 
     Armour::Armour(std::vector<rm::LightBar> lightBars, rm::CampType campType, double distance2D) : campType(campType),
@@ -33,8 +43,8 @@ namespace rm {
 
         float distanceL = rm::PointDistance(vertices[0], vertices[1]);
         float distanceR = rm::PointDistance(vertices[2], vertices[3]);
-        int offsetL = (int) round((distanceL / 0.44f - distanceL) / 2);
-        int offsetR = (int) round((distanceR / 0.44f - distanceR) / 2);
+        int offsetL = (int) round((distanceL / 0.38f - distanceL) / 2);
+        int offsetR = (int) round((distanceR / 0.38f - distanceR) / 2);
         ExCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
         ExCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
 

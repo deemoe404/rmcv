@@ -13,15 +13,15 @@
 
 namespace rm {
     enum ForceType {
-        FORCE_HERO = 0,       // Big armour 1
-        FORCE_ENGINEER = 1,   // Small armour 2
-        FORCE_STANDARD_3 = 2, // Small armour 3
-        FORCE_STANDARD_4 = 3, // Small armour 4
-        FORCE_STANDARD_5 = 4, // Small armour 5
-        FORCE_SENTRY = 5,     // Big armour icon
-        BUILD_BASE = 6,       // Big armour icon
-        BUILD_OUTPOST = 7,    // Small armour icon
-        FORCE_UNKNOWN = 8
+        FORCE_HERO = 1,       // Big armour 1
+        FORCE_ENGINEER = 2,   // Small armour 2
+        FORCE_STANDARD_3 = 3, // Small armour 3
+        FORCE_STANDARD_4 = 4, // Small armour 4
+        FORCE_STANDARD_5 = 5, // Small armour 5
+        FORCE_SENTRY = 6,     // Big armour icon
+        BUILD_BASE = 7,       // Big armour icon
+        BUILD_OUTPOST = 8,    // Small armour icon
+        FORCE_UNKNOWN = 0
     };
 
     enum CampType {
@@ -34,12 +34,14 @@ namespace rm {
 
     class LightBar {
     public:
-        cv::Point vertices[4]; // Four vertices around light bar
-        cv::Point center;
-        cv::Size2f size;
-        float angle;
+        cv::Point vertices[4]; // Four vertices around the light bar
+        cv::Point2f center;    // Mass center of the light bar
+        cv::Size2f size;       // Width and height of the light bar
+        float angle;           // Rotation angle of the light bar. When the angle is 90, the light bar is Vertically on the screen
 
         LightBar(cv::RotatedRect box, float angle);
+
+        explicit LightBar(cv::RotatedRect box);
     };
 
     class Armour {
@@ -50,13 +52,12 @@ namespace rm {
         double distance2D = 0;    // Distance to the center of the frame
         double airTime = 0;       // Estimate time before hitting target
         float pitch = 0, yaw = 0; // Angle error in pitch & yaw
-        char rank = -1;           // Help full-auto force in making decision
+        char rank = -1;           // Rank. Help full-auto force in making decision
         rm::ForceType forceType = rm::FORCE_STANDARD_5;
         rm::CampType campType = rm::CAMP_BLUE;
         cv::Mat rvecs;
         cv::Mat tvecs;
         cv::Point2f error;
-
 
         explicit Armour(std::vector<rm::LightBar> lightBars, rm::CampType campType = rm::CAMP_BLUE,
                         double distance2D = 0);

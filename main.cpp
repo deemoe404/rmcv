@@ -4,12 +4,25 @@
 
 // TODO: everything use float, except PnP(double) (needs more investigation)
 
+std::vector<cv::Mat> dataset;
+
+void testRead() {
+    cv::FileStorage fsread("/home/yaione/Desktop/0.xml", cv::FileStorage::READ);
+    cv::Mat test;// = cv::imread("/home/yaione/Desktop/5.jpg");
+//    test.convertTo(test, CV_32FC1);
+    fsread["Mat4000"] >> test;
+    cv::imshow("aa", test);
+    cv::waitKey(0);
+}
+
 void debugMode(char input) {
+    cv::FileStorage fs("/home/yaione/Desktop/0.xml", cv::FileStorage::WRITE);
     auto camp = input == '0' ? rm::CAMP_RED : rm::CAMP_BLUE;
-//    int count = 0;
+    int count = 0;
     rm::DahengCamera camera;
-    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 2500, 210);
-    while (cameraStatus) {
+    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210030295", 2500, 210);
+    int inputnum = 0;
+    while (inputnum != 'q') {
         cv::Mat frame = camera.getFrame();
         if (frame.empty()) {
             cameraStatus = false;
@@ -23,137 +36,43 @@ void debugMode(char input) {
             std::vector<rm::LightBar> lightBars;
             std::vector<rm::Armour> armours;
             rm::FindLightBars(contours, lightBars, 2, 19, 65, 10);
-            rm::FindArmour(lightBars, armours, 20, 8, 0.12, 0.5, 0.65, camp == rm::CAMP_RED ? 0.263 : 0.19,
-                           {frame.cols, frame.rows}, camp);
+            rm::FindArmour(lightBars, armours, 20, 8, 0.12, 0.5, 0.65, {frame.cols, frame.rows}, camp);
 
             if (!armours.empty()) {
-                cv::Mat icon;
-                rm::CalcRatio(frame, icon, armours[0].icon, armours[0].iconBox, {30, 30});
-                rm::CalcGamma(icon, icon, 0.05);
-                std::vector<cv::Mat> channels;
-                cv::split(icon, channels);
-                cv::Mat gray = channels[input == '1' ? 0 : 2];
-                gray.convertTo(gray, CV_32FC1);
-                cv::imshow("icon", gray);
-//                cv::imwrite("/home/yaione/Desktop/bigall/" + rm::int2str(count) + ".jpg", gray);
-//                count++;
+                for (auto &item: armours) {
+                    cv::Mat icon;
+                    rm::CalcRatio(frame, icon, item.icon, item.iconBox, {28, 28});
+                    cv::cvtColor(icon, icon, COLOR_BGR2GRAY);
+                    icon.convertTo(icon, CV_32FC1);
+                    fs << "Mat" + rm::int2str(count) << icon;
+                    cv::imshow("icon", icon);
+                    count++;
+                    std::cout << count << std::endl;
+                }
             }
 
             rm::debug::DrawArmours(armours, frame, -1);
             rm::debug::DrawLightBars(lightBars, frame, -1);
             cv::resize(frame, frame, {800, 600});
             cv::imshow("frame", frame);
-            cv::imshow("binary", binary);
-            cv::waitKey(1);
+//            cv::imshow("binary", binary);
+            inputnum = cv::waitKey(1);
         }
     }
-}
-
-void serialTest(){
-    rm::SerialPort serialPort;
-    rm::Request request{0, 0, 18, 0};
-    bool serialPortStatus = serialPort.Initialize();
-    // Serial port request receiving thread
-    thread serialPortThread([&]() {
-        while (serialPortStatus) {
-            if (!serialPort.Receive(request)) {
-                std::cout << "Serial port receive failed." << std::endl;
-            }
-        }
-        std::cout << "Serial port closed." << std::endl;
-    });
-
-    rm::DahengCamera camera;
-    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 2500, 210);
-    Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("test2.xml");
-    cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
-    cv::Mat distCoeffs = (cv::Mat_<double>(1, 5)
-            << -0.107365897147967, 0.353460341713276, 0, 0, -0.370048735508088);
-    rm::Response response{0, 0, 0};
-    int lastTarget = 1;
-    long time = cv::getTickCount();
-    while (cameraStatus) {
-        cv::Mat frame = camera.getFrame();
-        if (!frame.empty()) {
-            cameraStatus = false;
-            continue;
-        }
-        // Extract color
-        cv::Mat binary;
-        rm::ExtractColor(frame, binary, static_cast<rm::CampType>(request.camp));
-
-        // Find contours
-        std::vector<std::vector<cv::Point>> contours;
-        cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-
-        // Fit armours
-        std::vector<rm::LightBar> lightBars;
-        std::vector<rm::Armour> armours;
-        rm::FindLightBars(contours, lightBars, 2, 19, 65, 10);
-        rm::FindArmour(lightBars, armours, 20, 8, 0.12, 0.5, 0.65, 0.22, {frame.cols, frame.rows},
-                       request.camp == 0 ? rm::CAMP_BLUE : rm::CAMP_RED);
-
-        for (auto &armour: armours) {
-            cv::Mat icon;
-            rm::CalcRatio(frame, icon, armour.icon, armour.iconBox, {30, 30});
-            rm::CalcGamma(icon, icon, 0.05);
-            std::vector<cv::Mat> channels;
-            cv::split(icon, channels);
-            cv::Mat gray = channels[armour.campType == rm::CAMP_RED ? 0 : 2];
-            gray.convertTo(gray, CV_32FC1);
-            Mat cp;
-            cv::Mat rows = gray.reshape(0, 1);
-            model->predict(rows, cp);
-
-            double maxValue = 0;
-            int maxIndex[2] = {0};
-            cv::minMaxIdx(cp, nullptr, &maxValue, nullptr, maxIndex);
-            armour.forceType = maxValue > 0.9 ? static_cast<rm::ForceType>(maxIndex[1]) : rm::FORCE_UNKNOWN;
-        }
-
-        int index = -1;
-        for (int i = 0; i < armours.size(); i++) {
-            if (armours[i].forceType == lastTarget) {
-                index = i;
-                continue;
-            } else if (armours[i].forceType != rm::FORCE_UNKNOWN && index < 0) {
-                index = i;
-                lastTarget = armours[i].forceType;
-            }
-        }
-        if (index != -1) {
-            rm::SolveArmourPose(armours[index], cameraMatrix, distCoeffs, {21.5, 5.5});
-            rm::SolveAirTrack(armours[index], 9.8, (int) request.speed, 10, request.pitch.data);
-            response.pitch.data = armours[index].pitch;
-            response.yaw.data = armours[index].yaw;
-            response.rank = armours[index].rank;
-            std::cout << (double) (cv::getTickCount() - time) / cv::getTickFrequency() << "  "
-                      << response.pitch.data << "   " << armours[index].forceType << std::endl;
-            time = cv::getTickCount();
-
-            if (!serialPort.Send(response)) {
-                std::cout << response.pitch.data << std::endl;
-            }
-        }
-
-    }
-    serialPortThread.join();
+    fs.release();
 }
 
 int main(int argc, char *argv[]) {
     /// Debug mode
     if (argc == 2 && (*argv[1] == '1' || *argv[1] == '0')) {
+//        testRead();
         debugMode(*argv[1]);
-    }
-
-    /// Serial mode
-    if (argc == 2 && *argv[1] == '3') {
-        serialTest();
+        return 0;
     }
 
     /// Concurrent mode
     rm::SerialPort serialPort;
-    rm::Request request{1, 0, 18, 0};
+    rm::Request request{0, 0, 18, 0};
     // Serial port request receiving thread
     thread serialPortThread([&]() {
         bool status = serialPort.Initialize();
@@ -167,7 +86,7 @@ int main(int argc, char *argv[]) {
 
     rm::ParallelQueue<rm::Package> rawPackageQueue;
     rm::DahengCamera camera;
-    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210010003", 2500, 210);
+    bool cameraStatus = camera.dahengCameraInit((char *) "KE0210030295", 2500, 210);
     // Frame capture thread
     thread rawPackageThread([&]() {
         while (cameraStatus) {
@@ -203,24 +122,23 @@ int main(int argc, char *argv[]) {
                 std::vector<rm::LightBar> lightBars;
                 rm::FindLightBars(contours, lightBars, 2, 19, 65, 10);
                 rm::FindArmour(lightBars, result.armours, 20, 8, 0.12, 0.5, 0.65,
-                               package->camp == rm::CAMP_RED ? 0.263 : 0.19, {package->frame.cols, package->frame.rows},
-                               package->camp);
+                               {package->frame.cols, package->frame.rows}, package->camp);
 
                 armourPackageQueue.push(result);
 
-                cv::Mat temp;
-                package->frame.copyTo(temp);
-                rm::debug::DrawArmours(result.armours, temp, -1);
-                rm::debug::DrawLightBars(lightBars, temp, -1);
-                cv::imshow("test", temp);
-                cv::imshow("test2", package->binary);
-                cv::waitKey(1);
+//                cv::Mat temp;
+//                package->frame.copyTo(temp);
+//                rm::debug::DrawArmours(result.armours, temp, -1);
+//                rm::debug::DrawLightBars(lightBars, temp, -1);
+//                cv::imshow("test", temp);
+//                cv::imshow("test2", package->binary);
+//                cv::waitKey(1);
             }
         }
     });
 
     rm::ParallelQueue<rm::Package> targetQueue;
-    Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("test.xml");
+    Ptr<cv::ml::ANN_MLP> model = cv::ml::ANN_MLP::load("/home/yaione/Desktop/test.xml");
     cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
     cv::Mat distCoeffs = (cv::Mat_<double>(1, 5) << -0.107365897147967, 0.353460341713276, 0, 0, -0.370048735508088);
     // MLP predicting thread
@@ -230,40 +148,77 @@ int main(int argc, char *argv[]) {
             auto package = armourPackageQueue.pop();
             if (package->armours.empty()) continue;
 
+            cv::Mat test;
+
             rm::Package result(package);
-            cv::parallel_for_(cv::Range(0, (int) package->armours.size()), [&](const cv::Range &range) {
-                for (int i = range.start; i < range.end; i++) {
-                    cv::Mat icon;
-                    rm::CalcRatio(package->frame, icon, package->armours[i].icon, package->armours[i].iconBox,
-                                  {30, 30});
-                    rm::CalcGamma(icon, icon, 0.05);
-                    std::vector<cv::Mat> channels;
-                    cv::split(icon, channels);
-                    cv::Mat gray = channels[package->camp == rm::CAMP_RED ? 0 : 2];
-                    gray.convertTo(gray, CV_32FC1);
-                    Mat cp;
-                    cv::Mat rows = gray.reshape(0, 1);
-                    model->predict(rows, cp);
+//            cv::parallel_for_(cv::Range(0, (int) package->armours.size()), [&](const cv::Range &range) {
+//                for (int i = range.start; i < range.end; i++) {
+            for (int i = 0; i < package->armours.size(); i++) {
+                cv::Mat icon;
+                rm::CalcRatio(package->frame, icon, package->armours[i].icon, package->armours[i].iconBox, {28, 28});
+                cv::cvtColor(icon, icon, COLOR_BGR2GRAY);
+//                auto kernel = cv::getStructuringElement(cv::MORPH_RECT, {2, 2});
+//                cv::erode(icon, icon, kernel, {-1, -1}, 1);
+//                cv::dilate(icon, icon, kernel, {-1, -1}, 1);
+//                cv::threshold(icon, icon, 0, 255, cv::THRESH_BINARY);
+//                std::vector<std::vector<cv::Point>> ctws;
+//                cv::findContours(icon, ctws, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+//                int maxIndex = 0;
+//                double maxValue = 0;
+//                for (int j = 0; j < ctws.size(); j++) {
+//                    if (cv::contourArea(ctws[j]) > maxValue) {
+//                        maxValue = cv::contourArea(ctws[j]);
+//                        maxIndex = j;
+//                    }
+//                }
+//                for (int j = 0; j < ctws.size(); j++) {
+//                    if (j != maxIndex) {
+//                        cv::rectangle(icon, cv::boundingRect(ctws[j]), {0}, -1);
+//                    }
+//                }
+                icon.convertTo(icon, CV_32FC1);
+                Mat cp;
+                cv::Mat rows = icon.reshape(0, 1);
+                model->predict(rows, cp);
 
-                    double maxValue = 0;
-                    int maxIndex[2] = {0};
-                    cv::minMaxIdx(cp, nullptr, &maxValue, nullptr, maxIndex);
+                if (i == package->armours.size() - 1) icon.copyTo(test);
 
-                    result.armours[i].forceType =
-                            maxValue > 0.9 ? static_cast<rm::ForceType>(maxIndex[1]) : rm::FORCE_UNKNOWN;
+                double maxValue2 = 0;
+                int maxIndex2[2] = {0};
+                cv::minMaxIdx(cp, nullptr, &maxValue2, nullptr, maxIndex2);
 
-                    // ignore if distance farther than around 3m
-                    if (result.armours[i].forceType != rm::FORCE_UNKNOWN) {
-                        rm::SolveArmourPose(result.armours[i], cameraMatrix, distCoeffs,
-                                            (result.armours[i].armourType == rm::ARMOUR_BIG) ? cv::Size2f{21.5, 5.5}
-                                                                                             : cv::Size2f{12.5, 5.5});
-                        if (result.armours[i].tvecs.ptr<double>(0)[2] > 350) {
-                            result.armours[i].forceType = rm::FORCE_UNKNOWN;
-                        }
+                result.armours[i].forceType =
+                        maxValue2 > 0.99 ? static_cast<rm::ForceType>(maxIndex2[1]) : rm::FORCE_UNKNOWN;
+//                if (maxValue2 > 0.9 && maxIndex2[1] != 0) {
+                    std::cout << rm::int2str(i);
+                    print(cp);
+                    std::cout << maxValue2 << std::endl;
+//                }
+
+
+                // ignore if distance farther than around 3m
+                if (result.armours[i].forceType != rm::FORCE_UNKNOWN) {
+                    rm::SolveArmourPose(result.armours[i], cameraMatrix, distCoeffs, cv::Size2f{5.5, 5.5});
+                    if (result.armours[i].tvecs.ptr<double>(0)[2] > 350) {
+//                        result.armours[i].forceType = rm::FORCE_UNKNOWN;
                     }
                 }
-            }, cv::getNumberOfCPUs());
+            }
+//            }, cv::getNumberOfCPUs());
             targetQueue.push(result);
+
+            cv::Mat temp;
+            package->frame.copyTo(temp);
+
+            for (int i = 0; i < result.armours.size(); i++) {
+                if (result.armours[i].forceType == rm::FORCE_UNKNOWN) continue;
+                rm::debug::DrawArmours(result.armours, temp, i);
+            }
+
+            cv::imshow("test", temp);
+            cv::imshow("test222", test);
+            cv::imshow("test2", package->binary);
+            cv::waitKey(1);
         }
     });
 
@@ -288,8 +243,8 @@ int main(int argc, char *argv[]) {
                 response.yaw.data = package->armours[index].yaw;
                 response.rank = package->armours[index].rank;
 
-                std::cout << package->armours[index].forceType << "  "
-                          << package->armours[index].tvecs.ptr<double>(0)[2] << std::endl;
+//                std::cout << package->armours[index].forceType << "  "
+//                          << package->armours[index].tvecs.ptr<double>(0)[2] << std::endl;
 
                 if (!serialPort.Send(response)) {
                     std::cout << response.pitch.data << std::endl;

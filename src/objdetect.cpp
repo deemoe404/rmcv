@@ -35,6 +35,13 @@ namespace rm {
         output.clear();
         if (input.size() < 2) return;
 
+        std::sort(input.begin(), input.end(), [](const rm::LightBar &lightBar1, const rm::LightBar &lightBar2) {
+            return lightBar1.center.x < lightBar2.center.x;
+        });
+
+        float angleDifHistory = -1;
+        int lastJ = -1;
+
         for (int i = 0; i < input.size() - 1; i++) {
             for (int j = i + 1; j < input.size(); j++) {
                 bool conflict = false;
@@ -75,12 +82,23 @@ namespace rm {
                 float boxRatio = (max(heightI, heightI)) / (distance / compensate);
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
-                if (input[i].center.y - input[j].center.y > (int) ((input[i].size.height + input[j].size.height) / 2))
-                    continue;
+//                if (input[i].center.y - input[j].center.y > (int) ((input[i].size.height + input[j].size.height) / 2))
+//                    continue;
 
                 cv::Point centerArmour((input[i].center.x + input[j].center.x) / 2,
                                        (input[i].center.y + input[j].center.y) / 2);
                 cv::Point centerFrame(frameSize.width / 2, frameSize.height / 2);
+
+
+                if (lastJ == i) {
+                    if (angleDifHistory > angleDif) {
+//                        output.pop_back();
+                    } else {
+                        continue;
+                    }
+                }
+                angleDifHistory = angleDif;
+                lastJ = j;
 
                 output.push_back(
                         rm::Armour({input[i], input[j]}, campType, rm::PointDistance(centerArmour, centerFrame)));

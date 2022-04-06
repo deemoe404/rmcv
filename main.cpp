@@ -70,6 +70,54 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
+    if (argc == 2 && *argv[1] == '3') {
+        rm::DahengCamera camera;
+        long ts = cv::getTickCount();
+        bool cameraStatus = camera.dahengCameraInit((char *) "KE0210030295", (int) (1.0 / 210.0), 210);
+        while (cameraStatus) {
+            cv::Mat frame = camera.getFrame();
+            if (!frame.empty()) {
+//                std::cout << 1 / ((double) (cv::getTickCount() - ts) / cv::getTickFrequency()) << std::endl;
+//                ts = cv::getTickCount();
+//                rm::CalcGamma(frame, frame, 0.7);
+
+                cv::Mat binary;
+//                cv::inRange(frame, cv::Scalar{250, 80, 80}, cv::Scalar{255, 255, 255}, binary);
+                cv::inRange(frame, cv::Scalar{0, 0, 250}, cv::Scalar{255, 255, 255}, binary);
+                auto kernel = cv::getStructuringElement(cv::MORPH_RECT, {5, 5});
+                cv::morphologyEx(binary, binary, cv::MORPH_DILATE, kernel);
+
+                std::vector<std::vector<cv::Point>> contours;
+                cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+                std::vector<rm::LightBar> lightBars;
+                rm::FindLightBars(contours, lightBars, 2, 19, 65, 10, frame);
+
+                std::vector<rm::Armour> armours;
+                if (!lightBars.empty()) {
+                    rm::FindArmour(lightBars, armours, 20, 8, 0.12, 0.5, 0.65, {frame.cols, frame.rows},
+                                   lightBars[0].camp);
+                }
+
+                if (!armours.empty()) {
+                    cv::Mat icon;
+                    rm::CalcRatio(frame, icon, armours[0].icon, armours[0].iconBox, {28, 28});
+//                    icon.convertTo(icon, CV_32FC1);
+                    cv::cvtColor(icon, icon, cv::COLOR_BGR2GRAY);
+                    icon.convertTo(icon, CV_32FC1, 1.0 / 255.0);
+                    std::cout << (float) icon.at<float>(0, 14) << std::endl;
+                    cv::imshow("icon", icon);
+                }
+
+                rm::debug::DrawLightBars(lightBars, frame, -1);
+                rm::debug::DrawArmours(armours, frame, -1);
+                cv::imshow("frame", frame);
+                cv::imshow("binary", binary);
+
+                cv::waitKey(1);
+            }
+        }
+    }
+
     /// Concurrent mode
     rm::SerialPort serialPort;
     rm::Request request{0, 0, 18, 0};
@@ -190,9 +238,9 @@ int main(int argc, char *argv[]) {
                 result.armours[i].forceType =
                         maxValue2 > 0.99 ? static_cast<rm::ForceType>(maxIndex2[1]) : rm::FORCE_UNKNOWN;
 //                if (maxValue2 > 0.9 && maxIndex2[1] != 0) {
-                    std::cout << rm::int2str(i);
-                    print(cp);
-                    std::cout << maxValue2 << std::endl;
+                std::cout << rm::int2str(i);
+                print(cp);
+                std::cout << maxValue2 << std::endl;
 //                }
 
 

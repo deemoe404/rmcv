@@ -54,9 +54,36 @@ namespace rm {
             GXGetEnum(hDevice, GX_ENUM_PIXEL_COLOR_FILTER, &ColorFilter);
             GXSetEnum(hDevice, GX_ENUM_ACQUISITION_MODE, GX_ACQ_MODE_CONTINUOUS);
             GXSetEnum(hDevice, GX_ENUM_ACQUISITION_FRAME_RATE_MODE, GX_ACQUISITION_FRAME_RATE_MODE_ON);
+//            GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_OFF);
+            GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_CONTINUOUS);
             GXSetFloat(hDevice, GX_FLOAT_ACQUISITION_FRAME_RATE, frameSpeed);
             GXSetFloat(hDevice, GX_FLOAT_EXPOSURE_TIME, expoosureTime);
-            GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_OFF);
+
+            GXSetEnum(hDevice, GX_ENUM_GAIN_SELECTOR, GX_GAIN_SELECTOR_ALL);
+            GX_FLOAT_RANGE gainRange;
+            GXGetFloatRange(hDevice, GX_FLOAT_GAIN, &gainRange);
+            GXSetFloat(hDevice, GX_FLOAT_GAIN, gainRange.dMax);
+
+//            status = GXSetBool(hDevice, GX_BOOL_GAMMA_ENABLE, true);
+//            GX_GAMMA_MODE_ENTRY nValue;
+//            nValue = GX_GAMMA_SELECTOR_USER;
+//            GXSetEnum(hDevice, GX_ENUM_GAMMA_MODE, nValue);
+//            double colorp = 0.0;
+//            GXSetFloat(hDevice, GX_FLOAT_GAMMA_PARAM, 0.5);
+//            if (status != GX_STATUS_SUCCESS) {
+//                std::cout << "colorp" << std::endl;
+//            }
+//            GXGetFloat(hDevice, GX_FLOAT_GAMMA_PARAM, &colorp);
+//            std::cout << colorp << std::endl;
+
+//            GX_SHARPNESS_MODE_ENTRY nValue;
+//            nValue = GX_SHARPNESS_MODE_ON;
+//            status = GXSetEnum(hDevice, GX_ENUM_SHARPNESS_MODE, nValue);
+//            if (status != GX_STATUS_SUCCESS) {
+//                std::cout << "colorp" << std::endl;
+//            }
+
+
             status = GXSendCommand(hDevice, GX_COMMAND_ACQUISITION_START);
             if (status != GX_STATUS_SUCCESS) {
                 return false;

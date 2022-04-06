@@ -7,7 +7,7 @@
 namespace rm {
 
     void FindLightBars(std::vector<std::vector<cv::Point>> &input, std::vector<rm::LightBar> &output, float minRatio,
-                       float maxRatio, float tilAngle, float minArea) {
+                       float maxRatio, float tilAngle, float minArea, rm::CampType camp) {
         if (input.size() < 2) return;
         output.clear();
 
@@ -15,7 +15,7 @@ namespace rm {
             if (i.size() < 6 || cv::contourArea(i) < minArea) continue;
 
             cv::RotatedRect ellipse = cv::fitEllipseDirect(i);
-            cv::RotatedRect box = cv::minAreaRect(i);
+            cv::RotatedRect box = cv::fitEllipseDirect(i);
 
             // Aspect ratio
             float ratio = std::max(box.size.width, box.size.height) / std::min(box.size.width, box.size.height);
@@ -183,6 +183,33 @@ namespace rm {
         output.ptr<float>(0)[0] = (float) thetaX * -1;
         output.ptr<float>(0)[1] = (float) thetaY * -1;
         output.ptr<float>(0)[2] = (float) thetaZ * -1;
+    }
+
+    void
+    FindLightBars(vector<std::vector<cv::Point>> &input, vector<rm::LightBar> &output, float minRatio, float maxRatio,
+                  float tilAngle, float minArea, cv::Mat &frame) {
+        if (input.size() < 2) return;
+        output.clear();
+
+        for (auto &i: input) {
+            if (i.size() < 6 || cv::contourArea(i) < minArea) continue;
+
+            cv::RotatedRect ellipse = cv::fitEllipseDirect(i);
+            cv::RotatedRect box = cv::fitEllipseDirect(i);
+
+            // Aspect ratio
+            float ratio = std::max(box.size.width, box.size.height) / std::min(box.size.width, box.size.height);
+            if (ratio > maxRatio || ratio < minRatio) continue;
+
+            // Angle (Perpendicular to the frame is considered as 90 degrees, left < 90, right > 90)
+            float angle = ellipse.angle > 90 ? ellipse.angle - 90 : ellipse.angle + 90;
+            if (abs(angle - 90) > tilAngle) continue;
+
+            cv::Mat ROI = frame(cv::boundingRect(i));
+            cv::Scalar meanValue = cv::mean(ROI);
+
+            output.emplace_back(box, angle, meanValue.val[0] > meanValue.val[2] ? rm::CAMP_BLUE : rm::CAMP_RED);
+        }
     }
 
 }

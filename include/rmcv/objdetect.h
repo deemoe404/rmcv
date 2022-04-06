@@ -9,7 +9,10 @@
 
 namespace rm {
     void FindLightBars(std::vector<std::vector<cv::Point>> &input, std::vector<rm::LightBar> &output, float minRatio,
-                       float maxRatio, float tilAngle, float minArea);
+                       float maxRatio, float tilAngle, float minArea, rm::CampType camp = rm::CAMP_RED);
+
+    void FindLightBars(std::vector<std::vector<cv::Point>> &input, std::vector<rm::LightBar> &output, float minRatio,
+                       float maxRatio, float tilAngle, float minArea, cv::Mat &frame);
 
     void
     FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float maxAngleDif, float errAngle,

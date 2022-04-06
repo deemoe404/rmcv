@@ -12,14 +12,14 @@ namespace rm::debug {
         if (index < 0 || index > input.size()) {
             for (auto &armour: input) {
                 std::vector<cv::Point> vertices;
-                for (auto &vertex: armour.vertices) {
+                for (auto &vertex: armour.icon) {
                     vertices.push_back(vertex);
                 }
                 contours.push_back(vertices);
             }
         } else {
             std::vector<cv::Point> vertices;
-            for (auto &vertex: input[index].vertices) {
+            for (auto &vertex: input[index].icon) {
                 vertices.push_back(vertex);
             }
             contours.push_back(vertices);
@@ -30,22 +30,34 @@ namespace rm::debug {
     void DrawLightBars(const vector<rm::LightBar> &input, Mat &output, int index) {
         if (input.empty()) return;
 
-        std::vector<std::vector<cv::Point>> contours;
+        std::vector<std::vector<cv::Point>> contoursRed;
+        std::vector<std::vector<cv::Point>> contoursBlue;
+
         if (index < 0 || index > input.size()) {
-            for (auto &armour: input) {
+            for (auto &lightBar: input) {
                 std::vector<cv::Point> vertices;
-                for (auto &vertex: armour.vertices) {
+                for (auto &vertex: lightBar.vertices) {
                     vertices.push_back(vertex);
                 }
-                contours.push_back(vertices);
+                if (lightBar.camp == rm::CAMP_RED) {
+                    contoursRed.push_back(vertices);
+                } else if (lightBar.camp == rm::CAMP_BLUE) {
+                    contoursBlue.push_back(vertices);
+                }
             }
         } else {
             std::vector<cv::Point> vertices;
             for (auto &vertex: input[index].vertices) {
                 vertices.push_back(vertex);
             }
-            contours.push_back(vertices);
+            if (input[index].camp == rm::CAMP_RED) {
+                contoursRed.push_back(vertices);
+            } else if (input[index].camp == rm::CAMP_BLUE) {
+                contoursBlue.push_back(vertices);
+            }
         }
-        cv::drawContours(output, contours, -1, {0, 0, 255}, 1);
+
+        cv::drawContours(output, contoursRed, -1, {255, 0, 0}, 1);
+        cv::drawContours(output, contoursBlue, -1, {0, 0, 255}, 1);
     }
 }

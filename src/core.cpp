@@ -5,7 +5,7 @@
 #include "rmcv/core/core.h"
 
 namespace rm {
-    LightBar::LightBar(cv::RotatedRect box, float angle) : angle(angle) {
+    LightBar::LightBar(cv::RotatedRect box, float angle, rm::CampType camp) : angle(angle), camp(camp) {
         VerticesRectify(box, this->vertices, RECT_TALL);
 
         this->center = box.center;
@@ -13,7 +13,7 @@ namespace rm {
         this->size.width = min(box.size.height, box.size.width);
     }
 
-    LightBar::LightBar(cv::RotatedRect box) {
+    LightBar::LightBar(cv::RotatedRect box, rm::CampType camp) : camp(camp) {
         VerticesRectify(box, this->vertices, RECT_TALL);
 
         this->center = box.center;
@@ -43,10 +43,14 @@ namespace rm {
 
         float distanceL = rm::PointDistance(vertices[0], vertices[1]);
         float distanceR = rm::PointDistance(vertices[2], vertices[3]);
-        int offsetL = (int) round((distanceL / 0.38f - distanceL) / 2);
-        int offsetR = (int) round((distanceR / 0.38f - distanceR) / 2);
+        float offsetL = round((distanceL / 0.44f - distanceL) / 2);
+        float offsetR = round((distanceR / 0.44f - distanceR) / 2);
         ExCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
         ExCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
+//        icon[0] = vertices[0];
+//        icon[1] = vertices[1];
+//        icon[2] = vertices[2];
+//        icon[3] = vertices[3];
 
         rm::CalcPerspective(vertices, vertices);
         iconBox = cv::boundingRect(std::vector<cv::Point>({icon[0], icon[1], icon[2], icon[3]}));

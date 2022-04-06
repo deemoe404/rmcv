@@ -37,11 +37,12 @@ namespace rm {
         cv::Point vertices[4]; // Four vertices around the light bar
         cv::Point2f center;    // Mass center of the light bar
         cv::Size2f size;       // Width and height of the light bar
+        rm::CampType camp;     // Camp this light bar belong to
         float angle;           // Rotation angle of the light bar. When the angle is 90, the light bar is Vertically on the screen
 
-        LightBar(cv::RotatedRect box, float angle);
+        LightBar(cv::RotatedRect box, float angle, rm::CampType camp = rm::CAMP_RED);
 
-        explicit LightBar(cv::RotatedRect box);
+        explicit LightBar(cv::RotatedRect box, rm::CampType camp = rm::CAMP_RED);
     };
 
     class Armour {

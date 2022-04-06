@@ -86,66 +86,66 @@ namespace rm {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
     }
 
-    void ExCord(cv::Point pt1, cv::Point pt2, int deltaLen, cv::Point &dst1, cv::Point &dst2) {
+    void ExCord(cv::Point pt1, cv::Point pt2, float deltaLen, cv::Point &dst1, cv::Point &dst2) {
         // Special case
         if (pt1.x == pt2.x) {
             dst1.x = pt1.x;
             dst2.x = pt1.x;
 
             if (pt1.y > pt2.y) {
-                dst1.y = pt1.y + deltaLen;
-                dst2.y = pt2.y - deltaLen;
+                dst1.y = pt1.y + (int) deltaLen;
+                dst2.y = pt2.y - (int) deltaLen;
             } else {
-                dst1.y = pt1.y - deltaLen;
-                dst2.y = pt2.y + deltaLen;
+                dst1.y = pt1.y - (int) deltaLen;
+                dst2.y = pt2.y + (int) deltaLen;
             }
         } else if (pt1.y == pt2.y) {
             dst1.y = pt1.y;
             dst2.y = pt1.y;
 
             if (pt1.x > pt2.x) {
-                dst1.x = pt1.x + deltaLen;
-                dst2.x = pt2.x - deltaLen;
+                dst1.x = pt1.x + (int) deltaLen;
+                dst2.x = pt2.x - (int) deltaLen;
             } else {
-                dst1.x = pt1.x - deltaLen;
-                dst2.x = pt2.x + deltaLen;
+                dst1.x = pt1.x - (int) deltaLen;
+                dst2.x = pt2.x + (int) deltaLen;
             }
             // Common case
         } else {
             float k = (float) (pt1.y - pt2.y) / (float) (pt1.x - pt2.x);
             float theta = atan2((float) abs(pt1.y - pt2.y), (float) abs(pt1.x - pt2.x));
-            float b = (float) pt1.y - k * (float) pt1.x;
-            float zoom = cos(theta) * (float) deltaLen;
+            float zoomY = sin(theta) * deltaLen;
+            float zoomX = cos(theta) * deltaLen;
 
             // Left tilt
             if (k > 0) {
                 if (pt1.x > pt2.x) {
-                    dst1.x = (int) ((float) pt1.x + zoom);
-                    dst1.y = (int) (k * (float) dst1.x + b);
+                    dst1.x = (int) ((float) pt1.x + zoomX);
+                    dst1.y = (int) ((float) pt1.y + zoomY);
 
-                    dst2.x = (int) ((float) pt2.x - zoom);
-                    dst2.y = (int) (k * (float) dst2.x + b);
+                    dst2.x = (int) ((float) pt2.x - zoomX);
+                    dst2.y = (int) ((float) pt2.y - zoomY);
                 } else {
-                    dst1.x = (int) ((float) pt1.x - zoom);
-                    dst1.y = (int) (k * (float) dst1.x + b);
+                    dst1.x = (int) ((float) pt1.x - zoomX);
+                    dst1.y = (int) ((float) pt1.y - zoomY);
 
-                    dst2.x = (int) ((float) pt2.x + zoom);
-                    dst2.y = (int) (k * (float) dst2.x + b);
+                    dst2.x = (int) ((float) pt2.x + zoomX);
+                    dst2.y = (int) ((float) pt2.y + zoomY);
                 }
-                // Right tilt
+            // Right tilt
             } else {
                 if (pt1.x < pt2.x) {
-                    dst1.x = (int) ((float) pt1.x - zoom);
-                    dst1.y = (int) (k * (float) dst1.x + b);
+                    dst1.x = (int) ((float) pt1.x - zoomX);
+                    dst1.y = (int) ((float) pt1.y + zoomY);
 
-                    dst2.x = (int) ((float) pt2.x + zoom);
-                    dst2.y = (int) (k * (float) dst2.x + b);
+                    dst2.x = (int) ((float) pt2.x + zoomX);
+                    dst2.y = (int) ((float) pt2.y - zoomY);
                 } else {
-                    dst1.x = (int) ((float) pt1.x + zoom);
-                    dst1.y = (int) (k * (float) dst1.x + b);
+                    dst1.x = (int) ((float) pt1.x + zoomX);
+                    dst1.y = (int) ((float) pt1.y - zoomY);
 
-                    dst2.x = (int) ((float) pt2.x - zoom);
-                    dst2.y = (int) (k * (float) dst2.x + b);
+                    dst2.x = (int) ((float) pt2.x - zoomX);
+                    dst2.y = (int) ((float) pt2.y + zoomY);
                 }
             }
         }

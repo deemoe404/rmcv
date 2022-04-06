@@ -84,7 +84,7 @@ namespace rm {
     /// \param deltaLen The length to be expanded.
     /// \param dst1 The first point after expanding.
     /// \param dst2 The second point after expanding.
-    void ExCord(cv::Point pt1, cv::Point pt2, int deltaLen, cv::Point &dst1, cv::Point &dst2);
+    void ExCord(cv::Point pt1, cv::Point pt2, float deltaLen, cv::Point &dst1, cv::Point &dst2);
 
     std::string PathCombine(const std::string &path1, const std::string &path2);
 

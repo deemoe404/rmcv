@@ -28,7 +28,14 @@ namespace rm {
     public:
         long fps = 0;
 
-        bool dahengCameraInit(char *sn, int expoosureTime = 2000, int frameSpeed = 210) {
+        /// Initialize DaHeng camera with given parameters.
+        /// \param sn SN number of target camera.
+        /// \param autoWhiteBalance Auto adjust white balance.
+        /// \param expoosureTime Exposure time.
+        /// \param gainFactor Gain factor. Value should be inside [-1.0, 1.0].
+        /// \return Initialization status.
+        bool
+        dahengCameraInit(char *sn, bool autoWhiteBalance = false, int expoosureTime = 2000, double gainFactor = 1.0) {
             GXInitLib();
 
             auto *openParam = new GX_OPEN_PARAM;
@@ -53,16 +60,17 @@ namespace rm {
             GXGetEnum(hDevice, GX_ENUM_PIXEL_FORMAT, &PixelFormat);
             GXGetEnum(hDevice, GX_ENUM_PIXEL_COLOR_FILTER, &ColorFilter);
             GXSetEnum(hDevice, GX_ENUM_ACQUISITION_MODE, GX_ACQ_MODE_CONTINUOUS);
-            GXSetEnum(hDevice, GX_ENUM_ACQUISITION_FRAME_RATE_MODE, GX_ACQUISITION_FRAME_RATE_MODE_ON);
-//            GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_OFF);
-            GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO, GX_BALANCE_WHITE_AUTO_CONTINUOUS);
-            GXSetFloat(hDevice, GX_FLOAT_ACQUISITION_FRAME_RATE, frameSpeed);
+
+            GXSetEnum(hDevice, GX_ENUM_BALANCE_WHITE_AUTO,
+                      autoWhiteBalance ? GX_BALANCE_WHITE_AUTO_CONTINUOUS : GX_BALANCE_WHITE_AUTO_OFF);
             GXSetFloat(hDevice, GX_FLOAT_EXPOSURE_TIME, expoosureTime);
 
             GXSetEnum(hDevice, GX_ENUM_GAIN_SELECTOR, GX_GAIN_SELECTOR_ALL);
             GX_FLOAT_RANGE gainRange;
             GXGetFloatRange(hDevice, GX_FLOAT_GAIN, &gainRange);
-            GXSetFloat(hDevice, GX_FLOAT_GAIN, gainRange.dMax);
+            GXSetFloat(hDevice, GX_FLOAT_GAIN, gainRange.dMax * gainFactor);
+
+            // TODO: test this two function on gen2 cams
 
 //            status = GXSetBool(hDevice, GX_BOOL_GAMMA_ENABLE, true);
 //            GX_GAMMA_MODE_ENTRY nValue;

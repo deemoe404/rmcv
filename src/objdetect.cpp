@@ -15,7 +15,7 @@ namespace rm {
             if (i.size() < 6 || cv::contourArea(i) < minArea) continue;
 
             cv::RotatedRect ellipse = cv::fitEllipseDirect(i);
-            cv::RotatedRect box = cv::fitEllipseDirect(i);
+            cv::RotatedRect box = cv::minAreaRect(i);
 
             // Aspect ratio
             float ratio = std::max(box.size.width, box.size.height) / std::min(box.size.width, box.size.height);
@@ -29,28 +29,61 @@ namespace rm {
         }
     }
 
+    void FindLightBars(vector<std::vector<cv::Point>> &contours, vector<rm::LightBar> &lightBars, float minRatio,
+                       float maxRatio, float tiltAngle, float minArea, float maxArea, cv::Mat &frame,
+                       bool useFitEllipse) {
+        if (contours.size() < 2) return;
+        lightBars.clear();
+
+        for (auto &contour: contours) {
+            if (contour.size() < 6 || cv::contourArea(contour) < minArea || cv::contourArea(contour) > maxArea)
+                continue;
+
+            cv::RotatedRect ellipse = cv::fitEllipseDirect(contour);
+            cv::RotatedRect box = useFitEllipse ? cv::fitEllipseDirect(contour) : cv::minAreaRect(contour);
+
+            // Aspect ratio
+            float ratio = std::max(box.size.width, box.size.height) / std::min(box.size.width, box.size.height);
+            if (ratio > maxRatio || ratio < minRatio) continue;
+
+            // Angle (Perpendicular to the frame is considered as 90 degrees, left < 90, right > 90)
+            float angle = ellipse.angle > 90 ? ellipse.angle - 90 : ellipse.angle + 90;
+            if (abs(angle - 90) > tiltAngle) continue;
+
+            cv::Mat ROI = frame(cv::boundingRect(contour));
+            cv::Scalar meanValue = cv::mean(ROI);
+
+            lightBars.emplace_back(box, angle, meanValue.val[0] > meanValue.val[2] ? rm::CAMP_BLUE : rm::CAMP_RED);
+        }
+    }
+
     void
     FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float maxAngleDif, float errAngle,
-               float minBoxRatio, float maxBoxRatio, float lenRatio, cv::Size frameSize, rm::CampType campType) {
+               float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp, cv::Size frameSize) {
         output.clear();
         if (input.size() < 2) return;
 
+        //
         std::sort(input.begin(), input.end(), [](const rm::LightBar &lightBar1, const rm::LightBar &lightBar2) {
             return lightBar1.center.x < lightBar2.center.x;
         });
 
-        float angleDifHistory = -1;
+        float yDifHistory = -1;
         int lastJ = -1;
 
         for (int i = 0; i < input.size() - 1; i++) {
+            if (input[i].camp == ownCamp) continue;
             for (int j = i + 1; j < input.size(); j++) {
+                if (input[j].camp == ownCamp) continue;
+
+                // TODO: abstract into a function.
                 bool conflict = false;
                 for (int k = 0; k < input.size(); k++) {
                     if (k != i && k != j) {
                         if (input[k].center.x > min(input[i].center.x, input[j].center.x) &&
                             input[k].center.x < max(input[i].center.x, input[j].center.x) &&
-                            input[k].center.y > min(input[i].vertices[1].y, input[j].vertices[1].y) &&
-                            input[k].center.y < max(input[i].vertices[0].y, input[j].vertices[0].y)) {
+                            input[k].center.y > min((float) input[i].vertices[1].y, (float) input[j].vertices[1].y) &&
+                            input[k].center.y < max((float) input[i].vertices[0].y, (float) input[j].vertices[0].y)) {
                             conflict = true;
                         }
                     }
@@ -61,9 +94,9 @@ namespace rm {
                 float angleDif = abs(input[i].angle - input[j].angle);
                 if (angleDif > maxAngleDif) continue;
 
-                int y = abs(input[i].center.y - input[j].center.y);
-                int x = abs(input[i].center.x - input[j].center.x);
-                float angle = (float) atan2(y, x) * 180 / (float) CV_PI;
+                float y = abs(input[i].center.y - input[j].center.y);
+                float x = abs(input[i].center.x - input[j].center.x);
+                float angle = atan2(y, x) * 180.0f / (float) CV_PI;
                 float errorI = abs(
                         input[i].angle > 90 ? abs(input[i].angle - angle) - 90 : abs(180 - input[i].angle - angle) -
                                                                                  90);
@@ -82,26 +115,26 @@ namespace rm {
                 float boxRatio = (max(heightI, heightI)) / (distance / compensate);
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
-//                if (input[i].center.y - input[j].center.y > (int) ((input[i].size.height + input[j].size.height) / 2))
-//                    continue;
+                if (abs(input[i].center.y - input[j].center.y) > ((input[i].size.height + input[j].size.height) / 2))
+                    continue;
 
-                cv::Point centerArmour((input[i].center.x + input[j].center.x) / 2,
-                                       (input[i].center.y + input[j].center.y) / 2);
+                cv::Point centerArmour((int) ((input[i].center.x + input[j].center.x) / 2.0f),
+                                       (int) ((input[i].center.y + input[j].center.y) / 2.0f));
                 cv::Point centerFrame(frameSize.width / 2, frameSize.height / 2);
 
-
+                float yDiff = min(input[j].size.height, input[i].size.height);
                 if (lastJ == i) {
-                    if (angleDifHistory > angleDif) {
-//                        output.pop_back();
+                    if (yDifHistory < yDiff) {
+                        output.pop_back();
                     } else {
                         continue;
                     }
                 }
-                angleDifHistory = angleDif;
+                yDifHistory = yDiff;
                 lastJ = j;
 
                 output.push_back(
-                        rm::Armour({input[i], input[j]}, campType, rm::PointDistance(centerArmour, centerFrame)));
+                        rm::Armour({input[i], input[j]}, input[i].camp, rm::PointDistance(centerArmour, centerFrame)));
             }
         }
 
@@ -183,33 +216,6 @@ namespace rm {
         output.ptr<float>(0)[0] = (float) thetaX * -1;
         output.ptr<float>(0)[1] = (float) thetaY * -1;
         output.ptr<float>(0)[2] = (float) thetaZ * -1;
-    }
-
-    void
-    FindLightBars(vector<std::vector<cv::Point>> &input, vector<rm::LightBar> &output, float minRatio, float maxRatio,
-                  float tilAngle, float minArea, cv::Mat &frame) {
-        if (input.size() < 2) return;
-        output.clear();
-
-        for (auto &i: input) {
-            if (i.size() < 6 || cv::contourArea(i) < minArea) continue;
-
-            cv::RotatedRect ellipse = cv::fitEllipseDirect(i);
-            cv::RotatedRect box = cv::fitEllipseDirect(i);
-
-            // Aspect ratio
-            float ratio = std::max(box.size.width, box.size.height) / std::min(box.size.width, box.size.height);
-            if (ratio > maxRatio || ratio < minRatio) continue;
-
-            // Angle (Perpendicular to the frame is considered as 90 degrees, left < 90, right > 90)
-            float angle = ellipse.angle > 90 ? ellipse.angle - 90 : ellipse.angle + 90;
-            if (abs(angle - 90) > tilAngle) continue;
-
-            cv::Mat ROI = frame(cv::boundingRect(i));
-            cv::Scalar meanValue = cv::mean(ROI);
-
-            output.emplace_back(box, angle, meanValue.val[0] > meanValue.val[2] ? rm::CAMP_BLUE : rm::CAMP_RED);
-        }
     }
 
 }

@@ -11,13 +11,25 @@ namespace rm {
     void FindLightBars(std::vector<std::vector<cv::Point>> &input, std::vector<rm::LightBar> &output, float minRatio,
                        float maxRatio, float tilAngle, float minArea, rm::CampType camp = rm::CAMP_RED);
 
-    void FindLightBars(std::vector<std::vector<cv::Point>> &input, std::vector<rm::LightBar> &output, float minRatio,
-                       float maxRatio, float tilAngle, float minArea, cv::Mat &frame);
+    /// Fit light bars from a set of contours. Auto detect light bar color.
+    /// \param contours The set of contours.
+    /// \param output Output light bars.
+    /// \param minRatio Minimal aspect ratio.
+    /// \param maxRatio Maximal aspect ratio.
+    /// \param tiltAngle Maximal tilt angle.
+    /// \param minArea Minimal contour area.
+    /// \param frame Source frame.
+    /// \param useFitEllipse Use cv::fitEllipseDirect to define light bar outlines instead of cv::minAreaRect when set
+    ///                      to true. Usually recommended when source frame was over exposed.
+    void
+    FindLightBars(std::vector<std::vector<cv::Point>> &contours, std::vector<rm::LightBar> &lightBars, float minRatio,
+                  float maxRatio, float tiltAngle, float minArea, float maxArea, cv::Mat &frame,
+                  bool useFitEllipse = true);
 
     void
     FindArmour(std::vector<rm::LightBar> &input, std::vector<rm::Armour> &output, float maxAngleDif, float errAngle,
-               float minBoxRatio, float maxBoxRatio, float lenRatio, cv::Size frameSize = {1920, 1080},
-               rm::CampType campType = rm::CAMP_BLUE);
+               float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
+               cv::Size frameSize = {1920, 1080});
 
     /// Use PNP algorithm to estimate the pose in 3D of Armour.
     /// \param target Armour which changes is to make on.

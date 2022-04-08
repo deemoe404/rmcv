@@ -43,14 +43,10 @@ namespace rm {
 
         float distanceL = rm::PointDistance(vertices[0], vertices[1]);
         float distanceR = rm::PointDistance(vertices[2], vertices[3]);
-        float offsetL = round((distanceL / 0.44f - distanceL) / 2);
-        float offsetR = round((distanceR / 0.44f - distanceR) / 2);
+        float offsetL = round((distanceL / 0.50f - distanceL) / 2);
+        float offsetR = round((distanceR / 0.50f - distanceR) / 2);
         ExCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
         ExCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
-//        icon[0] = vertices[0];
-//        icon[1] = vertices[1];
-//        icon[2] = vertices[2];
-//        icon[3] = vertices[3];
 
         rm::CalcPerspective(vertices, vertices);
         iconBox = cv::boundingRect(std::vector<cv::Point>({icon[0], icon[1], icon[2], icon[3]}));

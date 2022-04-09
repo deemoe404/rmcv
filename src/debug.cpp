@@ -57,7 +57,7 @@ namespace rm::debug {
             }
         }
 
-        cv::drawContours(output, contoursRed, -1, {255, 0, 0}, 1);
-        cv::drawContours(output, contoursBlue, -1, {0, 0, 255}, 1);
+        cv::drawContours(output, contoursRed, -1, {0, 0, 255}, 1);
+        cv::drawContours(output, contoursBlue, -1, {255, 0, 0}, 1);
     }
 }

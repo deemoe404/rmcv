@@ -19,13 +19,13 @@ namespace rm {
     /// \param input The original rectangle.
     /// \param output Reordered vertices.
     /// \param type Rectangle type.
-    void VerticesRectify(cv::RotatedRect &input, cv::Point *output, RectType type);
+    void VerticesRectify(cv::RotatedRect &input, cv::Point2f *output, RectType type);
 
     /// Calibrate given point sets in to specified aspect ratio.
     /// \param input Origin point sets.
     /// \param output Points sets in specified aspect ratio.
     /// \param outRatio Aspect ratio.
-    void CalcPerspective(cv::Point2i input[4], cv::Point2i output[4], float outRatio = 1.0f);
+    void CalcPerspective(cv::Point2f input[4], cv::Point2f output[4], float outRatio = 1.0f);
 
     /// Use newton's iteration to approach the approx solve of function.
     /// \param fd The f(x)/f'(x) function of goal function.
@@ -76,7 +76,7 @@ namespace rm {
     /// \param pt1 First point.
     /// \param pt2 Second point.
     /// \return Midpoint.
-    cv::Point2i LineCenter(cv::Point2i pt1, cv::Point2i pt2);
+    cv::Point2f LineCenter(cv::Point2f pt1, cv::Point2f pt2);
 
     /// Expand the cord by the given length while center of the cord remain still.
     /// \param pt1 First point of the cord.
@@ -84,7 +84,7 @@ namespace rm {
     /// \param deltaLen The length to be expanded.
     /// \param dst1 The first point after expanding.
     /// \param dst2 The second point after expanding.
-    void ExCord(cv::Point pt1, cv::Point pt2, float deltaLen, cv::Point &dst1, cv::Point &dst2);
+    void ExCord(cv::Point2f pt1, cv::Point2f pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2);
 
     std::string PathCombine(const std::string &path1, const std::string &path2);
 

@@ -5,7 +5,7 @@
 #include "rmcv/core/utils.h"
 
 namespace rm {
-    void VerticesRectify(cv::RotatedRect &input, cv::Point *output, RectType type = RECT_TALL) {
+    void VerticesRectify(cv::RotatedRect &input, cv::Point2f *output, RectType type = RECT_TALL) {
         cv::Point2f temp[4];
         input.points(temp);
 
@@ -86,29 +86,29 @@ namespace rm {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
     }
 
-    void ExCord(cv::Point pt1, cv::Point pt2, float deltaLen, cv::Point &dst1, cv::Point &dst2) {
+    void ExCord(cv::Point2f pt1, cv::Point2f pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2) {
         // Special case
         if (pt1.x == pt2.x) {
             dst1.x = pt1.x;
             dst2.x = pt1.x;
 
             if (pt1.y > pt2.y) {
-                dst1.y = pt1.y + (int) deltaLen;
-                dst2.y = pt2.y - (int) deltaLen;
+                dst1.y = pt1.y + deltaLen;
+                dst2.y = pt2.y - deltaLen;
             } else {
-                dst1.y = pt1.y - (int) deltaLen;
-                dst2.y = pt2.y + (int) deltaLen;
+                dst1.y = pt1.y - deltaLen;
+                dst2.y = pt2.y + deltaLen;
             }
         } else if (pt1.y == pt2.y) {
             dst1.y = pt1.y;
             dst2.y = pt1.y;
 
             if (pt1.x > pt2.x) {
-                dst1.x = pt1.x + (int) deltaLen;
-                dst2.x = pt2.x - (int) deltaLen;
+                dst1.x = pt1.x + deltaLen;
+                dst2.x = pt2.x - deltaLen;
             } else {
-                dst1.x = pt1.x - (int) deltaLen;
-                dst2.x = pt2.x + (int) deltaLen;
+                dst1.x = pt1.x - deltaLen;
+                dst2.x = pt2.x + deltaLen;
             }
             // Common case
         } else {
@@ -120,32 +120,32 @@ namespace rm {
             // Left tilt
             if (k > 0) {
                 if (pt1.x > pt2.x) {
-                    dst1.x = (int) ((float) pt1.x + zoomX);
-                    dst1.y = (int) ((float) pt1.y + zoomY);
+                    dst1.x = pt1.x + zoomX;
+                    dst1.y = pt1.y + zoomY;
 
-                    dst2.x = (int) ((float) pt2.x - zoomX);
-                    dst2.y = (int) ((float) pt2.y - zoomY);
+                    dst2.x = pt2.x - zoomX;
+                    dst2.y = pt2.y - zoomY;
                 } else {
-                    dst1.x = (int) ((float) pt1.x - zoomX);
-                    dst1.y = (int) ((float) pt1.y - zoomY);
+                    dst1.x = pt1.x - zoomX;
+                    dst1.y = pt1.y - zoomY;
 
-                    dst2.x = (int) ((float) pt2.x + zoomX);
-                    dst2.y = (int) ((float) pt2.y + zoomY);
+                    dst2.x = pt2.x + zoomX;
+                    dst2.y = pt2.y + zoomY;
                 }
-            // Right tilt
+                // Right tilt
             } else {
                 if (pt1.x < pt2.x) {
-                    dst1.x = (int) ((float) pt1.x - zoomX);
-                    dst1.y = (int) ((float) pt1.y + zoomY);
+                    dst1.x = pt1.x - zoomX;
+                    dst1.y = pt1.y + zoomY;
 
-                    dst2.x = (int) ((float) pt2.x + zoomX);
-                    dst2.y = (int) ((float) pt2.y - zoomY);
+                    dst2.x = pt2.x + zoomX;
+                    dst2.y = pt2.y - zoomY;
                 } else {
-                    dst1.x = (int) ((float) pt1.x + zoomX);
-                    dst1.y = (int) ((float) pt1.y - zoomY);
+                    dst1.x = pt1.x + zoomX;
+                    dst1.y = pt1.y - zoomY;
 
-                    dst2.x = (int) ((float) pt2.x - zoomX);
-                    dst2.y = (int) ((float) pt2.y + zoomY);
+                    dst2.x = pt2.x - zoomX;
+                    dst2.y = pt2.y + zoomY;
                 }
             }
         }
@@ -201,13 +201,13 @@ namespace rm {
         outZ = cos(rx) * z1 + sin(rx) * y1;
     }
 
-    void CalcPerspective(cv::Point2i input[4], cv::Point2i output[4], float outRatio) {
+    void CalcPerspective(cv::Point2f input[4], cv::Point2f output[4], float outRatio) {
         float leftHeight = rm::PointDistance(input[0], input[1]);
         float rightHeight = rm::PointDistance(input[2], input[3]);
         float maxHeight = fmax(leftHeight, rightHeight);
 
-        cv::Size2i size((int) (maxHeight * outRatio), (int) maxHeight);
-        cv::Point2i center = rm::LineCenter(rm::LineCenter(input[0], input[1]), rm::LineCenter(input[2], input[3]));
+        cv::Size2f size((maxHeight * outRatio), maxHeight);
+        cv::Point2f center = rm::LineCenter(rm::LineCenter(input[0], input[1]), rm::LineCenter(input[2], input[3]));
 
         output[0].x = center.x - size.width / 2;
         output[0].y = center.y - size.height / 2;
@@ -219,7 +219,7 @@ namespace rm {
         output[3].y = center.y - size.height / 2;
     }
 
-    cv::Point2i LineCenter(cv::Point2i pt1, cv::Point2i pt2) {
+    cv::Point2f LineCenter(cv::Point2f pt1, cv::Point2f pt2) {
         return {pt1.x / 2 + pt2.x / 2, pt1.y / 2 + pt2.y / 2};
     }
 

@@ -89,7 +89,7 @@ namespace rm {
             }
 
             // TODO: confirm the definition of camp & mode.
-            message.camp = receiveBuffer[1] & 0x01;
+            message.ownCamp = receiveBuffer[1] & 0x01;
             message.mode = (receiveBuffer[1] & 0x04) >> 2;
             message.speed = receiveBuffer[2];
 

@@ -27,7 +27,7 @@ namespace rm {
     } BitFloat;
 
     typedef struct {
-        uc camp;
+        uc ownCamp;
         uc mode;
         uc speed;
         BitFloat pitch;

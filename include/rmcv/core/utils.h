@@ -92,6 +92,18 @@ namespace rm {
 
     void PrintMat(cv::Mat &input, int decimal = 0);
 
+    ///
+    /// \param imagePoints
+    /// \param cameraMatrix
+    /// \param distortionFactor
+    /// \param exactSize
+    /// \param translationVector
+    /// \param rotationVector
+    void SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, cv::Size2f exactSize,
+                  cv::Mat &translationVector, cv::Mat &rotationVector);
+
+    double SolveDistance(cv::Mat &translationVector);
+
     void AxisRotateZ(double x, double y, double thetaZ, double &outX, double &outY);
 
     void AxisRotateY(double x, double z, double thetaY, double &outX, double &outZ);

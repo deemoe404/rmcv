@@ -79,7 +79,15 @@ namespace rm {
 
     void FindArmour(std::vector<rm::LightBar> &lightBars, std::vector<rm::Armour> &armours, float maxAngleDif,
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
-                    cv::Size frameSize) {
+                    cv::Size2f frameSize) {
+        cv::Point2f center = {frameSize.width / 2.0f, frameSize.height / 2.0f};
+
+        rm::FindArmour(lightBars, armours, maxAngleDif, errAngle, minBoxRatio, maxBoxRatio, lenRatio, ownCamp, center);
+    }
+
+    void FindArmour(std::vector<rm::LightBar> &lightBars, std::vector<rm::Armour> &armours, float maxAngleDif,
+                    float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
+                    cv::Point2f attention) {
         armours.clear();
         if (lightBars.size() < 2) return;
 
@@ -124,9 +132,8 @@ namespace rm {
                     ((lightBars[i].size.height + lightBars[j].size.height) / 2))
                     continue;
 
-                cv::Point centerArmour((int) ((lightBars[i].center.x + lightBars[j].center.x) / 2.0f),
-                                       (int) ((lightBars[i].center.y + lightBars[j].center.y) / 2.0f));
-                cv::Point centerFrame(frameSize.width / 2, frameSize.height / 2);
+                cv::Point2f centerArmour((lightBars[i].center.x + lightBars[j].center.x) / 2.0f,
+                                         (lightBars[i].center.y + lightBars[j].center.y) / 2.0f);
 
                 float yDiff = min(lightBars[j].size.height, lightBars[i].size.height);
                 if (lastJ == i) {
@@ -139,7 +146,7 @@ namespace rm {
                 yDifHistory = yDiff;
                 lastJ = j;
 
-                armours.push_back(rm::Armour({lightBars[i], lightBars[j]}, rm::PointDistance(centerArmour, centerFrame),
+                armours.push_back(rm::Armour({lightBars[i], lightBars[j]}, rm::PointDistance(centerArmour, attention),
                                              lightBars[i].camp));
             }
         }

@@ -95,7 +95,22 @@ namespace rm {
     ///                  would be used to sort the output.
     void FindArmour(std::vector<rm::LightBar> &lightBars, std::vector<rm::Armour> &armours, float maxAngleDif,
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
-                    cv::Size frameSize);
+                    cv::Size2f frameSize);
+
+    /// Fit armours from a set of light bars.
+    /// \param lightBars The set of light bars
+    /// \param armours Output armours
+    /// \param maxAngleDif Maximum angle difference between two light bars.
+    /// \param errAngle Maximum angle between the over all rect and the two light bars.
+    /// \param minBoxRatio Minimum ratio of the armour box.
+    /// \param maxBoxRatio Maximum ratio of the armour box.
+    /// \param lenRatio Maximum length ratio between two light bars.
+    /// \param ownCamp Own camp.
+    /// \param attention Attention point. When this parameter is specified, the distance between armour and the
+    ///                  attention point would be used to sort the output.
+    void FindArmour(std::vector<rm::LightBar> &lightBars, std::vector<rm::Armour> &armours, float maxAngleDif,
+                    float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
+                    cv::Point2f attention);
 
     /// Use PNP algorithm to estimate the pose in 3D of Armour.
     /// \param target Armour which changes is to make on.

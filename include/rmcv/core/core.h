@@ -25,7 +25,7 @@ namespace rm {
     };
 
     enum CampType {
-        CAMP_RED = 0, CAMP_BLUE = 1
+        CAMP_RED = 0, CAMP_BLUE = 1, CAMP_NEUTRAL = -1
     };
 
     enum AimMode {
@@ -34,34 +34,34 @@ namespace rm {
 
     class LightBar {
     public:
-        cv::Point vertices[4]; // Four vertices around the light bar
-        cv::Point2f center;    // Mass center of the light bar
-        cv::Size2f size;       // Width and height of the light bar
-        rm::CampType camp;     // Camp this light bar belong to
-        float angle;           // Rotation angle of the light bar. When the angle is 90, the light bar is Vertically on the screen
+        float angle;             // Rotation angle of the light bar (vertical when the angle is 90)
+        rm::CampType camp;       // Camp this light bar belong to
+        cv::Point2f center;      // Mass center of the light bar
+        cv::Point2f vertices[4]; // Four vertices around the light bar
+        cv::Size2f size;         // Width and height of the light bar
 
-        LightBar(cv::RotatedRect box, float angle, rm::CampType camp = rm::CAMP_RED);
-
-        explicit LightBar(cv::RotatedRect box, rm::CampType camp = rm::CAMP_RED);
+        explicit LightBar(cv::RotatedRect box, rm::CampType camp = rm::CAMP_NEUTRAL);
     };
 
     class Armour {
     public:
-        cv::Point vertices[4];    // Vertices around two light bars
-        cv::Point icon[4];        // Vertices around icon
-        cv::Rect iconBox;         // Icon rect
-        double distance2D = 0;    // Distance to the center of the frame
-        double airTime = 0;       // Estimate time before hitting target
-        float pitch = 0, yaw = 0; // Angle error in pitch & yaw
-        char rank = -1;           // Rank. Help full-auto force in making decision
-        rm::ForceType forceType = rm::FORCE_STANDARD_5;
-        rm::CampType campType = rm::CAMP_BLUE;
-        cv::Mat rvecs;
-        cv::Mat tvecs;
-        cv::Point2f error;
+        cv::Point2f vertices[4]; // Vertices of armour (square with light bar as side length for better PNP result)
+        cv::Point2f icon[4];     // Vertices of icon area
+        float rank;              // A value help in sorting multiple armours
+        rm::ForceType force;
+        rm::CampType camp;
 
-        explicit Armour(std::vector<rm::LightBar> lightBars, rm::CampType campType = rm::CAMP_BLUE,
-                        double distance2D = 0);
+        explicit Armour(std::vector<rm::LightBar> lightBars, float rank = 0, rm::CampType camp = rm::CAMP_NEUTRAL,
+                        rm::ForceType force = rm::FORCE_UNKNOWN);
+    };
+
+    class ShootFactor {
+    public:
+        float pitchAngle;
+        float yawAngle;
+        double estimateAirTime;
+
+        ShootFactor(float pitchAngle, float yawAngle, double estimateAirTime);
     };
 
     class Package {

@@ -5,27 +5,15 @@
 #include "rmcv/core/core.h"
 
 namespace rm {
-    LightBar::LightBar(cv::RotatedRect box, float angle, rm::CampType camp) : angle(angle), camp(camp) {
+    LightBar::LightBar(cv::RotatedRect box, rm::CampType camp) : angle(
+            box.angle > 90 ? box.angle - 90 : box.angle + 90), camp(camp), center(box.center) {
         VerticesRectify(box, this->vertices, RECT_TALL);
 
-        this->center = box.center;
-        this->size.height = max(box.size.height, box.size.width);
-        this->size.width = min(box.size.height, box.size.width);
+        this->size = {min(box.size.height, box.size.width), max(box.size.height, box.size.width)};
     }
 
-    LightBar::LightBar(cv::RotatedRect box, rm::CampType camp) : camp(camp) {
-        VerticesRectify(box, this->vertices, RECT_TALL);
-
-        this->center = box.center;
-        this->size.height = max(box.size.height, box.size.width);
-        this->size.width = min(box.size.height, box.size.width);
-
-        this->angle = box.angle > 90 ? box.angle - 90 : box.angle + 90;
-    }
-
-    Armour::Armour(std::vector<rm::LightBar> lightBars, rm::CampType campType, double distance2D) : campType(campType),
-                                                                                                    distance2D(
-                                                                                                            distance2D) {
+    Armour::Armour(std::vector<rm::LightBar> lightBars, float rank, rm::CampType camp, rm::ForceType force) : camp(
+            camp), rank(rank), force(force) {
         if (lightBars.size() != 2) {
             throw std::runtime_error("Armour must be initialized with 2 rm::LightBar (s).");
         }
@@ -49,7 +37,13 @@ namespace rm {
         ExCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
 
         rm::CalcPerspective(vertices, vertices);
-        iconBox = cv::boundingRect(std::vector<cv::Point>({icon[0], icon[1], icon[2], icon[3]}));
+    }
+
+    ShootFactor::ShootFactor(float pitchAngle, float yawAngle, double estimateAirTime) : pitchAngle(pitchAngle),
+                                                                                         yawAngle(yawAngle),
+                                                                                         estimateAirTime(
+                                                                                                 estimateAirTime) {
+
     }
 
     Package::Package(rm::CampType camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat &inputFrame,

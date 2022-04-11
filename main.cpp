@@ -38,13 +38,16 @@ int main(int argc, char *argv[]) {
                 rm::FindLightBars(binary, lightBars, 2, 10, 25, 80, 1500, frame, true);
 
                 std::vector<rm::Armour> armours;
-                rm::FindArmour(lightBars, armours, 8, 24, 0.15, 0.45, 0.65, ownCamp, {frame.cols, frame.rows});\
+                rm::FindArmour(lightBars, armours, 8, 24, 0.15, 0.45, 0.65, ownCamp,
+                               cv::Size2f {(float) frame.cols, (float) frame.rows});
 
                 for (auto &armour: armours) {
                     cv::Mat tvecs, rvecs;
                     rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs);
                     double distance = rm::SolveDistance(tvecs);
-                    std::cout << distance << std::endl;
+                    if (distance < 450) {
+
+                    }
                 }
 
                 rm::debug::DrawLightBars(lightBars, frame, -1);

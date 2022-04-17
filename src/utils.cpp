@@ -86,7 +86,7 @@ namespace rm {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
     }
 
-    void ExCord(cv::Point2f pt1, cv::Point2f pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2) {
+    void ExtendCord(cv::Point2f pt1, cv::Point2f pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2) {
         // Special case
         if (pt1.x == pt2.x) {
             dst1.x = pt1.x;
@@ -187,10 +187,20 @@ namespace rm {
                                             cv::Point3f(exactSize.width / 2.0f, -exactSize.height / 2.0f, 0),
                                             cv::Point3f(-exactSize.width / 2.0f, -exactSize.height / 2.0f, 0)};
 
+        // TODO: sort points before doing this!!!
         std::vector<cv::Point2f> coordinate{imagePoints[1], imagePoints[2], imagePoints[3], imagePoints[0]};
 
         cv::solvePnP(exactPoint, coordinate, cameraMatrix, distortionFactor, rotationVector, translationVector, false,
-                     cv::SOLVEPNP_ITERATIVE);
+                     cv::SOLVEPNP_IPPE_SQUARE);
+    }
+
+    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset) {
+        double h = translationVector.ptr<double>(0)[1] - offset.y;
+        double d = translationVector.ptr<double>(0)[2];
+
+        double dPitch = -atan2(h, d) + motorAngle;
+
+        return d * tan(dPitch);
     }
 
     double SolveDistance(cv::Mat &translationVector) {

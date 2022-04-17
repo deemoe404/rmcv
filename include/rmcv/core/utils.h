@@ -84,7 +84,7 @@ namespace rm {
     /// \param deltaLen The length to be expanded.
     /// \param dst1 The first point after expanding.
     /// \param dst2 The second point after expanding.
-    void ExCord(cv::Point2f pt1, cv::Point2f pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2);
+    void ExtendCord(cv::Point2f pt1, cv::Point2f pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2);
 
     std::string PathCombine(const std::string &path1, const std::string &path2);
 
@@ -92,15 +92,24 @@ namespace rm {
 
     void PrintMat(cv::Mat &input, int decimal = 0);
 
-    ///
-    /// \param imagePoints
-    /// \param cameraMatrix
-    /// \param distortionFactor
-    /// \param exactSize
-    /// \param translationVector
-    /// \param rotationVector
+    /// Solve the rotation and the translation vectors that transform a 3D point expressed in the object coordinate
+    /// frame to the camera coordinate frame, using cv::SOLVEPNP_IPPE_SQUARE.
+    /// \param imagePoints Destine points on image (exactly 4).
+    /// \param cameraMatrix Camera matrix.
+    /// \param distortionFactor Distortion factor.
+    /// \param exactSize Exact size of the coordinate object (cm).
+    /// \param translationVector Output translation vector.
+    /// \param rotationVector Output rotation vector.
     void SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, cv::Size2f exactSize,
                   cv::Mat &translationVector, cv::Mat &rotationVector);
+
+    /// Solve height difference between barrel and target using the translation vector of target and the motor angle of
+    /// gimbal.
+    /// \param translationVector The translation vector of target.
+    /// \param motorAngle The motor angle of gimbal, positive upwards (radians).
+    /// \param offset Offset between camera and barrel (cm).
+    /// \return Height difference between barrel and target (cm).
+    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset = {0, 0});
 
     double SolveDistance(cv::Mat &translationVector);
 

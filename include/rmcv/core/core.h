@@ -57,9 +57,11 @@ namespace rm {
 
     class ShootFactor {
     public:
-        float pitchAngle;
-        float yawAngle;
-        double estimateAirTime;
+        float pitchAngle{};
+        float yawAngle{};
+        double estimateAirTime{};
+
+        ShootFactor() = default;
 
         ShootFactor(float pitchAngle, float yawAngle, double estimateAirTime);
     };

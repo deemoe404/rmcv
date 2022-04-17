@@ -112,45 +112,16 @@ namespace rm {
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
                     cv::Point2f attention);
 
-    /// Use PNP algorithm to estimate the pose in 3D of Armour.
-    /// \param target Armour which changes is to make on.
-    /// \param cameraMatrix
-    /// \param distCoeffs
-    /// \param exactSize Real size of the Armour, unit in mm.
-//    void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Size2f exactSize);
-
     /// Calculate the shoot factor using Newton Iteration.
     /// \param target The target armour.
     /// \param shootFactor Output shoot factor.
-    /// \param g Acceleration of gravity.
-    /// \param v0 The initial speed of bullet.
-    /// \param hOffset Distance between camera and barrel, positive when barrel sets under camera.
-    /// \param motorAngle Positive upwards, unit in radians.
-//    void SolveShootFactor(rm::Armour &target, rm::ShootFactor &shootFactor, double g, double v0, double hOffset,
-//                          float motorAngle);
-
-    /// Calculate the shoot factor without compensate.
-    /// \param target The target armour.
-    /// \param shootFactor Output shoot factor.
-    /// \param v0 The initial speed of bullet.
-    /// \param hOffset Distance between camera and barrel & X error of PNP. (positive when barrel sets under camera)
-    /// \param wOffset Y error of PNP.
-//    void SolveShootFactor(rm::Armour &target, rm::ShootFactor &shootFactor, double v0, double hOffset = 0,
-//                          double wOffset = 0);
-
-    /// Calculate the shoot factor of given target.
-    /// \param target The target armour.
-    /// \param shootFactor Output shoot factor.
-    /// \param v0 The initial speed of bullet.
-    /// \param vOffset Vertical distance between camera and barrel & Vertical error of PNP. (positive when barrel sets
-    ///                under camera)
-    /// \param hOffset Horizontal error of PNP.
-    /// \param g Acceleration of gravity.
-    /// \param mode Compensate mode.
-    /// \param pitchAngle Pitch angle of pitch-motor. Positive upwards. (radians)
-    /// \param height MotorAngle is ignored if this parameter is specified. (centimeter)
-    void SolveShootFactor(rm::Armour &target, rm::ShootFactor &shootFactor, double v0, double vOffset, double hOffset,
-                          double g, rm::CompensateMode mode, float pitchAngle = 0, double height = NAN);
+    /// \param g Acceleration of gravity (m/s^2).
+    /// \param v0 The initial speed of bullet (m/s).
+    /// \param offset Offset between camera and barrel (cm).
+    /// \param deltaHeight Height difference between barrel and target (cm).
+    void
+    SolveShootFactor(cv::Mat &translationVector, rm::ShootFactor &shootFactor, double g, double v0, double deltaHeight,
+                     cv::Point2f offset = {0, 0}, rm::CompensateMode mode = rm::COMPENSATE_NONE);
 
     void SolveCameraPose(cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &output);
 }

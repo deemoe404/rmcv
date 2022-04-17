@@ -91,7 +91,7 @@ namespace rm {
         armours.clear();
         if (lightBars.size() < 2) return;
 
-        //
+        // sort vertices ascending by x
         std::sort(lightBars.begin(), lightBars.end(), [](const rm::LightBar &lightBar1, const rm::LightBar &lightBar2) {
             return lightBar1.center.x < lightBar2.center.x;
         });
@@ -158,48 +158,36 @@ namespace rm {
         }
     }
 
-//    void SolveArmourPose(rm::Armour &target, cv::Mat &cameraMatrix, cv::Mat &distCoeffs, cv::Size2f exactSize) {
-//        target.rotationVector = cv::Mat::zeros(3, 1, CV_64FC1);
-//        target.translationVector = cv::Mat::zeros(3, 1, CV_64FC1);
-//
-//        std::vector<cv::Point3f> exactPoint{cv::Point3f(-exactSize.width / 2.0f, exactSize.height / 2.0f, 0),
-//                                            cv::Point3f(exactSize.width / 2.0f, exactSize.height / 2.0f, 0),
-//                                            cv::Point3f(exactSize.width / 2.0f, -exactSize.height / 2.0f, 0),
-//                                            cv::Point3f(-exactSize.width / 2.0f, -exactSize.height / 2.0f, 0)};
-//
-//        std::vector<cv::Point2f> tdCoordinate{target.vertices[1], target.vertices[2], target.vertices[3],
-//                                              target.vertices[0]};
-//
-//        cv::solvePnP(exactPoint, tdCoordinate, cameraMatrix, distCoeffs, target.rotationVector,
-//                     target.translationVector, false, cv::SOLVEPNP_ITERATIVE);
-//    }
+    void
+    SolveShootFactor(cv::Mat &translationVector, rm::ShootFactor &shootFactor, double g, double v0, double deltaHeight,
+                     cv::Point2f offset, rm::CompensateMode mode) {
+        float yaw = (float) atan2(translationVector.ptr<double>(0)[0] - offset.x, translationVector.ptr<double>(0)[2]) *
+                    180.0f / (float) CV_PI;
+        float pitch = 0;
+        double airTime = 0;
 
-//    void SolveShootFactor(rm::Armour &target, rm::ShootFactor &shootFactor, double g, double v0, double hOffset,
-//                          float motorAngle) {
-//        double h = (target.translationVector.ptr<double>(0)[1] - hOffset) / 100;
-//        double d = target.translationVector.ptr<double>(0)[2] / 100;
-//
-//        double dPitch = -atan2(h, d) + motorAngle;               // Horizontal related angle.
-//        double hWorld = d * tan(dPitch);                            // Ground related height.
-//        double shootTheta = rm::NewtonIteration(rm::ProjectileMotionFD, {g, d, hWorld, v0});
-//
-//        shootFactor.pitchAngle = (float) shootTheta - motorAngle;
-//        shootFactor.yawAngle = (float) atan2(target.translationVector.ptr<double>(0)[0],
-//                                             target.translationVector.ptr<double>(0)[2]);
-//        shootFactor.estimateAirTime = d / v0 * cos(shootTheta);
-//    }
+        double d = (translationVector.ptr<double>(0)[2]) / 100.0;
 
-//    void SolveShootFactor(Armour &target, rm::ShootFactor &shootFactor, double v0, double hOffset, double wOffset) {
-//        shootFactor.pitchAngle = (float) atan2(target.translationVector.ptr<double>(0)[1] - hOffset,
-//                                               target.translationVector.ptr<double>(0)[2]);
-//        shootFactor.yawAngle = (float) atan2(target.translationVector.ptr<double>(0)[0] - wOffset,
-//                                             target.translationVector.ptr<double>(0)[2]);
-//        shootFactor.estimateAirTime = target.translationVector.ptr<double>(0)[2] / v0;
-//    }
+        if (mode == rm::COMPENSATE_NONE) {
+            pitch = (float) atan2(translationVector.ptr<double>(0)[1] - offset.y, translationVector.ptr<double>(0)[2]) *
+                    180.0f / (float) CV_PI;
+            airTime = d / v0;
+        } else if (mode == rm::COMPENSATE_CLASSIC) {
+            double normalAngle = -(90 - atan2(d, deltaHeight / 100.0) * 180.0 / CV_PI);
+            double centerAngle =
+                    -atan2(translationVector.ptr<double>(0)[1] - offset.y, translationVector.ptr<double>(0)[2]) *
+                    180.0 / CV_PI;
+            double targetAngle = rm::ProjectileAngle(v0, g, d, deltaHeight / 100.0);
 
-    void SolveShootFactor(Armour &target, ShootFactor &shootFactor, double v0, double vOffset, double hOffset, double g,
-                          rm::CompensateMode mode, float pitchAngle, double height) {
+            pitch = (float) ((centerAngle + (centerAngle - normalAngle)) + targetAngle);
+            airTime = d / abs(v0 * cos(targetAngle));
+        } else if (mode == rm::COMPENSATE_NI) {
+            //TODO: Fix the bug of NI first!!!!
+        }
 
+        shootFactor.pitchAngle = pitch;
+        shootFactor.yawAngle = yaw;
+        shootFactor.estimateAirTime = airTime;
     }
 
     void SolveCameraPose(cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &output) {

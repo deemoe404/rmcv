@@ -7,7 +7,7 @@
 int main(int argc, char *argv[]) {
     rm::SerialPort serialPort;
 
-    rm::Request request{0, 0, 18, 0};
+    rm::Request request{1, 0, 18, 0};
     thread serialPortThread([&]() {
         bool status = serialPort.Initialize();
         int failure = 0;
@@ -39,14 +39,20 @@ int main(int argc, char *argv[]) {
 
                 std::vector<rm::Armour> armours;
                 rm::FindArmour(lightBars, armours, 8, 24, 0.15, 0.45, 0.65, ownCamp,
-                               cv::Size2f {(float) frame.cols, (float) frame.rows});
+                               cv::Size2f{(float) frame.cols, (float) frame.rows});
 
                 for (auto &armour: armours) {
                     cv::Mat tvecs, rvecs;
                     rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs);
                     double distance = rm::SolveDistance(tvecs);
                     if (distance < 450) {
-
+                        rm::SolveDeltaHeight(tvecs, request.pitch.data);
+                        rm::ShootFactor shoot;
+                        rm::SolveShootFactor(tvecs, shoot, 9.8, request.speed, 28, {0, 0}, rm::COMPENSATE_CLASSIC);
+                        rm::Response response;
+                        response.pitch.data = shoot.pitchAngle;
+                        response.yaw.data = shoot.yawAngle;
+                        std::cout << response.pitch.data << std::endl;
                     }
                 }
 

@@ -12,14 +12,14 @@ namespace rm::debug {
         if (index < 0 || index > input.size()) {
             for (auto &armour: input) {
                 std::vector<cv::Point> vertices;
-                for (auto &vertex: armour.icon) {
+                for (auto &vertex: armour.vertices) {
                     vertices.push_back(vertex);
                 }
                 contours.push_back(vertices);
             }
         } else {
             std::vector<cv::Point> vertices;
-            for (auto &vertex: input[index].icon) {
+            for (auto &vertex: input[index].vertices) {
                 vertices.push_back(vertex);
             }
             contours.push_back(vertices);

@@ -34,22 +34,26 @@ namespace rm {
 
     class LightBar {
     public:
-        float angle;             // Rotation angle of the light bar (vertical when the angle is 90)
-        rm::CampType camp;       // Camp this light bar belong to
-        cv::Point2f center;      // Mass center of the light bar
-        cv::Point2f vertices[4]; // Four vertices around the light bar
-        cv::Size2f size;         // Width and height of the light bar
+        float angle = 0;                      // Rotation angle of the light bar (vertical when the angle is 90)
+        rm::CampType camp = rm::CAMP_NEUTRAL; // Camp this light bar belongs to
+        cv::Point2f center;                   // Mass center of the light bar
+        cv::Point2f vertices[4];              // Four vertices around the light bar
+        cv::Size2f size;                      // Width and height of the light bar
+
+        LightBar() = default;
 
         explicit LightBar(cv::RotatedRect box, rm::CampType camp = rm::CAMP_NEUTRAL);
     };
 
     class Armour {
     public:
-        cv::Point2f vertices[4]; // Vertices of armour (square with light bar as side length for better PNP result)
-        cv::Point2f icon[4];     // Vertices of icon area
-        float rank;              // A value help in sorting multiple armours
-        rm::ForceType force;
-        rm::CampType camp;
+        float rank = 0;                          // A value help in sorting multiple armours
+        rm::CampType camp = rm::CAMP_NEUTRAL;    // Camp this armour belongs to
+        rm::ForceType force = rm::FORCE_UNKNOWN; // Force type
+        cv::Point2f icon[4];                     // Vertices of icon area
+        cv::Point2f vertices[4];                 // Vertices of armour (square with light bar as side length for better PNP result)
+
+        Armour() = default;
 
         explicit Armour(std::vector<rm::LightBar> lightBars, float rank = 0, rm::CampType camp = rm::CAMP_NEUTRAL,
                         rm::ForceType force = rm::FORCE_UNKNOWN);

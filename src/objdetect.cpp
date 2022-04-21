@@ -151,7 +151,7 @@ namespace rm {
             }
         }
 
-        if (!armours.empty()) {
+        if (armours.size() > 1) {
             std::sort(armours.begin(), armours.end(), [](const rm::Armour &armour1, const rm::Armour &armour2) {
                 return armour1.rank < armour2.rank;
             });
@@ -173,13 +173,13 @@ namespace rm {
                     180.0f / (float) CV_PI;
             airTime = d / v0;
         } else if (mode == rm::COMPENSATE_CLASSIC) {
-            double normalAngle = -(90 - atan2(d, deltaHeight / 100.0) * 180.0 / CV_PI);
+            double normalAngle = atan2(deltaHeight / 100.0, d) * 180.0 / CV_PI;
             double centerAngle =
                     -atan2(translationVector.ptr<double>(0)[1] - offset.y, translationVector.ptr<double>(0)[2]) *
                     180.0 / CV_PI;
-            double targetAngle = rm::ProjectileAngle(v0, g, d, deltaHeight / 100.0);
+            double targetAngle = rm::ProjectileAngle(v0, g, d, deltaHeight / 100.0) * 180.0 / CV_PI;
 
-            pitch = (float) ((centerAngle + (centerAngle - normalAngle)) + targetAngle);
+            pitch = (float) ((centerAngle - normalAngle) + targetAngle);
             airTime = d / abs(v0 * cos(targetAngle));
         } else if (mode == rm::COMPENSATE_NI) {
             //TODO: Fix the bug of NI first!!!!

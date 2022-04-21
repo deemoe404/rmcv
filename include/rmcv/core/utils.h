@@ -53,11 +53,11 @@ namespace rm {
     double ProjectileMotionFD(double theta, std::vector<double> literals);
 
     /// Solve the estimate launch angle by parameters given.
-    /// \param v0 Initial speed of bullet.
-    /// \param g Acceleration of gravity.
-    /// \param d Horizontal distance.
-    /// \param h Height difference.
-    /// \return Estimated launch angle.
+    /// \param v0 Initial speed of bullet (m/s).
+    /// \param g Acceleration of gravity (m/s^2).
+    /// \param d Horizontal distance (m).
+    /// \param h Height difference (m).
+    /// \return Estimated launch angle (radians).
     double ProjectileAngle(double v0, double g, double d, double h);
 
     /// Return the distance between two given points.

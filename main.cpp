@@ -89,11 +89,11 @@ int main(int argc, char *argv[]) {
 
         rm::ShootFactor result;
         cv::Mat frame, binary, tvecs, rvecs;
-        std::vector<rm::LightBar> lightBars(1024);
-        std::vector<rm::Armour> armours(512);
+        std::vector<rm::LightBar> lightBars(32);
+        std::vector<rm::Armour> armours(16);
 
         rm::DahengCamera camera;
-        bool status = camera.dahengCameraInit((char *) "KE0210030295", false, (int) (1.0 / 210.0 * 1000000), 0.5);
+        bool status = camera.dahengCameraInit((char *) "KE0210030295", true, (int) (1.0 / 210.0 * 1000000), 1.0);
         while (status) {
             frame = camera.getFrame();
             tick = cv::getTickCount();
@@ -106,6 +106,11 @@ int main(int argc, char *argv[]) {
                 for (auto &armour: armours) {
                     rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs);
                     if (rm::SolveDistance(tvecs) < 450) {
+                        cv::Mat icon;
+                        rm::CalcRatio(frame, icon, armour.icon, {28, 28});
+                        rm::AutoBinarize(icon, icon);
+                        cv::imshow("icon", icon);
+
                         rm::SolveDeltaHeight(tvecs, request.GimbalPitch);
                         rm::SolveShootFactor(tvecs, result, 9.8, request.FireRate, -60, {0, 0}, rm::COMPENSATE_CLASSIC);
 
@@ -120,11 +125,11 @@ int main(int argc, char *argv[]) {
                           << ((double) (cv::getTickCount() - tick) / cv::getTickFrequency()) * 1000.0 << "ms"
                           << std::endl;
 
-//                rm::debug::DrawLightBars(lightBars, frame, -1);
-//                rm::debug::DrawArmours(armours, frame, -1);
-//                cv::imshow("frame", frame);
-//                cv::imshow("binary", binary);
-//                cv::waitKey(1);
+                rm::debug::DrawLightBars(lightBars, frame, -1);
+                rm::debug::DrawArmours(armours, frame, -1);
+                cv::imshow("frame", frame);
+                cv::imshow("binary", binary);
+                cv::waitKey(1);
             } else {
                 status = false;
             }

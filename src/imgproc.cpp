@@ -5,22 +5,22 @@
 #include "rmcv/imgproc.h"
 
 namespace rm {
-    void CalcRatio(cv::Mat &source, cv::Mat &calibration, cv::Point vertices[4], cv::Size outSize) {
+    void CalcRatio(cv::Mat &source, cv::Mat &calibration, cv::Point2f vertices[4], cv::Size outSize) {
         // handel the case of vertices out of screen
         for (int i = 0; i < 4; i++) {
-            if (vertices[i].x < 0 || vertices[i].y < 0 || vertices[i].x > source.cols - 1 ||
-                vertices[i].y > source.rows - 1) {
+            if (vertices[i].x < 0 || vertices[i].y<0 || vertices[i].x>(float)
+                source.cols - 1 || vertices[i].y > (float) source.rows - 1) {
                 if (vertices[i].x < 0) vertices[i].x = 0;
                 if (vertices[i].y < 0) vertices[i].y = 0;
-                if (vertices[i].x > source.cols - 1) vertices[i].x = source.cols - 1;
-                if (vertices[i].y > source.rows - 1) vertices[i].y = source.rows - 1;
+                if (vertices[i].x > (float) source.cols - 1) vertices[i].x = (float) source.cols - 1;
+                if (vertices[i].y > (float) source.rows - 1) vertices[i].y = (float) source.rows - 1;
             }
         }
 
         cv::Rect box = cv::boundingRect(std::vector<cv::Point>({vertices[0], vertices[1], vertices[2], vertices[3]}));
-        cv::Point2f srcPts[3] = {{(float) (vertices[1].x - box.x), (float) (vertices[1].y - box.y)},
-                                 {(float) (vertices[2].x - box.x), (float) (vertices[2].y - box.y)},
-                                 {(float) (vertices[0].x - box.x), (float) (vertices[0].y - box.y)}};
+        cv::Point2f srcPts[3] = {{vertices[1].x - (float) box.x, vertices[1].y - (float) box.y},
+                                 {vertices[2].x - (float) box.x, vertices[2].y - (float) box.y},
+                                 {vertices[0].x - (float) box.x, vertices[0].y - (float) box.y}};
         cv::Point2f dstPts[3] = {{0,                   0},
                                  {(float) (box.width), 0},
                                  {0,                   (float) (box.height)}};

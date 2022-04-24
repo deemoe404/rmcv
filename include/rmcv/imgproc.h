@@ -13,7 +13,7 @@ namespace rm {
     /// \param calibration Output calibrated image.
     /// \param vertices Vertices of the portion on the source frame.
     /// \param outSize Destine size.
-    void CalcRatio(cv::Mat &source, cv::Mat &calibration, cv::Point vertices[4], cv::Size outSize);
+    void CalcRatio(cv::Mat &source, cv::Mat &calibration, cv::Point2f vertices[4], cv::Size outSize);
 
     /// Perform a gamma transform on the input image.
     /// \param source Source image.

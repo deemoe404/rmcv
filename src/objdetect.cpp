@@ -42,8 +42,8 @@ namespace rm {
     void FindLightBars(vector<std::vector<cv::Point>> &contours, vector<rm::LightBar> &lightBars, float minRatio,
                        float maxRatio, float tiltAngle, float minArea, float maxArea, cv::Mat &frame,
                        bool useFitEllipse) {
-        if (contours.size() < 2) return;
         lightBars.clear();
+        if (contours.size() < 2) return;
 
         for (auto &contour: contours) {
             if (!rm::JudgeLightBar(contour, minRatio, maxRatio, tiltAngle, minArea, maxArea)) continue;
@@ -79,15 +79,16 @@ namespace rm {
 
     void FindArmour(std::vector<rm::LightBar> &lightBars, std::vector<rm::Armour> &armours, float maxAngleDif,
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
-                    cv::Size2f frameSize) {
+                    cv::Size2f frameSize, bool filter) {
         cv::Point2f center = {frameSize.width / 2.0f, frameSize.height / 2.0f};
 
-        rm::FindArmour(lightBars, armours, maxAngleDif, errAngle, minBoxRatio, maxBoxRatio, lenRatio, ownCamp, center);
+        rm::FindArmour(lightBars, armours, maxAngleDif, errAngle, minBoxRatio, maxBoxRatio, lenRatio, ownCamp, center,
+                       filter);
     }
 
     void FindArmour(std::vector<rm::LightBar> &lightBars, std::vector<rm::Armour> &armours, float maxAngleDif,
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
-                    cv::Point2f attention) {
+                    cv::Point2f attention, bool filter) {
         armours.clear();
         if (lightBars.size() < 2) return;
 
@@ -140,7 +141,7 @@ namespace rm {
                     if (yDifHistory < yDiff) {
                         armours.pop_back();
                     } else {
-                        continue;
+                        if (filter) continue;
                     }
                 }
                 yDifHistory = yDiff;

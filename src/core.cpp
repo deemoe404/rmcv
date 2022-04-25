@@ -12,8 +12,8 @@ namespace rm {
         this->size = {min(box.size.height, box.size.width), max(box.size.height, box.size.width)};
     }
 
-    Armour::Armour(std::vector<rm::LightBar> lightBars, float rank, rm::CampType camp, rm::ForceType force) : camp(
-            camp), rank(rank), force(force) {
+    Armour::Armour(std::vector<rm::LightBar> lightBars, float rank, rm::CampType camp) : camp(
+            camp), rank(rank) {
         if (lightBars.size() != 2) {
             throw std::runtime_error("Armour must be initialized with 2 rm::LightBar (s).");
         }
@@ -37,13 +37,6 @@ namespace rm {
         rm::ExtendCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
 
         rm::CalcPerspective(vertices, vertices);
-    }
-
-    ShootFactor::ShootFactor(float pitchAngle, float yawAngle, double estimateAirTime) : pitchAngle(pitchAngle),
-                                                                                         yawAngle(yawAngle),
-                                                                                         estimateAirTime(
-                                                                                                 estimateAirTime) {
-
     }
 
     Package::Package(rm::CampType camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat &inputFrame,

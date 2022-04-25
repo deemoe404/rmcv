@@ -12,24 +12,18 @@
 #include "parallequeue.hpp"
 
 namespace rm {
-    enum ForceType {
-        FORCE_HERO = 1,       // Big armour 1
-        FORCE_ENGINEER = 2,   // Small armour 2
-        FORCE_STANDARD_3 = 3, // Small armour 3
-        FORCE_STANDARD_4 = 4, // Small armour 4
-        FORCE_STANDARD_5 = 5, // Small armour 5
-        FORCE_SENTRY = 6,     // Big armour icon
-        BUILD_BASE = 7,       // Big armour icon
-        BUILD_OUTPOST = 8,    // Small armour icon
-        FORCE_UNKNOWN = 0
-    };
-
     enum CampType {
         CAMP_RED = 0, CAMP_BLUE = 1, CAMP_NEUTRAL = -1
     };
 
     enum AimMode {
         AIM_COMBAT = 0, AIM_BUFF = 1
+    };
+
+    struct ShootFactor{
+        float pitchAngle;
+        float yawAngle;
+        double estimateAirTime;
     };
 
     class LightBar {
@@ -49,25 +43,12 @@ namespace rm {
     public:
         float rank = 0;                          // A value help in sorting multiple armours
         rm::CampType camp = rm::CAMP_NEUTRAL;    // Camp this armour belongs to
-        rm::ForceType force = rm::FORCE_UNKNOWN; // Force type
         cv::Point2f icon[4];                     // Vertices of icon area
         cv::Point2f vertices[4];                 // Vertices of armour (square with light bar as side length for better PNP result)
 
         Armour() = default;
 
-        explicit Armour(std::vector<rm::LightBar> lightBars, float rank = 0, rm::CampType camp = rm::CAMP_NEUTRAL,
-                        rm::ForceType force = rm::FORCE_UNKNOWN);
-    };
-
-    class ShootFactor {
-    public:
-        float pitchAngle{};
-        float yawAngle{};
-        double estimateAirTime{};
-
-        ShootFactor() = default;
-
-        ShootFactor(float pitchAngle, float yawAngle, double estimateAirTime);
+        explicit Armour(std::vector<rm::LightBar> lightBars, float rank = 0, rm::CampType camp = rm::CAMP_NEUTRAL);
     };
 
     class Package {

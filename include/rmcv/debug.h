@@ -10,6 +10,8 @@
 namespace rm::debug {
     void DrawArmours(const std::vector<rm::Armour> &input, cv::Mat &output, int index);
 
+    void DrawArmour(rm::Armour input, cv::Mat &output);
+
     void DrawLightBars(const std::vector<rm::LightBar> &input, cv::Mat &output, int index);
 }
 

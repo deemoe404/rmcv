@@ -12,18 +12,45 @@ namespace rm::debug {
         if (index < 0 || index > input.size()) {
             for (auto &armour: input) {
                 std::vector<cv::Point> vertices;
+                std::vector<cv::Point> icons;
                 for (auto &vertex: armour.vertices) {
                     vertices.push_back(vertex);
                 }
+                for (auto &vertex: armour.icon) {
+                    icons.push_back(vertex);
+                }
                 contours.push_back(vertices);
+                contours.push_back(icons);
             }
         } else {
             std::vector<cv::Point> vertices;
+            std::vector<cv::Point> icons;
             for (auto &vertex: input[index].vertices) {
                 vertices.push_back(vertex);
             }
+            for (auto &vertex: input[index].icon) {
+                icons.push_back(vertex);
+            }
             contours.push_back(vertices);
+            contours.push_back(icons);
         }
+        cv::drawContours(output, contours, -1, {0, 255, 255}, 1);
+    }
+
+    void DrawArmour(rm::Armour input, Mat &output) {
+        std::vector<std::vector<cv::Point>> contours;
+
+        std::vector<cv::Point> vertices;
+        std::vector<cv::Point> icons;
+        for (auto &vertex: input.vertices) {
+            vertices.push_back(vertex);
+        }
+        for (auto &vertex: input.icon) {
+            icons.push_back(vertex);
+        }
+        contours.push_back(vertices);
+        contours.push_back(icons);
+
         cv::drawContours(output, contours, -1, {0, 255, 255}, 1);
     }
 

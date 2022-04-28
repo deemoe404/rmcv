@@ -28,7 +28,7 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-    Request request(rm::CAMP_BLUE, rm::AIM_COMBAT);
+    Request request(rm::CAMP_RED, rm::AIM_COMBAT);
 
     rm::SerialPort serialPort;
     bool status = serialPort.Initialize("/dev/ttyUSB0", B460800);
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
         std::vector<rm::Armour> armours(16);
 
         rm::DahengCamera camera;
-        bool status = camera.dahengCameraInit((char *) "KE0210030295", true, (int) (1.0 / 210.0 * 1000000), 1.0);
+        bool status = camera.dahengCameraInit((char *) "KE0210030295", true, (int) (1.0 / 210.0 * 1000000), 0.0);
         while (status) {
             frame = camera.getFrame();
             tick = cv::getTickCount();
@@ -106,11 +106,6 @@ int main(int argc, char *argv[]) {
                 for (auto &armour: armours) {
                     rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs);
                     if (rm::SolveDistance(tvecs) < 450) {
-                        cv::Mat icon;
-                        rm::CalcRatio(frame, icon, armour.icon, {28, 28});
-                        rm::AutoBinarize(icon, icon);
-                        cv::imshow("icon", icon);
-
                         rm::SolveDeltaHeight(tvecs, request.GimbalPitch);
                         rm::SolveShootFactor(tvecs, result, 9.8, request.FireRate, -60, {0, 0}, rm::COMPENSATE_CLASSIC);
 
@@ -128,7 +123,6 @@ int main(int argc, char *argv[]) {
                 rm::debug::DrawLightBars(lightBars, frame, -1);
                 rm::debug::DrawArmours(armours, frame, -1);
                 cv::imshow("frame", frame);
-                cv::imshow("binary", binary);
                 cv::waitKey(1);
             } else {
                 status = false;

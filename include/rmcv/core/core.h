@@ -21,9 +21,9 @@ namespace rm {
     };
 
     struct ShootFactor{
-        float pitchAngle;
-        float yawAngle;
-        double estimateAirTime;
+        float pitchAngle = 0;
+        float yawAngle = 0;
+        double estimateAirTime = 0;
     };
 
     class LightBar {

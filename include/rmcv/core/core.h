@@ -13,7 +13,7 @@
 
 namespace rm {
     enum CampType {
-        CAMP_RED = 0, CAMP_BLUE = 1, CAMP_NEUTRAL = -1
+        CAMP_RED = 0, CAMP_BLUE = 1, CAMP_OUTPOST = 2, CAMP_NEUTRAL = -1
     };
 
     enum AimMode {

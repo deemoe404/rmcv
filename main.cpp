@@ -28,7 +28,7 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-    Request request(rm::CAMP_RED, rm::AIM_COMBAT);
+    Request request(rm::CAMP_OUTPOST, rm::AIM_COMBAT);
 
     rm::SerialPort serialPort;
     bool status = serialPort.Initialize("/dev/ttyUSB0", B460800);
@@ -81,7 +81,6 @@ int main(int argc, char *argv[]) {
         std::cout << "Serial port send closed." << std::endl;
     });
 
-    long tick = cv::getTickCount();
     thread detectionThread([&]() {
         cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
         cv::Mat distCoeffs = (cv::Mat_<double>(1, 5)
@@ -89,40 +88,40 @@ int main(int argc, char *argv[]) {
 
         rm::ShootFactor result;
         cv::Mat frame, binary, tvecs, rvecs;
-        std::vector<rm::LightBar> lightBars(32);
+        std::vector<rm::LightBlob> lightBlobs(32);
         std::vector<rm::Armour> armours(16);
 
         rm::DahengCamera camera;
         bool status = camera.dahengCameraInit((char *) "KE0210030295", true, (int) (1.0 / 210.0 * 1000000), 0.0);
         while (status) {
             frame = camera.getFrame();
-            tick = cv::getTickCount();
             if (!frame.empty()) {
                 rm::ExtractColor(frame, binary, request.OwnCamp, true, 40, {5, 5});
-                rm::FindLightBars(binary, lightBars, 2, 10, 25, 80, 1500, frame, true);
-                rm::FindArmour(lightBars, armours, 8, 24, 0.15, 0.45, 0.65, request.OwnCamp,
-                               cv::Size2f{(float) frame.cols, (float) frame.rows});
+                rm::FindLightBlobs(binary, lightBlobs, 1, 1.5, 360, 300, 1500, frame, true);
+//                rm::FindLightBlobs(binary, lightBlobs, 2, 10, 25, 80, 1500, frame, true);
 
-                for (auto &armour: armours) {
-                    rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs);
-                    if (rm::SolveDistance(tvecs) < 450) {
-                        rm::SolveDeltaHeight(tvecs, request.GimbalPitch);
-                        rm::SolveShootFactor(tvecs, result, 9.8, request.FireRate, -60, {0, 0}, rm::COMPENSATE_CLASSIC);
+//                rm::FindArmour(lightBlobs, armours, 8, 24, 0.15, 0.45, 0.65, request.OwnCamp,
+//                               cv::Size2f{(float) frame.cols, (float) frame.rows});
 
-                        std::cout << "pitch: " << result.pitchAngle << "  yaw: " << result.yawAngle << "  distance:"
-                                  << rm::SolveDistance(tvecs) << "  ";
-                        msgs.push({result.pitchAngle, result.yawAngle, 0});
-                        continue;
-                    }
-                }
-                std::cout << std::setiosflags(ios::fixed) << std::setiosflags(ios::right) << std::setprecision(6)
-                          << armours.size() << ": "
-                          << ((double) (cv::getTickCount() - tick) / cv::getTickFrequency()) * 1000.0 << "ms"
-                          << std::endl;
+//                for (auto &armour: armours) {
+//                    rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs);
+//                    if (rm::SolveDistance(tvecs) < 450) {
+//                        rm::SolveDeltaHeight(tvecs, request.GimbalPitch);
+//                        rm::SolveShootFactor(tvecs, result, -9.8, request.FireRate, -60, {0, 0},
+//                                             rm::COMPENSATE_CLASSIC);
+//
+//                        std::cout << "pitch: " << result.pitchAngle << "  yaw: " << result.yawAngle << "  distance:"
+//                                  << rm::SolveDistance(tvecs) << "  ";
+//                        msgs.push({result.pitchAngle, result.yawAngle, 0});
+//                        continue;
+//                    }
+//                }
 
-                rm::debug::DrawLightBars(lightBars, frame, -1);
-                rm::debug::DrawArmours(armours, frame, -1);
+                rm::debug::DrawlightBlobs(lightBlobs, frame, -1);
+//                rm::debug::DrawArmours(armours, frame, -1);
                 cv::imshow("frame", frame);
+                cv::resize(binary, binary, cv::Size(800, 600));
+                cv::imshow("binary", binary);
                 cv::waitKey(1);
             } else {
                 status = false;

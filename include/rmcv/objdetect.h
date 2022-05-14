@@ -14,105 +14,105 @@ namespace rm {
         COMPENSATE_NI = 2       // Use classic Newton's laws of motion for compensate
     };
 
-    /// Judge a contour if it's a light bar with the given qualifications.
+    /// Judge a contour if it's a light blob with the given qualifications.
     /// \param contour       The contour.
     /// \param minRatio      Minimal aspect ratio.
     /// \param maxRatio      Maximal aspect ratio.
     /// \param tiltAngle     Maximal tilt angle.
     /// \param minArea       Minimal contour area.
     /// \param maxArea       Maximal contour area.
-    /// \param useFitEllipse Use cv::fitEllipseDirect to define light bar outlines instead of cv::minAreaRect when set
+    /// \param useFitEllipse Use cv::fitEllipseDirect to define light blob outlines instead of cv::minAreaRect when set
     ///                      to true. Usually recommended when source frame was over exposed.
     bool
-    JudgeLightBar(const std::vector<cv::Point> &contour, float minRatio, float maxRatio, float tilAngle, float minArea,
-                  float maxArea, bool useFitEllipse = true);
+    JudgeLightBlob(const std::vector<cv::Point> &contour, float minRatio, float maxRatio, float tilAngle, float minArea,
+                   float maxArea, bool useFitEllipse = true);
 
-    /// Fit light bars from a set of contours with the given color. (Each contours must contains more than 6 points.)
+    /// Fit light blobs from a set of contours with the given color. (Each contours must contains more than 6 points.)
     /// \param contours      The set of contours.
-    /// \param lightBars     Output light bars.
+    /// \param lightBlobs     Output light blobs.
     /// \param minRatio      Minimal aspect ratio.
     /// \param maxRatio      Maximal aspect ratio.
     /// \param tiltAngle     Maximal tilt angle.
     /// \param minArea       Minimal contour area.
     /// \param maxArea       Maximal contour area.
     /// \param frame         Source frame. Used for auto color detection.
-    /// \param useFitEllipse Use cv::fitEllipseDirect to define light bar outlines instead of cv::minAreaRect when set
+    /// \param useFitEllipse Use cv::fitEllipseDirect to define light blob outlines instead of cv::minAreaRect when set
     ///                      to true. Usually recommended when source frame was over exposed.
     void
-    FindLightBars(std::vector<std::vector<cv::Point>> &contours, std::vector<rm::LightBar> &lightBars, float minRatio,
-                  float maxRatio, float tiltAngle, float minArea, float maxArea, rm::CampType camp = rm::CAMP_RED,
-                  bool useFitEllipse = true);
+    FindLightBlobs(std::vector<std::vector<cv::Point>> &contours, std::vector<rm::LightBlob> &lightBlobs, float minRatio,
+                   float maxRatio, float tiltAngle, float minArea, float maxArea, rm::CampType camp = rm::CAMP_RED,
+                   bool useFitEllipse = true);
 
-    /// Fit light bars from a set of contours. Auto detect light bar color. (Each contours must contains more than 6
+    /// Fit light blobs from a set of contours. Auto detect light blob color. (Each contours must contains more than 6
     /// points.)
     /// \param contours      The set of contours.
-    /// \param lightBars     Output light bars.
+    /// \param lightBlobs     Output light blobs.
     /// \param minRatio      Minimal aspect ratio.
     /// \param maxRatio      Maximal aspect ratio.
     /// \param tiltAngle     Maximal tilt angle.
     /// \param minArea       Minimal contour area.
     /// \param maxArea       Maximal contour area.
     /// \param frame         Source frame. Used for auto color detection.
-    /// \param useFitEllipse Use cv::fitEllipseDirect to define light bar outlines instead of cv::minAreaRect when set
+    /// \param useFitEllipse Use cv::fitEllipseDirect to define light blob outlines instead of cv::minAreaRect when set
     ///                      to true. Usually recommended when source frame was over exposed.
     void
-    FindLightBars(std::vector<std::vector<cv::Point>> &contours, std::vector<rm::LightBar> &lightBars, float minRatio,
-                  float maxRatio, float tiltAngle, float minArea, float maxArea, cv::Mat &frame,
-                  bool useFitEllipse = true);
+    FindLightBlobs(std::vector<std::vector<cv::Point>> &contours, std::vector<rm::LightBlob> &lightBlobs, float minRatio,
+                   float maxRatio, float tiltAngle, float minArea, float maxArea, cv::Mat &frame,
+                   bool useFitEllipse = true);
 
-    /// Fit light bars from a binary image. Auto detect light bar color. (Each contours must contains more than 6
+    /// Fit light blobs from a binary image. Auto detect light blob color. (Each contours must contains more than 6
     /// points.)
     /// \param binary        Source binary image. This function would consider the external contours only.
-    /// \param lightBars     Output light bars.
+    /// \param lightBlobs     Output light blobs.
     /// \param minRatio      Minimal aspect ratio.
     /// \param maxRatio      Maximal aspect ratio.
     /// \param tiltAngle     Maximal tilt angle.
     /// \param minArea       Minimal contour area.
     /// \param maxArea       Maximal contour area.
     /// \param frame         Source frame. Used for auto color detection.
-    /// \param useFitEllipse Use cv::fitEllipseDirect to define light bar outlines instead of cv::minAreaRect when set
+    /// \param useFitEllipse Use cv::fitEllipseDirect to define light blob outlines instead of cv::minAreaRect when set
     ///                      to true. Usually recommended when source frame was over exposed.
-    void FindLightBars(cv::Mat &binary, std::vector<rm::LightBar> &lightBars, float minRatio, float maxRatio,
-                       float tiltAngle, float minArea, float maxArea, cv::Mat &frame, bool useFitEllipse = true);
+    void FindLightBlobs(cv::Mat &binary, std::vector<rm::LightBlob> &lightBlobs, float minRatio, float maxRatio,
+                        float tiltAngle, float minArea, float maxArea, cv::Mat &frame, bool useFitEllipse = true);
 
-    /// Detect if there is a interference over all light bars at the given pair of light bars.
-    /// \param lightBars  All light bars on the frame.
-    /// \param leftIndex  Index of the left light bar.
-    /// \param rightIndex Index of the right light bar.
+    /// Detect if there is a interference over all light blobs at the given pair of light blobs.
+    /// \param lightBlobs  All light blobs on the frame.
+    /// \param leftIndex  Index of the left light blob.
+    /// \param rightIndex Index of the right light blob.
     /// \return True if there is a interference;
-    bool LightBarInterference(std::vector<rm::LightBar> &lightBars, int leftIndex, int rightIndex);
+    bool LightBlobInterference(std::vector<rm::LightBlob> &lightBlobs, int leftIndex, int rightIndex);
 
-    /// Fit armours from a set of light bars.
-    /// \param lightBars   The set of light bars
+    /// Fit armours from a set of light blobs.
+    /// \param lightBlobs   The set of light blobs
     /// \param armours     Output armours
-    /// \param maxAngleDif Maximum angle difference between two light bars.
-    /// \param errAngle    Maximum angle between the over all rect and the two light bars.
+    /// \param maxAngleDif Maximum angle difference between two light blobs.
+    /// \param errAngle    Maximum angle between the over all rect and the two light blobs.
     /// \param minBoxRatio Minimum ratio of the armour box.
     /// \param maxBoxRatio Maximum ratio of the armour box.
-    /// \param lenRatio    Maximum length ratio between two light bars.
+    /// \param lenRatio    Maximum length ratio between two light blobs.
     /// \param ownCamp     Own camp.
     /// \param frameSize   Frame size. When this parameter is specified, the distance between armour and the frame
     ///                    center would be used to sort the output.
-    /// \param filter      Exclude one if two armours sharing a same light bar, exclude the armour witch minimum height
-    ///                    along two light bars is smaller.
-    void FindArmour(std::vector<rm::LightBar> &lightBars, std::vector<rm::Armour> &armours, float maxAngleDif,
+    /// \param filter      Exclude one if two armours sharing a same light blob, exclude the armour witch minimum height
+    ///                    along two light blobs is smaller.
+    void FindArmour(std::vector<rm::LightBlob> &lightBlobs, std::vector<rm::Armour> &armours, float maxAngleDif,
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
                     cv::Size2f frameSize, bool filter = true);
 
-    /// Fit armours from a set of light bars.
-    /// \param lightBars   The set of light bars
+    /// Fit armours from a set of light blobs.
+    /// \param lightBlobs   The set of light blobs
     /// \param armours     Output armours
-    /// \param maxAngleDif Maximum angle difference between two light bars.
-    /// \param errAngle    Maximum angle between the over all rect and the two light bars.
+    /// \param maxAngleDif Maximum angle difference between two light blobs.
+    /// \param errAngle    Maximum angle between the over all rect and the two light blobs.
     /// \param minBoxRatio Minimum ratio of the armour box.
     /// \param maxBoxRatio Maximum ratio of the armour box.
-    /// \param lenRatio    Maximum length ratio between two light bars.
+    /// \param lenRatio    Maximum length ratio between two light blobs.
     /// \param ownCamp     Own camp.
     /// \param attention   Attention point. When this parameter is specified, the distance between armour and the
     ///                    attention point would be used to sort the output.
-    /// \param filter      Exclude one if two armours sharing a same light bar, exclude the armour witch minimum height
-    ///                    along two light bars is smaller.
-    void FindArmour(std::vector<rm::LightBar> &lightBars, std::vector<rm::Armour> &armours, float maxAngleDif,
+    /// \param filter      Exclude one if two armours sharing a same light blob, exclude the armour witch minimum height
+    ///                    along two light blobs is smaller.
+    void FindArmour(std::vector<rm::LightBlob> &lightBlobs, std::vector<rm::Armour> &armours, float maxAngleDif,
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
                     cv::Point2f attention, bool filter = true);
 

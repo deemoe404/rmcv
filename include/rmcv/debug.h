@@ -12,7 +12,7 @@ namespace rm::debug {
 
     void DrawArmour(rm::Armour input, cv::Mat &output);
 
-    void DrawLightBars(const std::vector<rm::LightBar> &input, cv::Mat &output, int index);
+    void DrawlightBlobs(const std::vector<rm::LightBlob> &input, cv::Mat &output, int index);
 }
 
 #endif //RM_STANDARD2022_DEBUG_H

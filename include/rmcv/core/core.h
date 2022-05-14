@@ -20,23 +20,23 @@ namespace rm {
         AIM_COMBAT = 0, AIM_BUFF = 1
     };
 
-    struct ShootFactor{
+    struct ShootFactor {
         float pitchAngle = 0;
         float yawAngle = 0;
         double estimateAirTime = 0;
     };
 
-    class LightBar {
+    class LightBlob {
     public:
-        float angle = 0;                      // Rotation angle of the light bar (vertical when the angle is 90)
-        rm::CampType camp = rm::CAMP_NEUTRAL; // Camp this light bar belongs to
-        cv::Point2f center;                   // Mass center of the light bar
-        cv::Point2f vertices[4];              // Four vertices around the light bar
-        cv::Size2f size;                      // Width and height of the light bar
+        float angle = 0;                      // Rotation angle of the light blob (vertical when the angle is 90)
+        rm::CampType camp = rm::CAMP_NEUTRAL; // Camp this light blob belongs to
+        cv::Point2f center;                   // Mass center of the light blob
+        cv::Point2f vertices[4];              // Four vertices around the light blob
+        cv::Size2f size;                      // Width and height of the light blob
 
-        LightBar() = default;
+        LightBlob() = default;
 
-        explicit LightBar(cv::RotatedRect box, rm::CampType camp = rm::CAMP_NEUTRAL);
+        explicit LightBlob(cv::RotatedRect box, rm::CampType camp = rm::CAMP_NEUTRAL);
     };
 
     class Armour {
@@ -44,11 +44,11 @@ namespace rm {
         float rank = 0;                          // A value help in sorting multiple armours
         rm::CampType camp = rm::CAMP_NEUTRAL;    // Camp this armour belongs to
         cv::Point2f icon[4];                     // Vertices of icon area
-        cv::Point2f vertices[4];                 // Vertices of armour (square with light bar as side length for better PNP result)
+        cv::Point2f vertices[4];                 // Vertices of armour (square with light blob as side length for better PNP result)
 
         Armour() = default;
 
-        explicit Armour(std::vector<rm::LightBar> lightBars, float rank = 0, rm::CampType camp = rm::CAMP_NEUTRAL);
+        explicit Armour(std::vector<rm::LightBlob> lightBlobs, float rank = 0, rm::CampType camp = rm::CAMP_NEUTRAL);
     };
 
     class Package {

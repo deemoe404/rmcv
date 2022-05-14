@@ -26,8 +26,8 @@ namespace rm {
     /// \param binary Output binary image.
     /// \param ownCamp Own camp.
     /// \param overExposed Specify if the image has been over exposed. If true, the color of own camp would be
-    ///                    extracted somehow, consider pass source image to rm::FindLightBars function when finding
-    ///                    light bars.
+    ///                    extracted somehow, consider pass source image to rm::FindLightBlobs function when finding
+    ///                    light blobs.
     /// \param lowerBound Lower bound when performing binarization.
     /// \param kernelSize Kernel size when performing dilate.
     void

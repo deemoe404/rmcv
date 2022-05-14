@@ -46,9 +46,14 @@ namespace rm {
     ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType ownCamp, bool overExposed, int lowerBound,
                  cv::Size kernelSize) {
         if (overExposed) {
-            cv::inRange(image, ownCamp == rm::CAMP_RED ? cv::Scalar{250, (double) lowerBound, (double) lowerBound}
-                                                       : cv::Scalar{(double) lowerBound, (double) lowerBound, 250},
-                        cv::Scalar{255, 255, 255}, binary);
+            if (ownCamp == rm::CAMP_OUTPOST) {
+                cv::inRange(image, cv::Scalar{(double) lowerBound, 250, (double) lowerBound}, cv::Scalar{255, 255, 255},
+                            binary);
+            } else {
+                cv::inRange(image, ownCamp == rm::CAMP_RED ? cv::Scalar{250, (double) lowerBound, (double) lowerBound}
+                                                           : cv::Scalar{(double) lowerBound, (double) lowerBound, 250},
+                            cv::Scalar{255, 255, 255}, binary);
+            }
         } else {
             std::vector<cv::Mat> channels;
             cv::split(image, channels);

@@ -5,26 +5,26 @@
 #include "rmcv/core/core.h"
 
 namespace rm {
-    LightBar::LightBar(cv::RotatedRect box, rm::CampType camp) : angle(
+    LightBlob::LightBlob(cv::RotatedRect box, rm::CampType camp) : angle(
             box.angle > 90 ? box.angle - 90 : box.angle + 90), camp(camp), center(box.center) {
         VerticesRectify(box, this->vertices, RECT_TALL);
 
         this->size = {min(box.size.height, box.size.width), max(box.size.height, box.size.width)};
     }
 
-    Armour::Armour(std::vector<rm::LightBar> lightBars, float rank, rm::CampType camp) : camp(
+    Armour::Armour(std::vector<rm::LightBlob> lightBlobs, float rank, rm::CampType camp) : camp(
             camp), rank(rank) {
-        if (lightBars.size() != 2) {
-            throw std::runtime_error("Armour must be initialized with 2 rm::LightBar (s).");
+        if (lightBlobs.size() != 2) {
+            throw std::runtime_error("Armour must be initialized with 2 rm::LightBlob (s).");
         }
 
-        // sort light bars left to right
-        std::sort(lightBars.begin(), lightBars.end(), [](rm::LightBar lightBar1, rm::LightBar lightBar2) {
+        // sort light blobs left to right
+        std::sort(lightBlobs.begin(), lightBlobs.end(), [](rm::LightBlob lightBar1, rm::LightBlob lightBar2) {
             return lightBar1.center.x < lightBar2.center.x;
         });
 
         int i = 0, j = 3;
-        for (auto lightBar: lightBars) {
+        for (auto lightBar: lightBlobs) {
             vertices[i++] = lightBar.vertices[j--];
             vertices[i++] = lightBar.vertices[j--];
         }

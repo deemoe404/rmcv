@@ -72,10 +72,17 @@ namespace rm {
         double b = d;
         double c = a - h;
 
-        double x1 = ((-1 * b) + sqrt(pow(b, 2.0) - (4 * a * c))) / (2 * a);
-        double x2 = ((-1 * b) - sqrt(pow(b, 2.0) - (4 * a * c))) / (2 * a);
+        double delta = pow(b, 2.0) - (4 * a * c);
+        if (delta > 0) {
+            double x1 = atan(((-1 * b) + sqrt(delta)) / (2 * a));
+            double x2 = atan(((-1 * b) - sqrt(delta)) / (2 * a));
 
-        return abs(x1) < abs(x2) ? atan(x1) : atan(x2);
+            return abs(x1) < abs(x2) ? x1 : x2;
+        } else if (delta == 0) {
+            return atan((-1) * (b / 2 * a));
+        }
+
+        return NAN;
     }
 
     float PointDistance(cv::Point2f pt1, cv::Point2f pt2) {

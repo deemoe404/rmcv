@@ -7,7 +7,7 @@ includes:
 
 * DaHeng industrial camera driver
 * Image preprocessing
-* Pattern matching for light bar and armour
+* Pattern matching for light blob and armour
 * Serial port communication (Linux only temporarily)
 * Gravity compensation
 

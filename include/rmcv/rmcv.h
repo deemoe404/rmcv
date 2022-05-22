@@ -6,7 +6,6 @@
 #define RM_STANDARD2022_RMCV_H
 
 #include "core/core.h"
-#include "mlp/mlp.h"
 #include "imgproc.h"
 #include "objdetect.h"
 #include "debug.h"

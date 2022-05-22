@@ -217,7 +217,9 @@ namespace rm {
     }
 
     void SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, cv::Size2f exactSize,
-                  cv::Mat &translationVector, cv::Mat &rotationVector) {
+                  cv::Mat &translationVector, cv::Mat &rotationVector, cv::Rect ROI) {
+        cv::Point2f offset((float) ROI.x, (float) ROI.y);
+
         rotationVector = cv::Mat::zeros(3, 1, CV_64FC1);
         translationVector = cv::Mat::zeros(3, 1, CV_64FC1);
 
@@ -227,10 +229,12 @@ namespace rm {
                                             cv::Point3f(-exactSize.width / 2.0f, -exactSize.height / 2.0f, 0)};
 
         // TODO: sort points before doing this!!!
-        std::vector<cv::Point2f> coordinate{imagePoints[1], imagePoints[2], imagePoints[3], imagePoints[0]};
+        std::vector<cv::Point2f> coordinate{imagePoints[1] + offset, imagePoints[2] + offset, imagePoints[3] + offset,
+                                            imagePoints[0] + offset};
 
         cv::solvePnP(exactPoint, coordinate, cameraMatrix, distortionFactor, rotationVector, translationVector, false,
                      cv::SOLVEPNP_IPPE_SQUARE);
+//        cv::solvePnPRansac(exactPoint, coordinate, cameraMatrix, distortionFactor, rotationVector, translationVector);
     }
 
     double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset, double angleOffset) {

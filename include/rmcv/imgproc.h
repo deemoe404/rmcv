@@ -30,9 +30,8 @@ namespace rm {
     ///                    light blobs.
     /// \param lowerBound Lower bound when performing binarization.
     /// \param kernelSize Kernel size when performing dilate.
-    void
-    ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType ownCamp, bool overExposed, int lowerBound,
-                 cv::Size kernelSize);
+    void ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType ownCamp, int lowerBound,
+                      bool overExposed = false, cv::Size kernelSize = {0, 0});
 
     /// Auto enhance image by the given benchmarks.
     /// \param frame Source image & destine image.

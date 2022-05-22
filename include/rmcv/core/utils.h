@@ -15,6 +15,9 @@ namespace rm {
         RECT_TALL = 0, RECT_SIDE = 1
     };
 
+    cv::Rect GetROI(cv::Point2f *imagePoints, int pointsCount, double scaleFactor = 1, cv::Size frameSize = {-1, -1},
+                    cv::Rect previous = {0, 0, 0, 0});
+
     /// Reorder vertices of a rectangle to match the point order in left down, left up, right up, right down.
     /// \param input The original rectangle.
     /// \param output Reordered vertices.
@@ -101,7 +104,7 @@ namespace rm {
     /// \param translationVector Output translation vector.
     /// \param rotationVector Output rotation vector.
     void SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, cv::Size2f exactSize,
-                  cv::Mat &translationVector, cv::Mat &rotationVector);
+                  cv::Mat &translationVector, cv::Mat &rotationVector, cv::Rect ROI = {0, 0, 0, 0});
 
     /// Solve height difference between barrel and target using the translation vector of target and the motor angle of
     /// gimbal.

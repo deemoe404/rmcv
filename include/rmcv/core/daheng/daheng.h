@@ -113,11 +113,11 @@ namespace rm {
             GXCloseLib();
         }
 
-        Mat getFrame() {
+        Mat getFrame(bool flip = false) {
             if (GXGetImage(hDevice, &frameData, 100) == GX_STATUS_SUCCESS) {
                 if (frameData.nStatus == 0) {
                     ProcessData(frameData.pImgBuf, pRaw8Buffer, pRGBframeData, frameData.nWidth, frameData.nHeight,
-                                (int) PixelFormat, 4);
+                                (int) PixelFormat, 4, flip);
                     fps++;
                     Mat src(Size(frameData.nWidth, frameData.nHeight), CV_8UC3, pRGBframeData);
                     return src;
@@ -129,7 +129,7 @@ namespace rm {
 
         static void
         ProcessData(void *pImageBuf, void *pImageRaw8Buf, void *pImageRGBBuf, int nImageWidth, int nImageHeight,
-                    int nPixelFormat, int nPixelColorFilter) {
+                    int nPixelFormat, int nPixelColorFilter, bool flip = false) {
             switch (nPixelFormat) {
                 case GX_PIXEL_FORMAT_BAYER_GR12:
                 case GX_PIXEL_FORMAT_BAYER_RG12:
@@ -137,7 +137,7 @@ namespace rm {
                 case GX_PIXEL_FORMAT_BAYER_BG12:
                     DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_4_11);
                     DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), false);
+                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip);
                     break;
 
                 case GX_PIXEL_FORMAT_BAYER_GR10:
@@ -146,7 +146,7 @@ namespace rm {
                 case GX_PIXEL_FORMAT_BAYER_BG10:
                     DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_2_9);
                     DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), false);
+                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip);
                     break;
 
                 case GX_PIXEL_FORMAT_BAYER_GR8:
@@ -154,19 +154,19 @@ namespace rm {
                 case GX_PIXEL_FORMAT_BAYER_GB8:
                 case GX_PIXEL_FORMAT_BAYER_BG8:
                     DxRaw8toRGB24(pImageBuf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), false); //RAW2RGB_ADAPTIVE
+                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip); //RAW2RGB_ADAPTIVE
                     break;
 
                 case GX_PIXEL_FORMAT_MONO12:
                 case GX_PIXEL_FORMAT_MONO10:
                     DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_4_11);
                     DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(NONE), false);
+                                  DX_PIXEL_COLOR_FILTER(NONE), flip);
                     break;
 
                 case GX_PIXEL_FORMAT_MONO8:
                     DxRaw8toRGB24(pImageBuf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(NONE), false);
+                                  DX_PIXEL_COLOR_FILTER(NONE), flip);
                     break;
 
                 default:

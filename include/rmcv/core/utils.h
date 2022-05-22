@@ -112,7 +112,8 @@ namespace rm {
     /// \param motorAngle The motor angle of gimbal, positive upwards (radians).
     /// \param offset Offset between camera and barrel (cm).
     /// \return Height difference between barrel and target (cm).
-    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset = {0, 0});
+    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset = {0, 0},
+                            double angleOffset = 0);
 
     double SolveDistance(cv::Mat &translationVector);
 

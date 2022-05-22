@@ -233,11 +233,11 @@ namespace rm {
                      cv::SOLVEPNP_IPPE_SQUARE);
     }
 
-    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset) {
+    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset, double angleOffset) {
         double h = translationVector.ptr<double>(0)[1] - offset.y;
         double d = translationVector.ptr<double>(0)[2];
 
-        double dPitch = -atan2(h, d) + motorAngle;
+        double dPitch = -atan2(h, d) + (motorAngle - angleOffset);
 
         return d * tan(dPitch);
     }

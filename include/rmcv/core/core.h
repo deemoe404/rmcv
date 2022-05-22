@@ -26,6 +26,8 @@ namespace rm {
         double estimateAirTime = 0;
     };
 
+    typedef std::vector<cv::Point> Contour;
+
     class LightBlob {
     public:
         float angle = 0;                      // Rotation angle of the light blob (vertical when the angle is 90)

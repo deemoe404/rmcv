@@ -4,31 +4,21 @@
 
 // TODO: everything use float, except PnP(double) (needs more investigation)
 
-class Request {
-public:
+struct Request {
     rm::CampType OwnCamp;
     rm::AimMode Mode;
     int FireRate;
     float GimbalPitch;
-
-    Request() = default;
-
-    Request(rm::CampType camp, rm::AimMode mode) : OwnCamp(camp), Mode(mode), FireRate(30), GimbalPitch(0) {}
 };
 
-class Response {
-public:
+struct Response {
     float Pitch;
     float Yaw;
     unsigned char Rank;
-
-    Response() = default;
-
-    Response(float pitch, float yaw, unsigned char rank) : Pitch(pitch), Yaw(yaw), Rank(rank) {};
 };
 
 int main(int argc, char *argv[]) {
-    Request request(rm::CAMP_OUTPOST, rm::AIM_COMBAT);
+    Request request{rm::CAMP_RED, rm::AIM_COMBAT, 0, 0};
 
     rm::SerialPort serialPort;
     bool status = serialPort.Initialize("/dev/ttyUSB0", B460800);
@@ -52,7 +42,7 @@ int main(int argc, char *argv[]) {
             }
 
             request.OwnCamp = static_cast<rm::CampType>(readBuff[1] & 0x01);
-            request.Mode = static_cast<rm::AimMode>((readBuff[1] & 0x04) >> 2);
+            request.Mode = (readBuff[1] & 0x04) >> 2 == '0' ? rm::AIM_COMBAT : rm::AIM_SNIPE;
             request.FireRate = (int) readBuff[2];
 
             std::memcpy(&request.GimbalPitch, readBuff + 3, sizeof(float));
@@ -82,53 +72,81 @@ int main(int argc, char *argv[]) {
     });
 
     thread detectionThread([&]() {
-        cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3) << 1279.7, 0, 619.4498, 0, 1279.1, 568.4985, 0, 0, 1);
+        cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3)
+                << 2893.316432895769, 0, 626.9759935670470, 0, 2932.394705738403, 523.2422551706520, 0, 0, 1);
         cv::Mat distCoeffs = (cv::Mat_<double>(1, 5)
-                << -0.107365897147967, 0.353460341713276, 0, 0, -0.370048735508088);
+                << -0.105453316958137, 0.369031456681063, 0.031896852060857, 0.002879995131883, -0.569188001455716);
 
         rm::ShootFactor result;
-        cv::Mat frame, binary, tvecs, rvecs;
+        cv::Mat source, calibration, binary, tvecs, rvecs;
+        cv::Rect ROI;
+        std::vector<rm::Contour> contours;
         std::vector<rm::LightBlob> lightBlobs(32);
         std::vector<rm::Armour> armours(16);
 
         rm::DahengCamera camera;
-        bool status = camera.dahengCameraInit((char *) "KE0210030295", true, (int) (1.0 / 210.0 * 1000000), 0.0);
+        bool status = camera.dahengCameraInit((char *) "KE0210010003", true, (int) (1.0 / 210.0 * 1000000), 0.0);
         while (status) {
-            frame = camera.getFrame();
-            if (!frame.empty()) {
-                rm::ExtractColor(frame, binary, request.OwnCamp, true, 40, {5, 5});
-                rm::FindLightBlobs(binary, lightBlobs, 1, 1.5, 360, 300, 1500, frame, true);
-//                rm::FindLightBlobs(binary, lightBlobs, 2, 10, 25, 80, 1500, frame, true);
+            source = camera.getFrame(true);
+            if (source.empty()) continue;
+            if (ROI.width != 0 && ROI.height != 0) {
+                calibration = source(ROI);
+            } else {
+                calibration = source;
+            }
 
-//                rm::FindArmour(lightBlobs, armours, 8, 24, 0.15, 0.45, 0.65, request.OwnCamp,
-//                               cv::Size2f{(float) frame.cols, (float) frame.rows});
+            if (request.Mode == rm::AIM_SNIPE) {
+                rm::ExtractColor(calibration, binary, rm::CAMP_OUTPOST, 64);
+                cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+                rm::FindLightBlobs(contours, lightBlobs, 1, 1.5, 360, 16, 2560, rm::CAMP_OUTPOST, true);
 
-//                for (auto &armour: armours) {
-//                    rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs);
-//                    if (rm::SolveDistance(tvecs) < 450) {
-//                        rm::SolveDeltaHeight(tvecs, request.GimbalPitch);
-//                        rm::SolveShootFactor(tvecs, result, -9.8, request.FireRate, -60, {0, 0},
-//                                             rm::COMPENSATE_CLASSIC);
-//
-//                        std::cout << "pitch: " << result.pitchAngle << "  yaw: " << result.yawAngle << "  distance:"
-//                                  << rm::SolveDistance(tvecs) << "  ";
-//                        msgs.push({result.pitchAngle, result.yawAngle, 0});
-//                        continue;
-//                    }
-//                }
-
-                rm::debug::DrawlightBlobs(lightBlobs, frame, -1);
-//                rm::debug::DrawArmours(armours, frame, -1);
-                cv::imshow("frame", frame);
-                cv::resize(binary, binary, cv::Size(800, 600));
+                if (!lightBlobs.empty()) {
+                    rm::SolvePNP(lightBlobs[0].vertices, cameraMatrix, distCoeffs, {5.43, 5.43}, tvecs, rvecs);
+                    rm::SolveShootFactor(tvecs, result, -0, 0, 0, {0, 0}, -0, rm::COMPENSATE_NONE);
+                    std::cout << "  " << result.yawAngle << "  " << result.pitchAngle;
+                    std::cout << rm::SolveDistance(tvecs) << "  " << tvecs.at<double>(2) << std::endl;
+                }
+                rm::debug::DrawlightBlobs(lightBlobs, calibration, -1);
+                cv::imshow("frame", calibration);
                 cv::imshow("binary", binary);
                 cv::waitKey(1);
-            } else {
-                status = false;
+            } else if (request.Mode == rm::AIM_COMBAT) {
+                rm::ExtractColor(calibration, binary, request.OwnCamp, 40, true, {5, 5});
+                cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+                rm::FindLightBlobs(contours, lightBlobs, 2, 10, 25, 80, 1500, calibration, true);
+                rm::FindArmour(lightBlobs, armours, 8, 24, 0.15, 0.45, 0.65, request.OwnCamp,
+                               cv::Size2f{(float) calibration.cols, (float) calibration.rows});
+
+                if (armours.empty()) {
+                    ROI = cv::Rect(0, 0, 0, 0);
+                } else {
+                    for (auto &armour: armours) {
+                        rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs, ROI);
+                        if (rm::SolveDistance(tvecs) < 900) {
+                            rm::SolveDeltaHeight(tvecs, request.GimbalPitch);
+                            rm::SolveShootFactor(tvecs, result, -9.8, request.FireRate, -60, {0, 0},
+                                                 rm::COMPENSATE_CLASSIC);
+
+                            std::cout << "pitch: " << result.pitchAngle << "  yaw: " << result.yawAngle << "  distance:"
+                                      << rm::SolveDistance(tvecs) << std::endl;
+                            ROI = rm::GetROI(armour.icon, 4, 1.5, {source.cols, source.rows}, ROI);
+                            msgs.push({result.pitchAngle, result.yawAngle, 0});
+
+                            rm::debug::DrawlightBlobs(lightBlobs, calibration, -1);
+                            rm::debug::DrawArmours(armours, calibration, -1);
+                            continue;
+                        }
+                    }
+                }
+
+                cv::imshow("frame", calibration);
+                cv::imshow("binary", binary);
+                cv::waitKey(1);
+            } else if (request.Mode == rm::AIM_BUFF) {
+
             }
         }
     });
-
 
     readThread.join();
     sendThread.join();

@@ -17,7 +17,7 @@ namespace rm {
     };
 
     enum AimMode {
-        AIM_COMBAT = 0, AIM_BUFF = 1
+        AIM_COMBAT = 0, AIM_BUFF = 1, AIM_SNIPE = 2
     };
 
     struct ShootFactor {

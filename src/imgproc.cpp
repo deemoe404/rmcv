@@ -43,7 +43,7 @@ namespace rm {
     }
 
     void
-    ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType ownCamp, bool overExposed, int lowerBound,
+    ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType ownCamp, int lowerBound, bool overExposed,
                  cv::Size kernelSize) {
         if (overExposed) {
             if (ownCamp == rm::CAMP_OUTPOST) {
@@ -59,8 +59,13 @@ namespace rm {
             cv::split(image, channels);
 
             // extract color
-            auto gray = channels[ownCamp == rm::CAMP_RED ? 0 : 2] - channels[ownCamp == rm::CAMP_RED ? 2 : 0];
-            cv::inRange(gray, lowerBound, 255, binary);
+            if (ownCamp == rm::CAMP_OUTPOST) {
+                auto gray = channels[1] - channels[2];
+                cv::inRange(gray, lowerBound, 255, binary);
+            } else {
+                auto gray = channels[ownCamp == rm::CAMP_RED ? 0 : 2] - channels[ownCamp == rm::CAMP_RED ? 2 : 0];
+                cv::inRange(gray, lowerBound, 255, binary);
+            }
         }
 
         // enhance visual

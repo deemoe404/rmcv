@@ -2,8 +2,6 @@
 #include <thread>
 #include "rmcv/rmcv.h"
 
-// TODO: everything use float, except PnP(double) (needs more investigation)
-
 struct Request {
     rm::CampType OwnCamp;
     rm::AimMode Mode;
@@ -15,7 +13,7 @@ struct Request {
 struct Response {
     float Pitch;
     float Yaw;
-    unsigned char Rank;
+    unsigned char Rank; // (int)((double)distance * 10.0)
 };
 
 bool GetRequest(unsigned char *buffer, int fairAngle, Request &request) {
@@ -28,7 +26,7 @@ bool GetRequest(unsigned char *buffer, int fairAngle, Request &request) {
     }
 
     request.OwnCamp = static_cast<rm::CampType>(buffer[1] & 0x01);
-    request.Mode = (buffer[1] & 0x04) >> 2 == '0' ? rm::AIM_COMBAT : rm::AIM_SNIPE;
+    request.Mode = (int) ((buffer[1] & 0x04) >> 2) == 0 ? rm::AIM_COMBAT : rm::AIM_SNIPE;
     request.FireRate = (int) buffer[2];
 
     std::memcpy(&request.GimbalYaw, buffer + 3, sizeof(float));
@@ -58,10 +56,10 @@ int main(int argc, char *argv[]) {
         unsigned char readBuff[256];
         while (serialStatus) {
             if (!serialPort.Receive(readBuff, 12) || !GetRequest(readBuff, 4191, request)) {
-                std::cout << "Serial port receive failed." << std::endl;
+                std::cout << "Receive failed." << std::endl;
             }
         }
-        std::cout << "Serial port read closed." << std::endl;
+        std::cout << "Serial port closed." << std::endl;
     });
 
     // result feedback thread
@@ -74,7 +72,6 @@ int main(int argc, char *argv[]) {
                 std::cout << "Send failed" << std::endl;
             }
         }
-        std::cout << "Serial port send closed." << std::endl;
     });
 
     // main detect thread
@@ -85,36 +82,38 @@ int main(int argc, char *argv[]) {
                 << -0.105453316958137, 0.369031456681063, 0.031896852060857, 0.002879995131883, -0.569188001455716);
 
         rm::ShootFactor result;
-        cv::Mat subImage, source0, source1, binary, tvecs, rvecs;
+        cv::Mat subImage, mainCam, sideCam, binary, tvecs, rvecs;
         cv::Rect ROI;
         std::vector<rm::Contour> contours;
         std::vector<rm::LightBlob> lightBlobs(32);
         std::vector<rm::Armour> armours(16);
 
         rm::DahengCamera camera0, camera1;
-        bool camStatus0 = camera0.dahengCameraInit((char *) "KE0210010003", true, (int) (1.0 / 210.0 * 1000000), 0.0);
+        bool camStatus0 = camera0.dahengCameraInit((char *) "KE0210010003", true, (int) (1.0 / 210.0 * 1000000), 1.0);
         bool camStatus1 = camera1.dahengCameraInit((char *) "KE0210010029", true, (int) (800), 0.0);
         while (true) {
             // snipe mode
             if (request.Mode == rm::AIM_SNIPE && camStatus1) {
-                source1 = camera1.getFrame(false);
-                if (source1.empty()) continue;
+                sideCam = camera1.getFrame(false);
+                if (sideCam.empty()) continue;
                 if (ROI.width != 0 && ROI.height != 0) {
-                    subImage = source1(ROI);
+                    subImage = sideCam(ROI);
                 } else {
-                    subImage = source1;
+                    subImage = sideCam;
                 }
 
-                rm::ExtractColor(subImage, binary, rm::CAMP_OUTPOST, 64);
+                rm::ExtractColor(subImage, binary, rm::CAMP_GUIDELIGHT, 64);
                 cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-                rm::FindLightBlobs(contours, lightBlobs, 1, 1.5, 360, 16, 2560, rm::CAMP_OUTPOST, true);
+                rm::FindLightBlobs(contours, lightBlobs, 1, 1.5, 360, 16, 2560, rm::CAMP_GUIDELIGHT, true);
                 if (!lightBlobs.empty()) {
                     rm::SolvePNP(lightBlobs[0].vertices, cameraMatrix, distCoeffs, {5.43, 5.43}, tvecs, rvecs, ROI);
                     rm::SolveShootFactor(tvecs, result, -0, 0, 0, {0, 0}, -0, rm::COMPENSATE_NONE);
-                    std::cout << "  " << result.yawAngle << "  " << result.pitchAngle;
-                    std::cout << rm::SolveDistance(tvecs) << "  " << tvecs.at<double>(2) << std::endl;
+                    std::cout << result.yawAngle << "  " << result.pitchAngle << "  " << rm::SolveDistance(tvecs)
+                              << "  " << tvecs.at<double>(2) << std::endl;
+
+                    rm::debug::DrawLightBlobs(lightBlobs, subImage, -1);
                 }
-                rm::debug::DrawlightBlobs(lightBlobs, subImage, -1);
+
                 cv::imshow("frame", subImage);
                 cv::imshow("binary", binary);
                 cv::waitKey(1);
@@ -122,12 +121,12 @@ int main(int argc, char *argv[]) {
 
             // combat mode
             if (request.Mode == rm::AIM_COMBAT && camStatus0) {
-                source0 = camera0.getFrame(false);
-                if (source0.empty()) continue;
+                mainCam = camera0.getFrame(false, false);
+                if (mainCam.empty()) continue;
                 if (ROI.width != 0 && ROI.height != 0) {
-                    subImage = source0(ROI);
+                    subImage = mainCam(ROI);
                 } else {
-                    subImage = source0;
+                    subImage = mainCam;
                 }
 
                 rm::ExtractColor(subImage, binary, request.OwnCamp, 40, true, {5, 5});
@@ -141,18 +140,18 @@ int main(int argc, char *argv[]) {
                     for (auto &armour: armours) {
                         rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs, ROI);
                         if (rm::SolveDistance(tvecs) < 900) {
-                            rm::SolveDeltaHeight(tvecs, request.GimbalPitch);
-                            rm::SolveShootFactor(tvecs, result, -9.8, request.FireRate, -60, {0, 0},
+                            double h = rm::SolveDeltaHeight(tvecs, request.GimbalPitch, {0, 0}, 0);
+                            rm::SolveShootFactor(tvecs, result, -9.8, request.FireRate, h - 0, {0, 0},
                                                  rm::COMPENSATE_CLASSIC);
 
                             std::cout << "pitch: " << result.pitchAngle << "  yaw: " << result.yawAngle << "  distance:"
                                       << rm::SolveDistance(tvecs) << std::endl;
-                            ROI = rm::GetROI(armour.icon, 4, 1.5, {source0.cols, source0.rows}, ROI);
+                            ROI = rm::GetROI(armour.icon, 4, 1.5, {mainCam.cols, mainCam.rows}, ROI);
                             message.push({result.pitchAngle, result.yawAngle, 0});
 
-                            rm::debug::DrawlightBlobs(lightBlobs, subImage, -1);
+                            rm::debug::DrawLightBlobs(lightBlobs, subImage, -1);
                             rm::debug::DrawArmours(armours, subImage, -1);
-                            continue;
+                            break;
                         }
                     }
                 }
@@ -160,9 +159,6 @@ int main(int argc, char *argv[]) {
                 cv::imshow("frame", subImage);
                 cv::imshow("binary", binary);
                 cv::waitKey(1);
-            }
-            if (request.Mode == rm::AIM_BUFF) {
-
             }
         }
     });

@@ -38,7 +38,7 @@ namespace rm {
 
             cv::Scalar meanValue = cv::mean(source(cv::boundingRect(contour)));
             if (meanValue.val[1] > meanValue.val[0] && meanValue.val[1] > meanValue.val[2]) {
-                lightBlobs.emplace_back(box, rm::CAMP_OUTPOST);
+                lightBlobs.emplace_back(box, rm::CAMP_GUIDELIGHT);
             } else {
                 lightBlobs.emplace_back(box, meanValue.val[0] > meanValue.val[2] ? rm::CAMP_BLUE : rm::CAMP_RED);
             }

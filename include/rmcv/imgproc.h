@@ -21,7 +21,7 @@ namespace rm {
     /// \param gamma Gamma factor.
     void CalcGamma(cv::Mat &source, cv::Mat &calibration, float gamma = 0.5f);
 
-    /// Extract enemy color from source image.
+    /// Extract specified color from source image.
     /// \param image Source image.
     /// \param binary Output binary image.
     /// \param ownCamp Own camp.

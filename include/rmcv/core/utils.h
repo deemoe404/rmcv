@@ -93,7 +93,7 @@ namespace rm {
 
     std::string int2str(int number);
 
-    void PrintMat(cv::Mat &input, int decimal = 0);
+
 
     /// Solve the rotation and the translation vectors that transform a 3D point expressed in the object coordinate
     /// frame to the camera coordinate frame, using cv::SOLVEPNP_IPPE_SQUARE.

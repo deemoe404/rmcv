@@ -54,7 +54,7 @@ namespace rm::debug {
         cv::drawContours(output, contours, -1, {0, 255, 255}, 1);
     }
 
-    void DrawlightBlobs(const vector<rm::LightBlob> &input, Mat &output, int index) {
+    void DrawLightBlobs(const vector<rm::LightBlob> &input, Mat &output, int index) {
         if (input.empty()) return;
 
         std::vector<std::vector<cv::Point>> contoursRed;
@@ -71,7 +71,7 @@ namespace rm::debug {
                     contoursRed.push_back(vertices);
                 } else if (lightBar.camp == rm::CAMP_BLUE) {
                     contoursBlue.push_back(vertices);
-                } else if (lightBar.camp == rm::CAMP_OUTPOST){
+                } else if (lightBar.camp == rm::CAMP_GUIDELIGHT) {
                     contoursOutpost.push_back(vertices);
                 }
             }
@@ -84,7 +84,7 @@ namespace rm::debug {
                 contoursRed.push_back(vertices);
             } else if (input[index].camp == rm::CAMP_BLUE) {
                 contoursBlue.push_back(vertices);
-            } else if (input[index].camp == rm::CAMP_OUTPOST){
+            } else if (input[index].camp == rm::CAMP_GUIDELIGHT) {
                 contoursOutpost.push_back(vertices);
             }
         }
@@ -92,5 +92,18 @@ namespace rm::debug {
         cv::drawContours(output, contoursRed, -1, {0, 0, 255}, 1);
         cv::drawContours(output, contoursBlue, -1, {255, 0, 0}, 1);
         cv::drawContours(output, contoursOutpost, -1, {0, 255, 0}, 1);
+    }
+
+    void PrintMat(cv::Mat &input, int decimal) {
+        for (int i = 0; i < input.size().height; i++) {
+            std::cout << "[ ";
+            for (int j = 0; j < input.size().width; j++) {
+                std::cout << std::fixed << std::setw(2) << std::setprecision(decimal) << input.at<float>(i, j);
+                if (j != input.size().width - 1)
+                    std::cout << ", ";
+                else
+                    std::cout << " ]" << std::endl;
+            }
+        }
     }
 }

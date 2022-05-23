@@ -21,6 +21,7 @@ namespace rm {
         GX_DEV_HANDLE hDevice = nullptr;
         GX_FRAME_DATA frameData{};
         void *pRaw8Buffer = nullptr;
+        void *pMirrorBuffer = nullptr;
         void *pRGBframeData = nullptr;
         int64_t PixelFormat = GX_PIXEL_FORMAT_BAYER_GR8;
         int64_t ColorFilter = GX_COLOR_FILTER_NONE;
@@ -56,6 +57,7 @@ namespace rm {
 
             frameData.pImgBuf = malloc((size_t) nPayLoadSize);
             pRaw8Buffer = malloc(nPayLoadSize);
+            pMirrorBuffer = malloc(nPayLoadSize * 3);
             pRGBframeData = malloc(nPayLoadSize * 3);
             GXGetEnum(hDevice, GX_ENUM_PIXEL_FORMAT, &PixelFormat);
             GXGetEnum(hDevice, GX_ENUM_PIXEL_COLOR_FILTER, &ColorFilter);
@@ -69,28 +71,6 @@ namespace rm {
             GX_FLOAT_RANGE gainRange;
             GXGetFloatRange(hDevice, GX_FLOAT_GAIN, &gainRange);
             GXSetFloat(hDevice, GX_FLOAT_GAIN, gainRange.dMax * gainFactor);
-
-            // TODO: test this two function on gen2 cams
-
-//            status = GXSetBool(hDevice, GX_BOOL_GAMMA_ENABLE, true);
-//            GX_GAMMA_MODE_ENTRY nValue;
-//            nValue = GX_GAMMA_SELECTOR_USER;
-//            GXSetEnum(hDevice, GX_ENUM_GAMMA_MODE, nValue);
-//            double colorp = 0.0;
-//            GXSetFloat(hDevice, GX_FLOAT_GAMMA_PARAM, 0.5);
-//            if (status != GX_STATUS_SUCCESS) {
-//                std::cout << "colorp" << std::endl;
-//            }
-//            GXGetFloat(hDevice, GX_FLOAT_GAMMA_PARAM, &colorp);
-//            std::cout << colorp << std::endl;
-
-//            GX_SHARPNESS_MODE_ENTRY nValue;
-//            nValue = GX_SHARPNESS_MODE_ON;
-//            status = GXSetEnum(hDevice, GX_ENUM_SHARPNESS_MODE, nValue);
-//            if (status != GX_STATUS_SUCCESS) {
-//                std::cout << "colorp" << std::endl;
-//            }
-
 
             status = GXSendCommand(hDevice, GX_COMMAND_ACQUISITION_START);
             if (status != GX_STATUS_SUCCESS) {
@@ -113,11 +93,11 @@ namespace rm {
             GXCloseLib();
         }
 
-        Mat getFrame(bool flip = false) {
+        Mat getFrame(bool flip = false, bool mirror = false) {
             if (GXGetImage(hDevice, &frameData, 100) == GX_STATUS_SUCCESS) {
                 if (frameData.nStatus == 0) {
                     ProcessData(frameData.pImgBuf, pRaw8Buffer, pRGBframeData, frameData.nWidth, frameData.nHeight,
-                                (int) PixelFormat, 4, flip);
+                                (int) PixelFormat, mirror ? 2 : 4, flip, mirror);
                     fps++;
                     Mat src(Size(frameData.nWidth, frameData.nHeight), CV_8UC3, pRGBframeData);
                     return src;
@@ -127,46 +107,78 @@ namespace rm {
             return {};
         }
 
-        static void
-        ProcessData(void *pImageBuf, void *pImageRaw8Buf, void *pImageRGBBuf, int nImageWidth, int nImageHeight,
-                    int nPixelFormat, int nPixelColorFilter, bool flip = false) {
+        void ProcessData(void *pImageBuf, void *pImageRaw8Buf, void *pImageRGBBuf, int nImageWidth, int nImageHeight,
+                         int nPixelFormat, int nPixelColorFilter, bool flip = false, bool mirror = false) {
             switch (nPixelFormat) {
                 case GX_PIXEL_FORMAT_BAYER_GR12:
                 case GX_PIXEL_FORMAT_BAYER_RG12:
                 case GX_PIXEL_FORMAT_BAYER_GB12:
                 case GX_PIXEL_FORMAT_BAYER_BG12:
-                    DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_4_11);
-                    DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip);
+                    if (mirror) {
+                        DxImageMirror(pImageBuf, pMirrorBuffer, nImageWidth, nImageHeight, HORIZONTAL_MIRROR);
+                        DxRaw16toRaw8(pMirrorBuffer, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_4_11);
+                        DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip);
+                    } else {
+                        DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_4_11);
+                        DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip);
+                    }
                     break;
 
                 case GX_PIXEL_FORMAT_BAYER_GR10:
                 case GX_PIXEL_FORMAT_BAYER_RG10:
                 case GX_PIXEL_FORMAT_BAYER_GB10:
                 case GX_PIXEL_FORMAT_BAYER_BG10:
-                    DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_2_9);
-                    DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip);
+                    if (mirror) {
+                        DxImageMirror(pImageBuf, pMirrorBuffer, nImageWidth, nImageHeight, HORIZONTAL_MIRROR);
+                        DxRaw16toRaw8(pMirrorBuffer, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_2_9);
+                        DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip);
+                    } else {
+                        DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_2_9);
+                        DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip);
+                    }
                     break;
 
                 case GX_PIXEL_FORMAT_BAYER_GR8:
                 case GX_PIXEL_FORMAT_BAYER_RG8:
                 case GX_PIXEL_FORMAT_BAYER_GB8:
                 case GX_PIXEL_FORMAT_BAYER_BG8:
-                    DxRaw8toRGB24(pImageBuf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip); //RAW2RGB_ADAPTIVE
+                    if (mirror) {
+                        DxImageMirror(pImageBuf, pMirrorBuffer, nImageWidth, nImageHeight, HORIZONTAL_MIRROR);
+                        DxRaw8toRGB24(pMirrorBuffer, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip); //RAW2RGB_ADAPTIVE
+                    } else {
+                        DxRaw8toRGB24(pImageBuf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(nPixelColorFilter), flip); //RAW2RGB_ADAPTIVE
+                    }
                     break;
 
                 case GX_PIXEL_FORMAT_MONO12:
                 case GX_PIXEL_FORMAT_MONO10:
-                    DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_4_11);
-                    DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(NONE), flip);
+                    if (mirror) {
+                        DxImageMirror(pImageBuf, pMirrorBuffer, nImageWidth, nImageHeight, HORIZONTAL_MIRROR);
+                        DxRaw16toRaw8(pMirrorBuffer, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_4_11);
+                        DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(NONE), flip);
+                    } else {
+                        DxRaw16toRaw8(pImageBuf, pImageRaw8Buf, nImageWidth, nImageHeight, DX_BIT_4_11);
+                        DxRaw8toRGB24(pImageRaw8Buf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(NONE), flip);
+                    }
                     break;
 
                 case GX_PIXEL_FORMAT_MONO8:
-                    DxRaw8toRGB24(pImageBuf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
-                                  DX_PIXEL_COLOR_FILTER(NONE), flip);
+                    if (mirror) {
+                        DxImageMirror(pImageBuf, pMirrorBuffer, nImageWidth, nImageHeight, HORIZONTAL_MIRROR);
+                        DxRaw8toRGB24(pMirrorBuffer, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(NONE), flip);
+                    } else {
+                        DxRaw8toRGB24(pImageBuf, pImageRGBBuf, nImageWidth, nImageHeight, RAW2RGB_NEIGHBOUR,
+                                      DX_PIXEL_COLOR_FILTER(NONE), flip);
+                    }
                     break;
 
                 default:

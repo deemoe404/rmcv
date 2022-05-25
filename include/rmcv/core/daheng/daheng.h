@@ -26,8 +26,10 @@ namespace rm {
         int64_t PixelFormat = GX_PIXEL_FORMAT_BAYER_GR8;
         int64_t ColorFilter = GX_COLOR_FILTER_NONE;
 
+
     public:
         long fps = 0;
+        int64_t SensorWidth = -1, SensorHeight = -1;
 
         /// Initialize DaHeng camera with given parameters.
         /// \param sn SN number of target camera.
@@ -56,6 +58,9 @@ namespace rm {
             }
 
             frameData.pImgBuf = malloc((size_t) nPayLoadSize);
+            GXGetInt(hDevice, GX_INT_SENSOR_WIDTH, &SensorWidth);
+            GXGetInt(hDevice, GX_INT_SENSOR_HEIGHT, &SensorHeight);
+
             pRaw8Buffer = malloc(nPayLoadSize);
             pMirrorBuffer = malloc(nPayLoadSize * 3);
             pRGBframeData = malloc(nPayLoadSize * 3);

@@ -8,26 +8,28 @@ namespace rm {
     cv::Rect
     GetROI(cv::Point2f *imagePoints, int pointsCount, double scaleFactor, cv::Size frameSize, cv::Rect previous) {
         cv::Rect boundingRect = cv::boundingRect(std::vector<cv::Point2f>(imagePoints, imagePoints + pointsCount));
+        boundingRect.x += previous.x;
+        boundingRect.y += previous.y;
         if (scaleFactor > 1) {
             cv::Size scale((int) ((double) boundingRect.width * scaleFactor / 2.0),
                            (int) ((double) boundingRect.height * scaleFactor / 2.0));
 
-            boundingRect.x -= scale.width - previous.x;
-            boundingRect.y -= scale.height - previous.y;
+            boundingRect.x -= scale.width;
+            boundingRect.y -= scale.height;
             boundingRect.width += scale.width * 2;
             boundingRect.height += scale.width * 2;
-        }
-        if (boundingRect.x + boundingRect.width > frameSize.width) {
-            boundingRect.width = frameSize.width - boundingRect.x - 1;
-        }
-        if (boundingRect.y + boundingRect.height > frameSize.height) {
-            boundingRect.height = frameSize.height - boundingRect.y - 1;
         }
         if (boundingRect.x < 0) {
             boundingRect.x = 0;
         }
         if (boundingRect.y < 0) {
             boundingRect.y = 0;
+        }
+        if (boundingRect.x + boundingRect.width >= frameSize.width) {
+            boundingRect.width = frameSize.width - boundingRect.x - 1;
+        }
+        if (boundingRect.y + boundingRect.height >= frameSize.height) {
+            boundingRect.height = frameSize.height - boundingRect.y - 1;
         }
 
         if (boundingRect.width < 0 || boundingRect.height < 0) {

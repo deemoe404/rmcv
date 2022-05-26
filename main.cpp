@@ -3,6 +3,8 @@
 #include "rmcv/rmcv.h"
 #include "openvino/openvino.hpp"
 
+const int id = 3;
+
 struct Request {
     rm::CampType OwnCamp;
     rm::AimMode Mode;
@@ -104,20 +106,11 @@ DecodeInfer(const ov::Tensor &boxTensor, const ov::Tensor &scoreTensor, float th
 }
 
 int main(int argc, char *argv[]) {
-    ov::Core core;
-    ov::Shape input_shape = {1, 3, 270, 320};
-    std::shared_ptr<ov::Model> model = core.read_model("picodet5_12b.xml");
-    ov::CompiledModel compiled_model = core.compile_model(model, "CPU");
-    ov::InferRequest infer_request = compiled_model.create_infer_request();
-    auto input_port = compiled_model.input();
-
-    rm::SerialPort serialPort;
-    rm::ParallelQueue<Response> message;
-    Request request{rm::CAMP_RED, rm::AIM_COMBAT, 0, 0};
-
-    bool serialStatus = serialPort.Initialize("/dev/ttyUSB0", B460800);
+    Request request{rm::CAMP_BLUE, rm::AIM_COMBAT, 0, 0};
 
     // Info receiving thread
+    rm::SerialPort serialPort;
+    bool serialStatus = serialPort.Initialize("/dev/ttyUSB0", B460800);
     thread readThread([&]() {
         unsigned char readBuff[256];
         while (serialStatus) {
@@ -129,6 +122,7 @@ int main(int argc, char *argv[]) {
     });
 
     // result feedback thread
+    rm::ParallelQueue<Response> message;
     thread sendThread([&]() {
         shared_ptr<Response> msg;
         unsigned char sendBuff[256];
@@ -140,124 +134,200 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    // main detect thread
-    thread detectionThread([&]() {
-        cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3)
-                << 2893.316432895769, 0, 626.9759935670470, 0, 2932.394705738403, 523.2422551706520, 0, 0, 1);
-        cv::Mat distCoeffs = (cv::Mat_<double>(1, 5)
-                << -0.105453316958137, 0.369031456681063, 0.031896852060857, 0.002879995131883, -0.569188001455716);
+    if (id == 3) {
+        // main detect thread
+        thread detectionThread([&]() {
+            cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3)
+                    << 2893.316432895769, 0, 626.9759935670470, 0, 2932.394705738403, 523.2422551706520, 0, 0, 1);
+            cv::Mat distCoeffs = (cv::Mat_<double>(1, 5)
+                    << -0.105453316958137, 0.369031456681063, 0.031896852060857, 0.002879995131883, -0.569188001455716);
 
-        rm::ShootFactor result;
-        cv::Mat subImage, mainCam, sideCam, binary, tvecs, rvecs;
-        cv::Rect ROI;
-        std::vector<rm::Contour> contours;
-        std::vector<rm::LightBlob> lightBlobs(32);
-        std::vector<rm::Armour> armours(16);
+            rm::ShootFactor result;
+            cv::Mat subImage, image, binary, tvecs, rvecs;
+            cv::Rect ROI;
+            std::vector<rm::Contour> contours;
+            std::vector<rm::LightBlob> lightBlobs(32);
+            std::vector<rm::Armour> armours(16);
 
-        rm::DahengCamera camera0, camera1;
-        bool camStatus0 = camera0.dahengCameraInit((char *) "KE0210010004", true, (int) (1.0 / 210.0 * 1000000), 1.0);
-        bool camStatus1 = camera1.dahengCameraInit((char *) "KE0210010029", true, (int) (800), 0.0);
-        while (true) {
-            // snipe mode
-            if (request.Mode == rm::AIM_SNIPE && camStatus1) {
-                sideCam = camera1.getFrame(false);
-                if (sideCam.empty()) continue;
-                if (ROI.width != 0 && ROI.height != 0) {
-                    subImage = sideCam(ROI);
-                } else {
-                    subImage = sideCam;
-                }
+            rm::DahengCamera camera;
+            bool status = camera.dahengCameraInit((char *) "FDK22050002", true, (int) (1.0 / 436.0 * 1000000), 0.0);
+            while (status) {
+                if (request.Mode == rm::AIM_COMBAT && status) {
+                    image = camera.getFrame();
+                    if (image.empty()) continue;
+                    if (ROI.width != 0 && ROI.height != 0) {
+                        subImage = image(ROI);
+                    } else {
+                        subImage = image;
+                    }
 
-                rm::ExtractColor(subImage, binary, rm::CAMP_GUIDELIGHT, 64);
-                cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-                rm::FindLightBlobs(contours, lightBlobs, 1, 1.5, 360, 16, 2560, sideCam, true);
-                if (!lightBlobs.empty()) {
-                    for (auto &lightBlob: lightBlobs) {
-                        if (lightBlob.camp == rm::CAMP_GUIDELIGHT) {
-                            rm::SolvePNP(lightBlob.vertices, cameraMatrix, distCoeffs, {5.43, 5.43}, tvecs, rvecs, ROI);
-                            rm::SolveShootFactor(tvecs, result, -0, 0, 0, {0, 0}, -0, rm::COMPENSATE_NONE);
-                            std::cout << result.yawAngle << "  " << result.pitchAngle << "  "
-                                      << rm::SolveDistance(tvecs) << "  " << tvecs.at<double>(2) << std::endl;
+                    rm::ExtractColor(subImage, binary, request.OwnCamp, 40, false, {5, 5});
+                    cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+                    rm::FindLightBlobs(contours, lightBlobs, 2, 10, 25, 80, 1500, subImage, true);
+                    rm::FindArmour(lightBlobs, armours, 8, 24, 0.15, 0.45, 0.65, request.OwnCamp,
+                                   cv::Size2f{(float) subImage.cols, (float) subImage.rows});
+                    if (armours.empty()) {
+                        ROI = cv::Rect(0, 0, 0, 0);
+                    } else {
+                        for (auto &armour: armours) {
+                            rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs, ROI);
+                            double h = rm::SolveDeltaHeight(tvecs, request.GimbalPitch, {0, 0}, 0);
+                            rm::SolveShootFactor(tvecs, result, -9.8, request.FireRate, h - 0, {0, 0},
+                                                 rm::COMPENSATE_CLASSIC);
+
+                            std::cout << "pitch: " << result.pitchAngle << "  yaw: " << result.yawAngle << "  distance:"
+                                      << rm::SolveDistance(tvecs) << std::endl;
+                            ROI = rm::GetROI(armour.icon, 4, 1.15, {image.cols, image.rows}, ROI);
+                            message.push({result.pitchAngle, result.yawAngle, 0});
                             break;
                         }
                     }
+
                     rm::debug::DrawLightBlobs(lightBlobs, subImage, -1);
+                    rm::debug::DrawArmours(armours, subImage, -1);
+                    cv::imshow("frame", image);
+                    cv::imshow("binary", binary);
+                    cv::waitKey(1);
                 }
-
-                cv::imshow("frame", subImage);
-                cv::imshow("binary", binary);
-                cv::waitKey(1);
             }
+        });
+        detectionThread.join();
+    }
 
-            // combat mode
-            if (request.Mode == rm::AIM_COMBAT && camStatus0) {
-                mainCam = camera0.getFrame(true, true);
-                if (mainCam.empty()) continue;
+    if (id == 1) {
+        ov::Core core;
+        ov::Shape input_shape = {1, 3, 270, 320};
+        std::shared_ptr<ov::Model> model = core.read_model("picodet5_12b.xml");
+        ov::CompiledModel compiled_model = core.compile_model(model, "CPU");
+        ov::InferRequest infer_request = compiled_model.create_infer_request();
+        auto input_port = compiled_model.input();
 
-                if (1) {//ROI.width == 0 && ROI.height == 0
-                    auto blob = cv::dnn::blobFromImage(mainCam, 1.0 / 255.0, {320, 270}, true, false, CV_32F);
-                    infer_request.set_input_tensor({input_port.get_element_type(), input_shape, (float *) blob.data});
-                    infer_request.infer();
+        // main detect thread
+        thread detectionThread([&]() {
+            cv::Mat cameraMatrix = (cv::Mat_<double>(3, 3)
+                    << 2893.316432895769, 0, 626.9759935670470, 0, 2932.394705738403, 523.2422551706520, 0, 0, 1);
+            cv::Mat distCoeffs = (cv::Mat_<double>(1, 5)
+                    << -0.105453316958137, 0.369031456681063, 0.031896852060857, 0.002879995131883, -0.569188001455716);
 
-                    auto boxes = DecodeInfer(infer_request.get_output_tensor(0), infer_request.get_output_tensor(1),
-                                             0.5f, (float) mainCam.cols / 320.0f, (float) mainCam.rows / 320.0f, 4);
-                    if (!boxes.empty()) {
-                        std::sort(boxes.begin(), boxes.end(), [&](RecognizeBox box0, RecognizeBox box1) {
-                            return rm::PointDistance(rm::LineCenter(box0.vertices[0], box0.vertices[1]),
-                                                     {(float) mainCam.cols / 2.0f, (float) mainCam.rows / 2.0f}) <
-                                   rm::PointDistance(rm::LineCenter(box1.vertices[0], box1.vertices[1]),
-                                                     {(float) mainCam.cols / 2.0f, (float) mainCam.rows / 2.0f});
-                        });
-                        for (auto &box: boxes) {
-                            // cv::rectangle(mainCam, cv::Rect(box.vertices[0], box.vertices[1]), Scalar(0, 255, 0));
-                            if (box.score > 0.5) {
-                                ROI = rm::GetROI(box.vertices, 2, 1.5,
-                                                 {(int) camera0.SensorWidth, (int) camera0.SensorHeight});;
+            rm::ShootFactor result;
+            cv::Mat subImage, mainCam, sideCam, binary, tvecs, rvecs;
+            cv::Rect ROI;
+            std::vector<rm::Contour> contours;
+            std::vector<rm::LightBlob> lightBlobs(32);
+            std::vector<rm::Armour> armours(16);
+
+            rm::DahengCamera camera0, camera1;
+            bool camStatus0 = camera0.dahengCameraInit((char *) "FDK22050002", true, (int) (1.0 / 436.0 * 1000000),
+                                                       1.0);
+            bool camStatus1 = camera1.dahengCameraInit((char *) "KE0210010029", true, (int) (800), 0.0);
+            while (true) {
+                // snipe mode
+                if (request.Mode == rm::AIM_SNIPE && camStatus1) {
+                    sideCam = camera1.getFrame(false);
+                    if (sideCam.empty()) continue;
+                    if (ROI.width != 0 && ROI.height != 0) {
+                        subImage = sideCam(ROI);
+                    } else {
+                        subImage = sideCam;
+                    }
+
+                    rm::ExtractColor(subImage, binary, rm::CAMP_GUIDELIGHT, 64);
+                    cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+                    rm::FindLightBlobs(contours, lightBlobs, 1, 1.5, 360, 16, 2560, sideCam, true);
+                    if (!lightBlobs.empty()) {
+                        for (auto &lightBlob: lightBlobs) {
+                            if (lightBlob.camp == rm::CAMP_GUIDELIGHT) {
+                                rm::SolvePNP(lightBlob.vertices, cameraMatrix, distCoeffs, {5.43, 5.43}, tvecs, rvecs,
+                                             ROI);
+                                rm::SolveShootFactor(tvecs, result, -0, 0, 0, {0, 0}, -0, rm::COMPENSATE_NONE);
+                                std::cout << result.yawAngle << "  " << result.pitchAngle << "  "
+                                          << rm::SolveDistance(tvecs) << "  " << tvecs.at<double>(2) << std::endl;
                                 break;
                             }
                         }
-                    } else {
-//                        continue;
+                        rm::debug::DrawLightBlobs(lightBlobs, subImage, -1);
                     }
+
+                    cv::imshow("frame", subImage);
+                    cv::imshow("binary", binary);
+                    cv::waitKey(1);
                 }
 
-//                subImage = mainCam(ROI);
-//                rm::ExtractColor(subImage, binary, request.OwnCamp, 40, true, {5, 5});
-//                cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-//                rm::FindLightBlobs(contours, lightBlobs, 2, 10, 25, 80, 1500, subImage, true);
-//                rm::FindArmour(lightBlobs, armours, 8, 24, 0.15, 0.45, 0.65, request.OwnCamp,
-//                               cv::Size2f{(float) subImage.cols, (float) subImage.rows});
-//                if (armours.empty()) {
-//                    ROI = cv::Rect(0, 0, 0, 0);
-//                } else {
-//                    for (auto &armour: armours) {
-//                        rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs, ROI);
-//                        if (rm::SolveDistance(tvecs) < 900) {
-//                            double h = rm::SolveDeltaHeight(tvecs, request.GimbalPitch, {0, 0}, 0);
-//                            rm::SolveShootFactor(tvecs, result, -9.8, request.FireRate, h - 0, {0, 0},
-//                                                 rm::COMPENSATE_CLASSIC);
+                // combat mode
+                if (request.Mode == rm::AIM_COMBAT && camStatus0) {
+                    mainCam = camera0.getFrame(false, false);
+                    if (mainCam.empty()) continue;
+                    if (ROI.width != 0 && ROI.height != 0) {
+                        subImage = mainCam(ROI);
+                    } else {
+                        subImage = mainCam;
+                    }
+
+//                if (1) {//ROI.width == 0 && ROI.height == 0
+//                    auto blob = cv::dnn::blobFromImage(mainCam, 1.0 / 255.0, {320, 270}, true, false, CV_32F);
+//                    infer_request.set_input_tensor({input_port.get_element_type(), input_shape, (float *) blob.data});
+//                    infer_request.infer();
 //
-//                            std::cout << "pitch: " << result.pitchAngle << "  yaw: " << result.yawAngle << "  distance:"
-//                                      << rm::SolveDistance(tvecs) << std::endl;
-//                            ROI = rm::GetROI(armour.icon, 4, 1.5, {mainCam.cols, mainCam.rows}, ROI);
-//                            message.push({result.pitchAngle, result.yawAngle, 0});
-//
-//                            rm::debug::DrawLightBlobs(lightBlobs, subImage, -1);
-//                            rm::debug::DrawArmours(armours, subImage, -1);
-//                            break;
+//                    auto boxes = DecodeInfer(infer_request.get_output_tensor(0), infer_request.get_output_tensor(1),
+//                                             0.5f, (float) mainCam.cols / 320.0f, (float) mainCam.rows / 320.0f, 4);
+//                    if (!boxes.empty()) {
+//                        std::sort(boxes.begin(), boxes.end(), [&](RecognizeBox box0, RecognizeBox box1) {
+//                            return rm::PointDistance(rm::LineCenter(box0.vertices[0], box0.vertices[1]),
+//                                                     {(float) mainCam.cols / 2.0f, (float) mainCam.rows / 2.0f}) <
+//                                   rm::PointDistance(rm::LineCenter(box1.vertices[0], box1.vertices[1]),
+//                                                     {(float) mainCam.cols / 2.0f, (float) mainCam.rows / 2.0f});
+//                        });
+//                        for (auto &box: boxes) {
+//                            // cv::rectangle(mainCam, cv::Rect(box.vertices[0], box.vertices[1]), Scalar(0, 255, 0));
+//                            if (box.score > 0.5) {
+//                                ROI = rm::GetROI(box.vertices, 2, 1.5,
+//                                                 {(int) camera0.SensorWidth, (int) camera0.SensorHeight});;
+//                                break;
+//                            }
 //                        }
+//                    } else {
+//                        continue;
 //                    }
 //                }
 
-                cv::imshow("frame", mainCam);
-//                cv::imshow("binary", binary);
-                cv::waitKey(1);
+                    rm::ExtractColor(subImage, binary, request.OwnCamp, 40, true, {5, 5});
+                    cv::findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+                    rm::FindLightBlobs(contours, lightBlobs, 2, 10, 25, 80, 1500, subImage, true);
+                    rm::FindArmour(lightBlobs, armours, 8, 24, 0.15, 0.45, 0.65, request.OwnCamp,
+                                   cv::Size2f{(float) subImage.cols, (float) subImage.rows});
+                    if (armours.empty()) {
+                        ROI = cv::Rect(0, 0, 0, 0);
+                    } else {
+                        for (auto &armour: armours) {
+                            rm::SolvePNP(armour.vertices, cameraMatrix, distCoeffs, {5.5, 5.5}, tvecs, rvecs, ROI);
+                            if (rm::SolveDistance(tvecs) < 900) {
+                                double h = rm::SolveDeltaHeight(tvecs, request.GimbalPitch, {0, 0}, 0);
+                                rm::SolveShootFactor(tvecs, result, -9.8, request.FireRate, h - 0, {0, 0},
+                                                     rm::COMPENSATE_CLASSIC);
+
+                                std::cout << "pitch: " << result.pitchAngle << "  yaw: " << result.yawAngle
+                                          << "  distance:" << rm::SolveDistance(tvecs) << std::endl;
+                                ROI = rm::GetROI(armour.icon, 4, 1.5, {mainCam.cols, mainCam.rows}, ROI);
+                                message.push({result.pitchAngle, result.yawAngle, 0});
+
+                                rm::debug::DrawLightBlobs(lightBlobs, subImage, -1);
+                                rm::debug::DrawArmours(armours, subImage, -1);
+                                break;
+                            }
+                        }
+                    }
+
+                    cv::imshow("frame", mainCam);
+                    cv::imshow("binary", binary);
+                    cv::waitKey(1);
+                }
             }
-        }
-    });
+        });
+
+    }
 
     readThread.join();
     sendThread.join();
-    detectionThread.join();
+
     return 0;
 }

@@ -55,10 +55,10 @@ namespace rm {
 
     class Package {
     public:
-        rm::CampType camp = rm::CAMP_RED;  // Self camp
-        rm::AimMode mode = rm::AIM_COMBAT; // Aim mode
-        unsigned char speed = 0;           // Bullet speed
-        float pitch = 0;                   // Pitch angle
+        rm::CampType camp = rm::CAMP_NEUTRAL;  // Self camp
+        rm::AimMode mode = rm::AIM_COMBAT;     // Aim mode
+        unsigned char speed = 0;               // Bullet speed
+        float pitch = 0;                       // Pitch angle
         cv::Mat frame;
         cv::Mat binary;
         std::vector<rm::Armour> armours;

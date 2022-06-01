@@ -87,7 +87,7 @@ namespace rm {
     /// \param filter      Exclude one if two armours sharing a same light blob, exclude the armour witch minimum height
     ///                    along two light blobs is smaller.
     void FindArmour(std::vector<rm::LightBlob> &lightBlobs, std::vector<rm::Armour> &armours, float maxAngleDif,
-                    float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
+                    float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType enemy,
                     cv::Point2f attention = {-1.0, -1.0}, bool filter = true);
 
     /// Calculate the shoot factor using Newton Iteration.

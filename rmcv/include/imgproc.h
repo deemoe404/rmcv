@@ -5,7 +5,7 @@
 #ifndef RM_STANDARD2022_IMGPROC_H
 #define RM_STANDARD2022_IMGPROC_H
 
-#include "rmcv/core/core.h"
+#include "include/core/core.h"
 
 namespace rm {
     /// Calibrate a portion of the source frame to the destine rect.
@@ -30,7 +30,7 @@ namespace rm {
     ///                    light blobs.
     /// \param lowerBound Lower bound when performing binarization.
     /// \param kernelSize Kernel size when performing dilate.
-    void ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType ownCamp, int lowerBound,
+    void ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType enemy, int lowerBound,
                       bool overExposed = false, cv::Size kernelSize = {0, 0});
 
     /// Auto enhance image by the given benchmarks.

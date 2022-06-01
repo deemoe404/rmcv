@@ -2,7 +2,7 @@
 // Created by yaione on 3/5/22.
 //
 
-#include "rmcv/objdetect.h"
+#include "include/objdetect.h"
 
 namespace rm {
     bool MatchLightBlob(const std::vector<cv::Point> &contour, float minRatio, float maxRatio, float tiltAngle,
@@ -80,7 +80,7 @@ namespace rm {
     }
 
     void FindArmour(std::vector<rm::LightBlob> &lightBlobs, std::vector<rm::Armour> &armours, float maxAngleDif,
-                    float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType ownCamp,
+                    float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType enemy,
                     cv::Point2f attention, bool filter) {
         armours.clear();
         if (lightBlobs.size() < 2) return;
@@ -96,9 +96,10 @@ namespace rm {
         bool rank = !(attention.x == -1.0 && attention.y == -1.0);
 
         for (int i = 0; i < lightBlobs.size() - 1; i++) {
-            if (lightBlobs[i].camp == ownCamp) continue;
+            if (lightBlobs[i].camp != enemy) continue;
             for (int j = i + 1; j < lightBlobs.size(); j++) {
-                if (lightBlobs[j].camp == ownCamp || rm::LightBlobOverlap(lightBlobs, i, j)) continue;
+                if (lightBlobs[j].camp != enemy || rm::LightBlobOverlap(lightBlobs, i, j))
+                    continue;
 
                 // Poor angle between two light blob
                 float angleDif = abs(lightBlobs[i].angle - lightBlobs[j].angle);

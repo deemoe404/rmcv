@@ -15,8 +15,12 @@ namespace rm {
         RECT_TALL = 0, RECT_SIDE = 1
     };
 
-    cv::Rect GetROI(cv::Point2f *imagePoints, int pointsCount, double scaleFactor = 1, cv::Size frameSize = {-1, -1},
+    cv::Rect GetROI(cv::Point2f *imagePoints, int pointsCount, float scaleFactor = 1.0f, cv::Size frameSize = {-1, -1},
                     cv::Rect previous = {0, 0, 0, 0});
+
+    cv::Rect
+    GetROI(cv::Point2f *imagePoints, int pointsCount, cv::Size2f scaleFactor = {1, 1}, cv::Size frameSize = {-1, -1},
+           cv::Rect previous = {0, 0, 0, 0});
 
     /// Reorder vertices of a rectangle to match the point order in left down, left up, right up, right down.
     /// \param input The original rectangle.
@@ -92,8 +96,6 @@ namespace rm {
     std::string PathCombine(const std::string &path1, const std::string &path2);
 
     std::string int2str(int number);
-
-
 
     /// Solve the rotation and the translation vectors that transform a 3D point expressed in the object coordinate
     /// frame to the camera coordinate frame, using cv::SOLVEPNP_IPPE_SQUARE.

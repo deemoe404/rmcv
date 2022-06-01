@@ -2,7 +2,7 @@
 // Created by yaione on 3/17/22.
 //
 
-#include "rmcv/debug.h"
+#include "include/debug.h"
 
 namespace rm::debug {
     void DrawArmours(const std::vector<rm::Armour> &input, cv::Mat &output, int index) {

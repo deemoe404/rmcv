@@ -2,7 +2,7 @@
 // Created by yaione on 2/26/2022.
 //
 
-#include "rmcv/imgproc.h"
+#include "include/imgproc.h"
 
 namespace rm {
     void CalcRatio(cv::Mat &source, cv::Mat &calibration, cv::Point2f vertices[4], cv::Size outSize) {
@@ -43,15 +43,15 @@ namespace rm {
     }
 
     void
-    ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType ownCamp, int lowerBound, bool overExposed,
+    ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType enemy, int lowerBound, bool overExposed,
                  cv::Size kernelSize) {
         if (overExposed) {
-            if (ownCamp == rm::CAMP_GUIDELIGHT) {
+            if (enemy == rm::CAMP_GUIDELIGHT) {
                 cv::inRange(image, cv::Scalar{(double) lowerBound, 250, (double) lowerBound}, cv::Scalar{255, 255, 255},
                             binary);
             } else {
-                cv::inRange(image, ownCamp == rm::CAMP_RED ? cv::Scalar{250, (double) lowerBound, (double) lowerBound}
-                                                           : cv::Scalar{(double) lowerBound, (double) lowerBound, 250},
+                cv::inRange(image, enemy == rm::CAMP_BLUE ? cv::Scalar{250, (double) lowerBound, (double) lowerBound}
+                                                          : cv::Scalar{(double) lowerBound, (double) lowerBound, 250},
                             cv::Scalar{255, 255, 255}, binary);
             }
         } else {
@@ -59,11 +59,11 @@ namespace rm {
             cv::split(image, channels);
 
             // extract color
-            if (ownCamp == rm::CAMP_GUIDELIGHT) {
+            if (enemy == rm::CAMP_GUIDELIGHT) {
                 auto gray = channels[1] - channels[2];
                 cv::inRange(gray, lowerBound, 255, binary);
             } else {
-                auto gray = channels[ownCamp == rm::CAMP_RED ? 0 : 2] - channels[ownCamp == rm::CAMP_RED ? 2 : 0];
+                auto gray = channels[enemy == rm::CAMP_BLUE ? 0 : 2] - channels[enemy == rm::CAMP_BLUE ? 2 : 0];
                 cv::inRange(gray, lowerBound, 255, binary);
             }
         }

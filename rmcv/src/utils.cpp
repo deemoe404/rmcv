@@ -2,17 +2,22 @@
 // Created by yaione on 3/3/2022.
 //
 
-#include "rmcv/core/utils.h"
+#include "include/core/utils.h"
 
 namespace rm {
     cv::Rect
-    GetROI(cv::Point2f *imagePoints, int pointsCount, double scaleFactor, cv::Size frameSize, cv::Rect previous) {
+    GetROI(cv::Point2f *imagePoints, int pointsCount, float scaleFactor, cv::Size frameSize, cv::Rect previous) {
+        return rm::GetROI(imagePoints, pointsCount, {scaleFactor, scaleFactor}, frameSize, previous);
+    }
+
+    cv::Rect
+    GetROI(cv::Point2f *imagePoints, int pointsCount, cv::Size2f scaleFactor, cv::Size frameSize, cv::Rect previous) {
         cv::Rect boundingRect = cv::boundingRect(std::vector<cv::Point2f>(imagePoints, imagePoints + pointsCount));
         boundingRect.x += previous.x;
         boundingRect.y += previous.y;
-        if (scaleFactor > 1) {
-            cv::Size scale((int) ((double) boundingRect.width * scaleFactor / 2.0),
-                           (int) ((double) boundingRect.height * scaleFactor / 2.0));
+        if (scaleFactor.width != 1.0f || scaleFactor.height != 1.0f) {
+            cv::Size scale((int) ((double) boundingRect.width * scaleFactor.width / 2.0),
+                           (int) ((double) boundingRect.height * scaleFactor.height / 2.0));
 
             boundingRect.x -= scale.width;
             boundingRect.y -= scale.height;

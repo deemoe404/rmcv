@@ -2,7 +2,7 @@
 // Created by yaione on 2/26/2022.
 //
 
-#include "rmcv/core/core.h"
+#include "include/core/core.h"
 
 namespace rm {
     LightBlob::LightBlob(cv::RotatedRect box, rm::CampType camp) : angle(

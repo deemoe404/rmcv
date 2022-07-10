@@ -5,13 +5,56 @@
 #include "include/core/utils.h"
 
 namespace rm {
-    cv::Rect
-    GetROI(cv::Point2f *imagePoints, int pointsCount, float scaleFactor, cv::Size frameSize, cv::Rect previous) {
+    rm::FileType GetFileType(const char *filename) {
+        struct stat buffer{};
+        if (stat(filename, &buffer) == 0) {
+            if (S_ISREG(buffer.st_mode))
+                return rm::FILETYPE_REGULAR_FILE;
+
+            if (S_ISDIR(buffer.st_mode))
+                return rm::FILETYPE_DIRECTORY;
+
+            if (S_ISLNK(buffer.st_mode))
+                return rm::FILETYPE_SYMBOLIC_LINK;
+
+            if (S_ISSOCK(buffer.st_mode))
+                return rm::FILETYPE_SOCKET;
+        }
+
+        return rm::FILETYPE_UNKNOWN;
+    }
+
+    bool ListFiles(const char *path, std::vector<std::string> &filenames) { // NOLINT(misc-no-recursion)
+        DIR *pDir;
+        struct dirent *ptr;
+        if (!(pDir = opendir(path))) {
+            return false;
+        }
+
+        std::filesystem::path fullPath;
+        while ((ptr = readdir(pDir)) != nullptr) {
+            fullPath = path;
+            if (strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0) {
+                fullPath /= ptr->d_name;
+                if (GetFileType(fullPath.string().c_str()) == rm::FILETYPE_DIRECTORY) {
+                    rm::ListFiles(fullPath.string().c_str(), filenames);
+                } else {
+                    filenames.push_back(fullPath.string());
+                }
+            }
+        }
+
+        closedir(pDir);
+        return true;
+    }
+
+    cv::Rect GetROI(cv::Point2f *imagePoints, int pointsCount, float scaleFactor, const cv::Size &frameSize,
+                    const cv::Rect &previous) {
         return rm::GetROI(imagePoints, pointsCount, {scaleFactor, scaleFactor}, frameSize, previous);
     }
 
-    cv::Rect
-    GetROI(cv::Point2f *imagePoints, int pointsCount, cv::Size2f scaleFactor, cv::Size frameSize, cv::Rect previous) {
+    cv::Rect GetROI(cv::Point2f *imagePoints, int pointsCount, const cv::Size2f &scaleFactor, const cv::Size &frameSize,
+                    const cv::Rect &previous) {
         cv::Rect boundingRect = cv::boundingRect(std::vector<cv::Point2f>(imagePoints, imagePoints + pointsCount));
         boundingRect.x += previous.x;
         boundingRect.y += previous.y;
@@ -49,7 +92,7 @@ namespace rm {
         input.points(temp);
 
         // sort vertices ascending by y
-        std::sort(temp, temp + 4, [](cv::Point2f point1, cv::Point2f point2) {
+        std::sort(temp, temp + 4, [](const cv::Point2f &point1, const cv::Point2f &point2) {
             return point1.y < point2.y;
         });
 
@@ -124,15 +167,16 @@ namespace rm {
         return NAN;
     }
 
-    float PointDistance(cv::Point2f pt1, cv::Point2f pt2) {
+    float PointDistance(const cv::Point2f &pt1, const cv::Point2f &pt2) {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
     }
 
-    float PointDistance(cv::Point2i pt1, cv::Point2i pt2) {
+    float PointDistance(const cv::Point2i &pt1, const cv::Point2i &pt2) {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
     }
 
-    void ExtendCord(cv::Point2f pt1, cv::Point2f pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2) {
+    void
+    ExtendCord(const cv::Point2f &pt1, const cv::Point2f &pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2) {
         // Special case
         if (pt1.x == pt2.x) {
             dst1.x = pt1.x;
@@ -211,8 +255,9 @@ namespace rm {
     }
 
 
-    void SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, cv::Size2f exactSize,
-                  cv::Mat &translationVector, cv::Mat &rotationVector, cv::Rect ROI) {
+    void
+    SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, const cv::Size2f &exactSize,
+             cv::Mat &translationVector, cv::Mat &rotationVector, const cv::Rect &ROI) {
         cv::Point2f offset((float) ROI.x, (float) ROI.y);
 
         rotationVector = cv::Mat::zeros(3, 1, CV_64FC1);
@@ -231,7 +276,8 @@ namespace rm {
                      cv::SOLVEPNP_IPPE_SQUARE);
     }
 
-    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset, double angleOffset) {
+    double
+    SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, const cv::Point2f &offset, double angleOffset) {
         double h = translationVector.ptr<double>(0)[1] - offset.y;
         double d = translationVector.ptr<double>(0)[2];
 
@@ -287,7 +333,7 @@ namespace rm {
         output[3].y = center.y - size.height / 2;
     }
 
-    cv::Point2f LineCenter(cv::Point2f pt1, cv::Point2f pt2) {
+    cv::Point2f LineCenter(const cv::Point2f &pt1, const cv::Point2f &pt2) {
         return {pt1.x / 2 + pt2.x / 2, pt1.y / 2 + pt2.y / 2};
     }
 

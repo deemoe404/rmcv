@@ -7,7 +7,12 @@
 
 #include <cmath>
 #include <vector>
-#include "filesystem"
+#include <string>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <filesystem>
+#include <sys/io.h>
+#include <cstring>
 #include "opencv2/opencv.hpp"
 
 namespace rm {
@@ -15,12 +20,24 @@ namespace rm {
         RECT_TALL = 0, RECT_SIDE = 1
     };
 
-    cv::Rect GetROI(cv::Point2f *imagePoints, int pointsCount, float scaleFactor = 1.0f, cv::Size frameSize = {-1, -1},
-                    cv::Rect previous = {0, 0, 0, 0});
+    enum FileType {
+        FILETYPE_REGULAR_FILE = 0,
+        FILETYPE_DIRECTORY = 1,
+        FILETYPE_SYMBOLIC_LINK = 2,
+        FILETYPE_SOCKET = 3,
+        FILETYPE_UNKNOWN = -1
+    };
+
+    rm::FileType GetFileType(const char *filename);
+
+    bool ListFiles(const char *path, std::vector<std::string> &filenames);
 
     cv::Rect
-    GetROI(cv::Point2f *imagePoints, int pointsCount, cv::Size2f scaleFactor = {1, 1}, cv::Size frameSize = {-1, -1},
-           cv::Rect previous = {0, 0, 0, 0});
+    GetROI(cv::Point2f *imagePoints, int pointsCount, float scaleFactor = 1.0f, const cv::Size &frameSize = {-1, -1},
+           const cv::Rect &previous = {0, 0, 0, 0});
+
+    cv::Rect GetROI(cv::Point2f *imagePoints, int pointsCount, const cv::Size2f &scaleFactor = {1, 1},
+                    const cv::Size &frameSize = {-1, -1}, const cv::Rect &previous = {0, 0, 0, 0});
 
     /// Reorder vertices of a rectangle to match the point order in left down, left up, right up, right down.
     /// \param input The original rectangle.
@@ -71,19 +88,19 @@ namespace rm {
     /// \param pt1 First point.
     /// \param pt2 Second point.
     /// \return Distance.
-    float PointDistance(cv::Point2f pt1, cv::Point2f pt2);
+    float PointDistance(const cv::Point2f &pt1, const cv::Point2f &pt2);
 
     /// Return the distance between two given points.
     /// \param pt1 First point.
     /// \param pt2 Second point.
     /// \return Distance.
-    float PointDistance(cv::Point2i pt1, cv::Point2i pt2);
+    float PointDistance(const cv::Point2i &pt1, const cv::Point2i &pt2);
 
     /// Return the midpoint between two given points.
     /// \param pt1 First point.
     /// \param pt2 Second point.
     /// \return Midpoint.
-    cv::Point2f LineCenter(cv::Point2f pt1, cv::Point2f pt2);
+    cv::Point2f LineCenter(const cv::Point2f &pt1, const cv::Point2f &pt2);
 
     /// Expand the cord by the given length while center of the cord remain still.
     /// \param pt1 First point of the cord.
@@ -91,7 +108,8 @@ namespace rm {
     /// \param deltaLen The length to be expanded.
     /// \param dst1 The first point after expanding.
     /// \param dst2 The second point after expanding.
-    void ExtendCord(cv::Point2f pt1, cv::Point2f pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2);
+    void
+    ExtendCord(const cv::Point2f &pt1, const cv::Point2f &pt2, float deltaLen, cv::Point2f &dst1, cv::Point2f &dst2);
 
     std::string PathCombine(const std::string &path1, const std::string &path2);
 
@@ -105,8 +123,9 @@ namespace rm {
     /// \param exactSize Exact size of the coordinate object (cm).
     /// \param translationVector Output translation vector.
     /// \param rotationVector Output rotation vector.
-    void SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, cv::Size2f exactSize,
-                  cv::Mat &translationVector, cv::Mat &rotationVector, cv::Rect ROI = {0, 0, 0, 0});
+    void
+    SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, const cv::Size2f &exactSize,
+             cv::Mat &translationVector, cv::Mat &rotationVector, const cv::Rect &ROI = {0, 0, 0, 0});
 
     /// Solve height difference between barrel and target using the translation vector of target and the motor angle of
     /// gimbal.
@@ -114,7 +133,7 @@ namespace rm {
     /// \param motorAngle The motor angle of gimbal, positive upwards (radians).
     /// \param offset Offset between camera and barrel (cm).
     /// \return Height difference between barrel and target (cm).
-    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, cv::Point2f offset = {0, 0},
+    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, const cv::Point2f &offset = {0, 0},
                             double angleOffset = 0);
 
     double SolveDistance(cv::Mat &translationVector);

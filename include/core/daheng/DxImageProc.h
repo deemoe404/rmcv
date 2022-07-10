@@ -293,7 +293,7 @@ VxInt32 DHDECL DxGetWhiteBalanceRatio(void *pInputBuffer, VxUint32 nWidth, VxUin
 \param  pRawImgBuf      [in,out]Raw image buffer
 \param  nWidth        	[in]image width
 \param  nHeight       	[in]image height
-\param  nBitNum         [in]image bit number (for example:if image 10bit, nBitNum = 10, if image 12bit,nBitNum = 12,range:8 ~ 16)
+\param  nBitNum         [in]image bit number (for samples:if image 10bit, nBitNum = 10, if image 12bit,nBitNum = 12,range:8 ~ 16)
 
 \return emStatus  
 */

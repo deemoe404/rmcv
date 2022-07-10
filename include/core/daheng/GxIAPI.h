@@ -1483,7 +1483,7 @@ GX_API GXGetDeviceIPInfo (uint32_t nIndex, GX_DEVICE_IP_INFO *pstDeviceIPInfo);
 //----------------------------------------------------------------------------------
 /**
 \brief      Open the device by index, starting from 1.
-\param      nDeviceIndex          The index of the device starts from 1, for example: 1, 2, 3, 4...
+\param      nDeviceIndex          The index of the device starts from 1, for samples: 1, 2, 3, 4...
 \param      phDevice              Device handle returned by the interface.
 \return     GX_STATUS_SUCCESS             The operation is successful and no error occurs.
             GX_STATUS_NOT_INIT_API        The GXInitLib initialization library is not called.

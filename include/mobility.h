@@ -101,7 +101,8 @@ namespace rm {
     /// \param exactSize         Exact size of the coordinate object (cm).
     /// \param translationVector [OUT] Translation vector.
     /// \param rotationVector    [OUT] Rotation vector.
-    /// \return False if imagePoints.size() is not 4, or there might be errors in Camera-parameters.
+    /// \return False if imagePoints.size() is not 4, or there might be errors in Camera-parameters or Points-given, such
+    ///         as wrong There is no one-to-one correspondence between the points on the image and the actual points.
     [[maybe_unused]] bool
     SolvePNP(const std::vector<cv::Point2f> &imagePoints, cv::InputArray cameraMatrix, cv::InputArray distortionFactor,
              const cv::Size2f &exactSize, cv::OutputArray translationVector, cv::OutputArray rotationVector,

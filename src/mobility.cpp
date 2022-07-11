@@ -158,7 +158,6 @@ namespace rm {
                                                 cv::Point3f(exactSize.width / 2.0f, -exactSize.height / 2.0f, 0),
                                                 cv::Point3f(-exactSize.width / 2.0f, -exactSize.height / 2.0f, 0)};
 
-            // TODO: sort points before doing this!!!
             std::vector<cv::Point2f> coordinate{imagePoints[1] + offset, imagePoints[2] + offset,
                                                 imagePoints[3] + offset, imagePoints[0] + offset};
 

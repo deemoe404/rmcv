@@ -7,6 +7,7 @@
 
 #include "core/core.h"
 
+/// \brief Debug utilities.
 namespace rm::debug {
     void DrawArmours(const std::vector<rm::Armour> &input, cv::Mat &output, int index);
 

@@ -5,8 +5,8 @@
 #ifndef RMCV_DAHENG_H
 #define RMCV_DAHENG_H
 
-#include "GxIAPI.h"
-#include "DxImageProc.h"
+#include "daheng/GxIAPI.h"
+#include "daheng/DxImageProc.h"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <cstdlib>
@@ -192,6 +192,5 @@ namespace rm {
         }
     };
 }
-
 
 #endif //RMCV_DAHENG_H

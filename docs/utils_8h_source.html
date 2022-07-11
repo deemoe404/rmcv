@@ -95,7 +95,7 @@ $(function() {
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="preprocessor">#include &lt;cstring&gt;</span></div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">#include &quot;opencv2/opencv.hpp&quot;</span></div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">namespace </span>rm {</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacerm.html">rm</a> {</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keyword">enum</span> RectType {</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        RECT_TALL = 0, RECT_SIDE = 1</div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    };</div>
@@ -119,28 +119,28 @@ $(function() {
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    cv::Rect GetROI(cv::Point2f *imagePoints, <span class="keywordtype">int</span> pointsCount, <span class="keyword">const</span> cv::Size2f &amp;scaleFactor = {1, 1},</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                    <span class="keyword">const</span> cv::Size &amp;frameSize = {-1, -1}, <span class="keyword">const</span> cv::Rect &amp;previous = {0, 0, 0, 0});</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">void</span> VerticesRectify(cv::RotatedRect &amp;input, cv::Point2f *output, RectType type);</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="namespacerm.html#ab0639309ee171fc9c4831f089318960b">VerticesRectify</a>(cv::RotatedRect &amp;input, cv::Point2f *output, RectType type);</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordtype">void</span> CalcPerspective(cv::Point2f input[4], cv::Point2f output[4], <span class="keywordtype">float</span> outRatio = 1.0f);</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="namespacerm.html#a0774b4f8d4874dceb8c7dee537321dd8">CalcPerspective</a>(cv::Point2f input[4], cv::Point2f output[4], <span class="keywordtype">float</span> outRatio = 1.0f);</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordtype">double</span> NewtonIteration(<span class="keywordtype">double</span> (*fd)(<span class="keywordtype">double</span>), <span class="keywordtype">double</span> x0 = 0, <span class="keywordtype">double</span> error = 0.0001, <span class="keywordtype">int</span> cycle = 1024);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordtype">double</span> <a class="code" href="namespacerm.html#ad8acb39d9ce8a070232a68f565b637a4">NewtonIteration</a>(<span class="keywordtype">double</span> (*fd)(<span class="keywordtype">double</span>), <span class="keywordtype">double</span> x0 = 0, <span class="keywordtype">double</span> error = 0.0001, <span class="keywordtype">int</span> cycle = 1024);</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160; </div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="keywordtype">double</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    NewtonIteration(<span class="keywordtype">double</span> (*fd)(<span class="keywordtype">double</span>, std::vector&lt;double&gt;), <span class="keyword">const</span> std::vector&lt;double&gt; &amp;literals, <span class="keywordtype">double</span> x0 = 0,</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <a class="code" href="namespacerm.html#ad8acb39d9ce8a070232a68f565b637a4">NewtonIteration</a>(<span class="keywordtype">double</span> (*fd)(<span class="keywordtype">double</span>, std::vector&lt;double&gt;), <span class="keyword">const</span> std::vector&lt;double&gt; &amp;literals, <span class="keywordtype">double</span> x0 = 0,</div>
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                    <span class="keywordtype">double</span> error = 0.0001, <span class="keywordtype">int</span> cycle = 1024);</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">double</span> ProjectileMotionFD(<span class="keywordtype">double</span> theta, std::vector&lt;double&gt; literals);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">double</span> <a class="code" href="namespacerm.html#a12f427e03fb8918e48261de91decc593">ProjectileMotionFD</a>(<span class="keywordtype">double</span> theta, std::vector&lt;double&gt; literals);</div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">float</span> PointDistance(<span class="keyword">const</span> cv::Point2f &amp;pt1, <span class="keyword">const</span> cv::Point2f &amp;pt2);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="namespacerm.html#ac70e8490151e65610f51955000846573">PointDistance</a>(<span class="keyword">const</span> cv::Point2f &amp;pt1, <span class="keyword">const</span> cv::Point2f &amp;pt2);</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">float</span> PointDistance(<span class="keyword">const</span> cv::Point2i &amp;pt1, <span class="keyword">const</span> cv::Point2i &amp;pt2);</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">float</span> <a class="code" href="namespacerm.html#ac70e8490151e65610f51955000846573">PointDistance</a>(<span class="keyword">const</span> cv::Point2i &amp;pt1, <span class="keyword">const</span> cv::Point2i &amp;pt2);</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160; </div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    cv::Point2f LineCenter(<span class="keyword">const</span> cv::Point2f &amp;pt1, <span class="keyword">const</span> cv::Point2f &amp;pt2);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    cv::Point2f <a class="code" href="namespacerm.html#abc3a77e3e733ad5a7bb1bc7b719b376b">LineCenter</a>(<span class="keyword">const</span> cv::Point2f &amp;pt1, <span class="keyword">const</span> cv::Point2f &amp;pt2);</div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160; </div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    ExtendCord(<span class="keyword">const</span> cv::Point2f &amp;pt1, <span class="keyword">const</span> cv::Point2f &amp;pt2, <span class="keywordtype">float</span> deltaLen, cv::Point2f &amp;dst1, cv::Point2f &amp;dst2);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <a class="code" href="namespacerm.html#a9378ad2b4599884d92dea2e6c222a375">ExtendCord</a>(<span class="keyword">const</span> cv::Point2f &amp;pt1, <span class="keyword">const</span> cv::Point2f &amp;pt2, <span class="keywordtype">float</span> deltaLen, cv::Point2f &amp;dst1, cv::Point2f &amp;dst2);</div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    std::string PathCombine(<span class="keyword">const</span> std::string &amp;path1, <span class="keyword">const</span> std::string &amp;path2);</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
@@ -149,6 +149,14 @@ $(function() {
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="preprocessor">#endif //RMCV_UTILS_H</span></div>
 </div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespacerm_html_ad8acb39d9ce8a070232a68f565b637a4"><div class="ttname"><a href="namespacerm.html#ad8acb39d9ce8a070232a68f565b637a4">rm::NewtonIteration</a></div><div class="ttdeci">double NewtonIteration(double(*fd)(double), double x0=0, double error=0.0001, int cycle=1024)</div><div class="ttdef"><b>Definition:</b> utils.cpp:108</div></div>
+<div class="ttc" id="anamespacerm_html_ab0639309ee171fc9c4831f089318960b"><div class="ttname"><a href="namespacerm.html#ab0639309ee171fc9c4831f089318960b">rm::VerticesRectify</a></div><div class="ttdeci">void VerticesRectify(cv::RotatedRect &amp;input, cv::Point2f *output, RectType type)</div><div class="ttdef"><b>Definition:</b> utils.cpp:90</div></div>
+<div class="ttc" id="anamespacerm_html_ac70e8490151e65610f51955000846573"><div class="ttname"><a href="namespacerm.html#ac70e8490151e65610f51955000846573">rm::PointDistance</a></div><div class="ttdeci">float PointDistance(const cv::Point2f &amp;pt1, const cv::Point2f &amp;pt2)</div><div class="ttdef"><b>Definition:</b> utils.cpp:154</div></div>
+<div class="ttc" id="anamespacerm_html_a0774b4f8d4874dceb8c7dee537321dd8"><div class="ttname"><a href="namespacerm.html#a0774b4f8d4874dceb8c7dee537321dd8">rm::CalcPerspective</a></div><div class="ttdeci">void CalcPerspective(cv::Point2f input[4], cv::Point2f output[4], float outRatio=1.0f)</div><div class="ttdef"><b>Definition:</b> utils.cpp:241</div></div>
+<div class="ttc" id="anamespacerm_html"><div class="ttname"><a href="namespacerm.html">rm</a></div><div class="ttdoc">Main modules.</div><div class="ttdef"><b>Definition:</b> daheng.h:17</div></div>
+<div class="ttc" id="anamespacerm_html_abc3a77e3e733ad5a7bb1bc7b719b376b"><div class="ttname"><a href="namespacerm.html#abc3a77e3e733ad5a7bb1bc7b719b376b">rm::LineCenter</a></div><div class="ttdeci">cv::Point2f LineCenter(const cv::Point2f &amp;pt1, const cv::Point2f &amp;pt2)</div><div class="ttdef"><b>Definition:</b> utils.cpp:259</div></div>
+<div class="ttc" id="anamespacerm_html_a9378ad2b4599884d92dea2e6c222a375"><div class="ttname"><a href="namespacerm.html#a9378ad2b4599884d92dea2e6c222a375">rm::ExtendCord</a></div><div class="ttdeci">void ExtendCord(const cv::Point2f &amp;pt1, const cv::Point2f &amp;pt2, float deltaLen, cv::Point2f &amp;dst1, cv::Point2f &amp;dst2)</div><div class="ttdef"><b>Definition:</b> utils.cpp:163</div></div>
+<div class="ttc" id="anamespacerm_html_a12f427e03fb8918e48261de91decc593"><div class="ttname"><a href="namespacerm.html#a12f427e03fb8918e48261de91decc593">rm::ProjectileMotionFD</a></div><div class="ttdeci">double ProjectileMotionFD(double theta, std::vector&lt; double &gt; literals)</div><div class="ttdef"><b>Definition:</b> utils.cpp:137</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

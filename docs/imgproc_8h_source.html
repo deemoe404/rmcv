@@ -87,21 +87,27 @@ $(function() {
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160; </div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &quot;include/core/core.h&quot;</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160; </div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">namespace </span>rm {</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordtype">void</span> CalcRatio(cv::Mat &amp;source, cv::Mat &amp;calibration, cv::Point2f vertices[4], cv::Size outSize);</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacerm.html">rm</a> {</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="namespacerm.html#a02ed2b845a71a8b27b2c266311f844ee">CalcRatio</a>(cv::Mat &amp;source, cv::Mat &amp;calibration, cv::Point2f vertices[4], cv::Size outSize);</div>
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160; </div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">void</span> CalcGamma(cv::Mat &amp;source, cv::Mat &amp;calibration, <span class="keywordtype">float</span> gamma = 0.5f);</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="namespacerm.html#a848a53b8cfb7b4aaacfafd026b08aa1d">CalcGamma</a>(cv::Mat &amp;source, cv::Mat &amp;calibration, <span class="keywordtype">float</span> gamma = 0.5f);</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">void</span> ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType enemy, <span class="keywordtype">int</span> lowerBound,</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="namespacerm.html#a068b124e0ed8cb49c4efc9eb4055ff1a">ExtractColor</a>(cv::InputArray image, cv::OutputArray binary, rm::CampType enemy, <span class="keywordtype">int</span> lowerBound,</div>
 <div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;                      <span class="keywordtype">bool</span> overExposed = <span class="keyword">false</span>, cv::Size kernelSize = {0, 0});</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">void</span> AutoEnhance(cv::Mat &amp;frame, <span class="keywordtype">float</span> maxGainFactor = 100.0, <span class="keywordtype">float</span> minGainFactor = 50.0);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="namespacerm.html#a16928371cde4cbf4792a414ea12129a3">AutoEnhance</a>(cv::Mat &amp;frame, <span class="keywordtype">float</span> maxGainFactor = 100.0, <span class="keywordtype">float</span> minGainFactor = 50.0);</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160; </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">void</span> AutoBinarize(cv::Mat &amp;image, cv::Mat &amp;binary);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="namespacerm.html#a792b8fc8f972a2dfaec4edb0c1bec7a7">AutoBinarize</a>(cv::Mat &amp;image, cv::Mat &amp;binary);</div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;}</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160; </div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor">#endif //RMCV_IMGPROC_H</span></div>
 </div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="anamespacerm_html_a848a53b8cfb7b4aaacfafd026b08aa1d"><div class="ttname"><a href="namespacerm.html#a848a53b8cfb7b4aaacfafd026b08aa1d">rm::CalcGamma</a></div><div class="ttdeci">void CalcGamma(cv::Mat &amp;source, cv::Mat &amp;calibration, float gamma=0.5f)</div><div class="ttdef"><b>Definition:</b> imgproc.cpp:34</div></div>
+<div class="ttc" id="anamespacerm_html_a16928371cde4cbf4792a414ea12129a3"><div class="ttname"><a href="namespacerm.html#a16928371cde4cbf4792a414ea12129a3">rm::AutoEnhance</a></div><div class="ttdeci">void AutoEnhance(cv::Mat &amp;frame, float maxGainFactor=100.0, float minGainFactor=50.0)</div><div class="ttdef"><b>Definition:</b> imgproc.cpp:78</div></div>
+<div class="ttc" id="anamespacerm_html_a068b124e0ed8cb49c4efc9eb4055ff1a"><div class="ttname"><a href="namespacerm.html#a068b124e0ed8cb49c4efc9eb4055ff1a">rm::ExtractColor</a></div><div class="ttdeci">void ExtractColor(cv::InputArray image, cv::OutputArray binary, rm::CampType enemy, int lowerBound, bool overExposed=false, cv::Size kernelSize={0, 0})</div><div class="ttdef"><b>Definition:</b> imgproc.cpp:46</div></div>
+<div class="ttc" id="anamespacerm_html"><div class="ttname"><a href="namespacerm.html">rm</a></div><div class="ttdoc">Main modules.</div><div class="ttdef"><b>Definition:</b> daheng.h:17</div></div>
+<div class="ttc" id="anamespacerm_html_a792b8fc8f972a2dfaec4edb0c1bec7a7"><div class="ttname"><a href="namespacerm.html#a792b8fc8f972a2dfaec4edb0c1bec7a7">rm::AutoBinarize</a></div><div class="ttdeci">void AutoBinarize(cv::Mat &amp;image, cv::Mat &amp;binary)</div><div class="ttdef"><b>Definition:</b> imgproc.cpp:96</div></div>
+<div class="ttc" id="anamespacerm_html_a02ed2b845a71a8b27b2c266311f844ee"><div class="ttname"><a href="namespacerm.html#a02ed2b845a71a8b27b2c266311f844ee">rm::CalcRatio</a></div><div class="ttdeci">void CalcRatio(cv::Mat &amp;source, cv::Mat &amp;calibration, cv::Point2f vertices[4], cv::Size outSize)</div><div class="ttdef"><b>Definition:</b> imgproc.cpp:8</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

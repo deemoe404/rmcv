@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['projectileangle_196',['ProjectileAngle',['../mobility_8h.html#abfde2cbf698a353d39ae4a9cd47a07ef',1,'rm']]]
+  ['extendcord_74',['ExtendCord',['../namespacerm.html#a9378ad2b4599884d92dea2e6c222a375',1,'rm']]],
+  ['extractcolor_75',['ExtractColor',['../namespacerm.html#a068b124e0ed8cb49c4efc9eb4055ff1a',1,'rm']]]
 ];

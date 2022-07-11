@@ -6,6 +6,10 @@
 #define RMCV_RMCV_H
 
 #include "core/core.h"
+#include "camdrivers/daheng/daheng.h"
+
+#include "serialport.h"
+#include "parallequeue.hpp"
 #include "imgproc.h"
 #include "objdetect.h"
 #include "debug.h"

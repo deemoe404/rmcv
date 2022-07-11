@@ -1,0 +1,324 @@
+\hypertarget{mobility_8h}{}\doxysection{mobility.\+h File Reference}
+\label{mobility_8h}\index{mobility.h@{mobility.h}}
+
+
+Provides a series of functions for solving automatic control parameters.  
+
+
+{\ttfamily \#include \char`\"{}core/core.\+h\char`\"{}}\newline
+Include dependency graph for mobility.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{mobility_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=145pt]{mobility_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{mobility_8h_a1bd54fb91a5fab8325bcc02e44addb61}\label{mobility_8h_a1bd54fb91a5fab8325bcc02e44addb61}} 
+typedef enum \mbox{\hyperlink{mobility_8h_a888882bcdf823bfde098e5c5d3682897}{rm\+::\+Compensate\+Mode}} \mbox{\hyperlink{mobility_8h_a1bd54fb91a5fab8325bcc02e44addb61}{rm\+::\+Compensate\+Mode}}
+\begin{DoxyCompactList}\small\item\em Define witch method is used to calculate the compensation of gravity. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{mobility_8h_a888882bcdf823bfde098e5c5d3682897}{rm\+::\+Compensate\+Mode}} \{ \mbox{\hyperlink{mobility_8h_a888882bcdf823bfde098e5c5d3682897a6cc86f0be3e8ac9f44d8791b2730ad5f}{rm\+::\+C\+O\+M\+P\+E\+N\+S\+A\+T\+E\+\_\+\+N\+O\+NE}} = 0, 
+\mbox{\hyperlink{mobility_8h_a888882bcdf823bfde098e5c5d3682897a7e4ec778dd2094918d11a74e4c9ef635}{rm\+::\+C\+O\+M\+P\+E\+N\+S\+A\+T\+E\+\_\+\+C\+L\+A\+S\+S\+IC}} = 1, 
+\mbox{\hyperlink{mobility_8h_a888882bcdf823bfde098e5c5d3682897ac2cf0bcc69df744821b2045a98050e15}{rm\+::\+C\+O\+M\+P\+E\+N\+S\+A\+T\+E\+\_\+\+NI}} = 2
+ \}
+\begin{DoxyCompactList}\small\item\em Define witch method is used to calculate the compensation of gravity. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{mobility_8h_a9752678c15291aca42bc51c4213cdca2}{rm\+::\+Axis\+RotateX}} (double y, double z, double thetaX, double \&outY, double \&outZ)
+\begin{DoxyCompactList}\small\item\em Rotate the vector around the x-\/axis. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{mobility_8h_a80ae7bffaa892addbd57220b97580867}{rm\+::\+Axis\+RotateY}} (double x, double z, double thetaY, double \&outX, double \&outZ)
+\begin{DoxyCompactList}\small\item\em Rotate the vector around the y-\/axis. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{mobility_8h_a05543be9e35dfa79b963a8d1d67fee94}{rm\+::\+Axis\+RotateZ}} (double x, double y, double thetaZ, double \&outX, double \&outY)
+\begin{DoxyCompactList}\small\item\em Rotate the vector around the z-\/axis. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{mobility_8h_a80a144deda7078763a4ab4c0729905e1}{rm\+::\+Delta\+Height}} (cv\+::\+Input\+Array translation\+Vector, double motor\+Angle, const cv\+::\+Point2f \&offset=\{0, 0\}, double angle\+Offset=0)
+\begin{DoxyCompactList}\small\item\em Solve height difference between barrel and target. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{mobility_8h_ab3ffc83bf6d655f1408d8cd14df47a7b}{rm\+::\+Distance}} (cv\+::\+Input\+Array translation\+Vector)
+\begin{DoxyCompactList}\small\item\em Solve the distance between camera and target. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{mobility_8h_abfde2cbf698a353d39ae4a9cd47a07ef}{rm\+::\+Projectile\+Angle}} (double v0, double g, double d, double h)
+\begin{DoxyCompactList}\small\item\em Solve initial angle required for a projectile motion. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{mobility_8h_a610d019d4d5138d809f5f37bb002f0d1}{rm\+::\+Solve\+Camera\+Pose}} (cv\+::\+Input\+Array rotation\+Vector, cv\+::\+Input\+Array translation\+Vector, cv\+::\+Output\+Array pose)
+\begin{DoxyCompactList}\small\item\em Solve camera pose in pitch, yaw, and roll relative to a target. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{mobility_8h_afe788ab698c79bf4a93431b299ec18c0}{rm\+::\+Solve\+G\+EA}} (cv\+::\+Input\+Array translation\+Vector, cv\+::\+Output\+Array gimbal\+Error\+Angle, double g, double v0, double h, const cv\+::\+Point2f \&offset=\{0, 0\}, double angle\+Offset=0, \mbox{\hyperlink{mobility_8h_a888882bcdf823bfde098e5c5d3682897}{rm\+::\+Compensate\+Mode}} mode=rm\+::\+C\+O\+M\+P\+E\+N\+S\+A\+T\+E\+\_\+\+N\+O\+NE)
+\begin{DoxyCompactList}\small\item\em Solve gimbal error angle to target by given method. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{mobility_8h_abc6d61afc0422fc3c01da0d32dc233f6}{rm\+::\+Solve\+P\+NP}} (const std\+::vector$<$ cv\+::\+Point2f $>$ \&image\+Points, cv\+::\+Input\+Array camera\+Matrix, cv\+::\+Input\+Array distortion\+Factor, const cv\+::\+Size2f \&exact\+Size, cv\+::\+Output\+Array translation\+Vector, cv\+::\+Output\+Array rotation\+Vector, const cv\+::\+Rect \&R\+OI=\{0, 0, 0, 0\})
+\begin{DoxyCompactList}\small\item\em Solve the rotation \& translation vector using cv\+::solve\+PnP \& cv\+::\+S\+O\+L\+V\+E\+P\+N\+P\+\_\+\+I\+P\+P\+E\+\_\+\+S\+Q\+U\+A\+RE. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Provides a series of functions for solving automatic control parameters. 
+
+\begin{DoxyVersion}{Version}
+v0.\+1.\+0 
+\end{DoxyVersion}
+\begin{DoxyDate}{Date}
+7/11/2022 
+\end{DoxyDate}
+\begin{DoxyAuthor}{Author}
+Earth\+O\+L-\/088217 
+\end{DoxyAuthor}
+\begin{DoxyCopyright}{Copyright}
+Copyright (c) 2020-\/2022 and all right reserved. 
+\end{DoxyCopyright}
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{mobility_8h_a888882bcdf823bfde098e5c5d3682897}\label{mobility_8h_a888882bcdf823bfde098e5c5d3682897}} 
+\index{mobility.h@{mobility.h}!CompensateMode@{CompensateMode}}
+\index{CompensateMode@{CompensateMode}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{CompensateMode}{CompensateMode}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{mobility_8h_a888882bcdf823bfde098e5c5d3682897}{rm\+::\+Compensate\+Mode}}}
+
+
+
+Define witch method is used to calculate the compensation of gravity. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMPENSATE\_NONE@{COMPENSATE\_NONE}!mobility.h@{mobility.h}}\index{mobility.h@{mobility.h}!COMPENSATE\_NONE@{COMPENSATE\_NONE}}}\mbox{\Hypertarget{mobility_8h_a888882bcdf823bfde098e5c5d3682897a6cc86f0be3e8ac9f44d8791b2730ad5f}\label{mobility_8h_a888882bcdf823bfde098e5c5d3682897a6cc86f0be3e8ac9f44d8791b2730ad5f}} 
+C\+O\+M\+P\+E\+N\+S\+A\+T\+E\+\_\+\+N\+O\+NE&No compensation. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMPENSATE\_CLASSIC@{COMPENSATE\_CLASSIC}!mobility.h@{mobility.h}}\index{mobility.h@{mobility.h}!COMPENSATE\_CLASSIC@{COMPENSATE\_CLASSIC}}}\mbox{\Hypertarget{mobility_8h_a888882bcdf823bfde098e5c5d3682897a7e4ec778dd2094918d11a74e4c9ef635}\label{mobility_8h_a888882bcdf823bfde098e5c5d3682897a7e4ec778dd2094918d11a74e4c9ef635}} 
+C\+O\+M\+P\+E\+N\+S\+A\+T\+E\+\_\+\+C\+L\+A\+S\+S\+IC&Use newtonian\textquotesingle{}s theorem of mechanics. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMPENSATE\_NI@{COMPENSATE\_NI}!mobility.h@{mobility.h}}\index{mobility.h@{mobility.h}!COMPENSATE\_NI@{COMPENSATE\_NI}}}\mbox{\Hypertarget{mobility_8h_a888882bcdf823bfde098e5c5d3682897ac2cf0bcc69df744821b2045a98050e15}\label{mobility_8h_a888882bcdf823bfde098e5c5d3682897ac2cf0bcc69df744821b2045a98050e15}} 
+C\+O\+M\+P\+E\+N\+S\+A\+T\+E\+\_\+\+NI&Use newton iteration method. \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{mobility_8h_a9752678c15291aca42bc51c4213cdca2}\label{mobility_8h_a9752678c15291aca42bc51c4213cdca2}} 
+\index{mobility.h@{mobility.h}!AxisRotateX@{AxisRotateX}}
+\index{AxisRotateX@{AxisRotateX}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{AxisRotateX()}{AxisRotateX()}}
+{\footnotesize\ttfamily void rm\+::\+Axis\+RotateX (\begin{DoxyParamCaption}\item[{double}]{y,  }\item[{double}]{z,  }\item[{double}]{thetaX,  }\item[{double \&}]{outY,  }\item[{double \&}]{outZ }\end{DoxyParamCaption})}
+
+
+
+Rotate the vector around the x-\/axis. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em y} & y of the vector. \\
+\hline
+{\em z} & z of the vector. \\
+\hline
+{\em thetaX} & angle to be rotate. \\
+\hline
+{\em outY} & y of the vector after rotation. \\
+\hline
+{\em outZ} & z of the vector after rotation. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{mobility_8h_a80ae7bffaa892addbd57220b97580867}\label{mobility_8h_a80ae7bffaa892addbd57220b97580867}} 
+\index{mobility.h@{mobility.h}!AxisRotateY@{AxisRotateY}}
+\index{AxisRotateY@{AxisRotateY}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{AxisRotateY()}{AxisRotateY()}}
+{\footnotesize\ttfamily void rm\+::\+Axis\+RotateY (\begin{DoxyParamCaption}\item[{double}]{x,  }\item[{double}]{z,  }\item[{double}]{thetaY,  }\item[{double \&}]{outX,  }\item[{double \&}]{outZ }\end{DoxyParamCaption})}
+
+
+
+Rotate the vector around the y-\/axis. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & x of the vector. \\
+\hline
+{\em z} & z of the vector. \\
+\hline
+{\em thetaY} & angle to be rotate. \\
+\hline
+{\em outX} & x of the vector after rotation. \\
+\hline
+{\em outZ} & z of the vector after rotation. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{mobility_8h_a05543be9e35dfa79b963a8d1d67fee94}\label{mobility_8h_a05543be9e35dfa79b963a8d1d67fee94}} 
+\index{mobility.h@{mobility.h}!AxisRotateZ@{AxisRotateZ}}
+\index{AxisRotateZ@{AxisRotateZ}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{AxisRotateZ()}{AxisRotateZ()}}
+{\footnotesize\ttfamily void rm\+::\+Axis\+RotateZ (\begin{DoxyParamCaption}\item[{double}]{x,  }\item[{double}]{y,  }\item[{double}]{thetaZ,  }\item[{double \&}]{outX,  }\item[{double \&}]{outY }\end{DoxyParamCaption})}
+
+
+
+Rotate the vector around the z-\/axis. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em x} & x of the vector. \\
+\hline
+{\em y} & y of the vector. \\
+\hline
+{\em thetaZ} & angle to be rotate. \\
+\hline
+{\em outX} & x of the vector after rotation. \\
+\hline
+{\em outY} & y of the vector after rotation. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{mobility_8h_a80a144deda7078763a4ab4c0729905e1}\label{mobility_8h_a80a144deda7078763a4ab4c0729905e1}} 
+\index{mobility.h@{mobility.h}!DeltaHeight@{DeltaHeight}}
+\index{DeltaHeight@{DeltaHeight}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{DeltaHeight()}{DeltaHeight()}}
+{\footnotesize\ttfamily double rm\+::\+Delta\+Height (\begin{DoxyParamCaption}\item[{cv\+::\+Input\+Array}]{translation\+Vector,  }\item[{double}]{motor\+Angle,  }\item[{const cv\+::\+Point2f \&}]{offset = {\ttfamily \{0,~0\}},  }\item[{double}]{angle\+Offset = {\ttfamily 0} }\end{DoxyParamCaption})}
+
+
+
+Solve height difference between barrel and target. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em translation\+Vector} & The translation vector of target. \\
+\hline
+{\em motor\+Angle} & The motor angle of gimbal, positive upwards. (R\+AD) \\
+\hline
+{\em offset} & Offset between camera and barrel. (cm) \\
+\hline
+{\em angle\+Offset} & Angle offset between camera and barrel. (R\+AD) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Height difference between barrel and target in cm, N\+AN if translation\+Vector is not in cv\+::\+Mat format. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{mobility_8h_ab3ffc83bf6d655f1408d8cd14df47a7b}\label{mobility_8h_ab3ffc83bf6d655f1408d8cd14df47a7b}} 
+\index{mobility.h@{mobility.h}!Distance@{Distance}}
+\index{Distance@{Distance}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{Distance()}{Distance()}}
+{\footnotesize\ttfamily double rm\+::\+Distance (\begin{DoxyParamCaption}\item[{cv\+::\+Input\+Array}]{translation\+Vector }\end{DoxyParamCaption})}
+
+
+
+Solve the distance between camera and target. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em translation\+Vector} & The translation vector of target. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Distance in cm, N\+AN if translation\+Vector is not in cv\+::\+Mat format. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{mobility_8h_abfde2cbf698a353d39ae4a9cd47a07ef}\label{mobility_8h_abfde2cbf698a353d39ae4a9cd47a07ef}} 
+\index{mobility.h@{mobility.h}!ProjectileAngle@{ProjectileAngle}}
+\index{ProjectileAngle@{ProjectileAngle}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{ProjectileAngle()}{ProjectileAngle()}}
+{\footnotesize\ttfamily double rm\+::\+Projectile\+Angle (\begin{DoxyParamCaption}\item[{double}]{v0,  }\item[{double}]{g,  }\item[{double}]{d,  }\item[{double}]{h }\end{DoxyParamCaption})}
+
+
+
+Solve initial angle required for a projectile motion. 
+
+This function would be done by solving $ 0 = \frac{g \cdot d^{2}}{2 \cdot v_{0}^{2}} \cdot tan\theta^{2} + d \cdot tan\theta + (\frac{g \cdot d^{2}}{2 \cdot v_{0}^{2}} - h) $ for $tan\theta$ using the binary first-\/order root formula, witch can be deduced from Newtonian\textquotesingle{}s theorem of mechanics.
+
+
+\begin{DoxyParams}{Parameters}
+{\em v0} & Initial launch speed. (m/s) \\
+\hline
+{\em g} & Acceleration of gravity. (m/s$^\wedge$2) \\
+\hline
+{\em d} & Horizontal distance. (m) \\
+\hline
+{\em h} & Height difference. (m) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Estimated launch angle in radians, N\+AN if equations have no real solutions. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{mobility_8h_a610d019d4d5138d809f5f37bb002f0d1}\label{mobility_8h_a610d019d4d5138d809f5f37bb002f0d1}} 
+\index{mobility.h@{mobility.h}!SolveCameraPose@{SolveCameraPose}}
+\index{SolveCameraPose@{SolveCameraPose}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{SolveCameraPose()}{SolveCameraPose()}}
+{\footnotesize\ttfamily bool rm\+::\+Solve\+Camera\+Pose (\begin{DoxyParamCaption}\item[{cv\+::\+Input\+Array}]{rotation\+Vector,  }\item[{cv\+::\+Input\+Array}]{translation\+Vector,  }\item[{cv\+::\+Output\+Array}]{pose }\end{DoxyParamCaption})}
+
+
+
+Solve camera pose in pitch, yaw, and roll relative to a target. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em rotation\+Vector} & The rotation vector of target. \\
+\hline
+{\em translation\+Vector} & The translation vector of target. \\
+\hline
+{\em pose} & \mbox{[}O\+UT\mbox{]} Camera pose. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+False if translation\+Vector or rotation\+Vector is not in cv\+::\+Mat format. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{mobility_8h_afe788ab698c79bf4a93431b299ec18c0}\label{mobility_8h_afe788ab698c79bf4a93431b299ec18c0}} 
+\index{mobility.h@{mobility.h}!SolveGEA@{SolveGEA}}
+\index{SolveGEA@{SolveGEA}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{SolveGEA()}{SolveGEA()}}
+{\footnotesize\ttfamily double rm\+::\+Solve\+G\+EA (\begin{DoxyParamCaption}\item[{cv\+::\+Input\+Array}]{translation\+Vector,  }\item[{cv\+::\+Output\+Array}]{gimbal\+Error\+Angle,  }\item[{double}]{g,  }\item[{double}]{v0,  }\item[{double}]{h,  }\item[{const cv\+::\+Point2f \&}]{offset = {\ttfamily \{0,~0\}},  }\item[{double}]{angle\+Offset = {\ttfamily 0},  }\item[{\mbox{\hyperlink{mobility_8h_a888882bcdf823bfde098e5c5d3682897}{rm\+::\+Compensate\+Mode}}}]{mode = {\ttfamily rm\+:\+:COMPENSATE\+\_\+NONE} }\end{DoxyParamCaption})}
+
+
+
+Solve gimbal error angle to target by given method. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em translation\+Vector} & Translation vector of target. \\
+\hline
+{\em gimbal\+Error\+Angle} & \mbox{[}O\+UT\mbox{]} Estimation error angle. Format\+: \mbox{[}pitch, yaw\mbox{]}. \\
+\hline
+{\em g} & Acceleration of gravity. (m/s$^\wedge$2) \\
+\hline
+{\em v0} & The initial speed of bullet. (m/s) \\
+\hline
+{\em h} & Height between barrel and target. (m) \\
+\hline
+{\em offset} & Offset between camera and barrel. (cm) \\
+\hline
+{\em angle\+Offset} & Angle offset between camera and barrel. (R\+AD) \\
+\hline
+{\em mode} & Method to be used to calculate the compensation of gravity. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Estimation air time, N\+AN if translation\+Vector is not in cv\+::\+Mat format. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{mobility_8h_abc6d61afc0422fc3c01da0d32dc233f6}\label{mobility_8h_abc6d61afc0422fc3c01da0d32dc233f6}} 
+\index{mobility.h@{mobility.h}!SolvePNP@{SolvePNP}}
+\index{SolvePNP@{SolvePNP}!mobility.h@{mobility.h}}
+\doxysubsubsection{\texorpdfstring{SolvePNP()}{SolvePNP()}}
+{\footnotesize\ttfamily bool rm\+::\+Solve\+P\+NP (\begin{DoxyParamCaption}\item[{const std\+::vector$<$ cv\+::\+Point2f $>$ \&}]{image\+Points,  }\item[{cv\+::\+Input\+Array}]{camera\+Matrix,  }\item[{cv\+::\+Input\+Array}]{distortion\+Factor,  }\item[{const cv\+::\+Size2f \&}]{exact\+Size,  }\item[{cv\+::\+Output\+Array}]{translation\+Vector,  }\item[{cv\+::\+Output\+Array}]{rotation\+Vector,  }\item[{const cv\+::\+Rect \&}]{R\+OI = {\ttfamily \{0,~0,~0,~0\}} }\end{DoxyParamCaption})}
+
+
+
+Solve the rotation \& translation vector using cv\+::solve\+PnP \& cv\+::\+S\+O\+L\+V\+E\+P\+N\+P\+\_\+\+I\+P\+P\+E\+\_\+\+S\+Q\+U\+A\+RE. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em image\+Points} & Object points on image (Quantity must be four). \\
+\hline
+{\em camera\+Matrix} & Camera matrix. \\
+\hline
+{\em distortion\+Factor} & Camera distortion factor. \\
+\hline
+{\em exact\+Size} & Exact size of the coordinate object (cm). \\
+\hline
+{\em translation\+Vector} & \mbox{[}O\+UT\mbox{]} Translation vector. \\
+\hline
+{\em rotation\+Vector} & \mbox{[}O\+UT\mbox{]} Rotation vector. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+False if image\+Points.\+size() is not 4, or there might be errors in Camera-\/parameters or Points-\/given, such as wrong There is no one-\/to-\/one correspondence between the points on the image and the actual points. 
+\end{DoxyReturn}

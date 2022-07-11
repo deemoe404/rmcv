@@ -9,22 +9,22 @@ namespace rm {
             box.angle > 90 ? box.angle - 90 : box.angle + 90), camp(camp), center(box.center) {
         VerticesRectify(box, this->vertices, RECT_TALL);
 
-        this->size = {min(box.size.height, box.size.width), max(box.size.height, box.size.width)};
+        this->size = {std::min(box.size.height, box.size.width), std::max(box.size.height, box.size.width)};
     }
 
-    Armour::Armour(std::vector<rm::LightBlob> lightBlobs, float rank, rm::CampType camp) : camp(
-            camp), rank(rank) {
+    Armour::Armour(std::vector<rm::LightBlob> lightBlobs, float rank, rm::CampType camp) : camp(camp), rank(rank) {
         if (lightBlobs.size() != 2) {
             throw std::runtime_error("Armour must be initialized with 2 rm::LightBlob (s).");
         }
 
         // sort light blobs left to right
-        std::sort(lightBlobs.begin(), lightBlobs.end(), [](rm::LightBlob lightBar1, rm::LightBlob lightBar2) {
-            return lightBar1.center.x < lightBar2.center.x;
-        });
+        std::sort(lightBlobs.begin(), lightBlobs.end(),
+                  [](const rm::LightBlob &lightBar1, const rm::LightBlob &lightBar2) {
+                      return lightBar1.center.x < lightBar2.center.x;
+                  });
 
         int i = 0, j = 3;
-        for (auto lightBar: lightBlobs) {
+        for (const auto &lightBar: lightBlobs) {
             vertices[i++] = lightBar.vertices[j--];
             vertices[i++] = lightBar.vertices[j--];
         }
@@ -45,8 +45,8 @@ namespace rm {
         inputBinary.copyTo(this->binary);
     }
 
-    Package::Package(const shared_ptr<rm::Package> &input) : camp(input->camp), mode(input->mode), speed(input->speed),
-                                                             pitch(input->pitch) {
+    Package::Package(const std::shared_ptr<rm::Package> &input) : camp(input->camp), mode(input->mode),
+                                                                  speed(input->speed), pitch(input->pitch) {
         input->frame.copyTo(this->frame);
         input->binary.copyTo(this->binary);
         this->armours = std::vector<rm::Armour>(input->armours);

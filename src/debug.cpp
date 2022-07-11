@@ -37,7 +37,7 @@ namespace rm::debug {
         cv::drawContours(output, contours, -1, {0, 255, 255}, 1);
     }
 
-    void DrawArmour(rm::Armour input, Mat &output) {
+    void DrawArmour(rm::Armour input, cv::Mat &output) {
         std::vector<std::vector<cv::Point>> contours;
 
         std::vector<cv::Point> vertices;
@@ -54,7 +54,7 @@ namespace rm::debug {
         cv::drawContours(output, contours, -1, {0, 255, 255}, 1);
     }
 
-    void DrawLightBlobs(const vector<rm::LightBlob> &input, Mat &output, int index) {
+    void DrawLightBlobs(const std::vector<rm::LightBlob> &input, cv::Mat &output, int index) {
         if (input.empty()) return;
 
         std::vector<std::vector<cv::Point>> contoursRed;

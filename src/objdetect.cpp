@@ -62,12 +62,12 @@ namespace rm {
     bool LightBlobOverlap(std::vector<rm::LightBlob> &lightBlobs, int leftIndex, int rightIndex) {
         if (leftIndex < 0 || rightIndex > lightBlobs.size() || rightIndex - leftIndex < 2) return false;
 
-        float lowerY = min(
-                min((float) lightBlobs[leftIndex].vertices[1].y, (float) lightBlobs[leftIndex].vertices[2].y),
-                min((float) lightBlobs[rightIndex].vertices[1].y, (float) lightBlobs[rightIndex].vertices[2].y));
-        float UpperY = max(
-                max((float) lightBlobs[leftIndex].vertices[0].y, (float) lightBlobs[leftIndex].vertices[3].y),
-                max((float) lightBlobs[rightIndex].vertices[0].y, (float) lightBlobs[rightIndex].vertices[3].y));
+        float lowerY = std::min(
+                std::min((float) lightBlobs[leftIndex].vertices[1].y, (float) lightBlobs[leftIndex].vertices[2].y),
+                std::min((float) lightBlobs[rightIndex].vertices[1].y, (float) lightBlobs[rightIndex].vertices[2].y));
+        float UpperY = std::max(
+                std::max((float) lightBlobs[leftIndex].vertices[0].y, (float) lightBlobs[leftIndex].vertices[3].y),
+                std::max((float) lightBlobs[rightIndex].vertices[0].y, (float) lightBlobs[rightIndex].vertices[3].y));
 
         for (int i = leftIndex; i < rightIndex; i++) {
             if (lightBlobs[i].center.x > lightBlobs[leftIndex].center.x &&
@@ -118,9 +118,9 @@ namespace rm {
                 float ratio = std::min(heightI, heightJ) / std::max(heightI, heightJ);
                 if (ratio < lenRatio) continue;
 
-                float compensate = sin(atan2(min(heightI, heightJ), max(heightI, heightJ)));
+                float compensate = sin(atan2(std::min(heightI, heightJ), std::max(heightI, heightJ)));
                 float distance = rm::PointDistance(lightBlobs[i].center, lightBlobs[j].center);
-                float boxRatio = (max(heightI, heightI)) / (distance / compensate);
+                float boxRatio = (std::max(heightI, heightI)) / (distance / compensate);
                 if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
                 if (abs(lightBlobs[i].center.y - lightBlobs[j].center.y) >
@@ -128,7 +128,7 @@ namespace rm {
                     continue;
 
                 if (filter) {
-                    float yDiff = min(lightBlobs[j].size.height, lightBlobs[i].size.height);
+                    float yDiff = std::min(lightBlobs[j].size.height, lightBlobs[i].size.height);
                     if (lastJ == i) {
                         if (yDifHistory < yDiff) {
                             armours.pop_back();

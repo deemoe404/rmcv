@@ -5,10 +5,7 @@
 #ifndef RMCV_CORE_H
 #define RMCV_CORE_H
 
-#include "daheng/daheng.h"
 #include "utils.h"
-#include "serialport.h"
-#include "parallequeue.hpp"
 
 namespace rm {
     enum CampType {
@@ -59,7 +56,7 @@ namespace rm {
         Package(rm::CampType camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat &inputFrame,
                 const cv::Mat &inputBinary);
 
-        explicit Package(const shared_ptr<rm::Package> &input);
+        explicit Package(const std::shared_ptr<rm::Package> &input);
     };
 
 }

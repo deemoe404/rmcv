@@ -149,23 +149,7 @@ namespace rm {
         }
     }
 
-    double ProjectileAngle(double v0, double g, double d, double h) {
-        double a = (g * pow(d, 2.0)) / (2.0 * pow(v0, 2.0));
-        double b = d;
-        double c = a - h;
 
-        double delta = pow(b, 2.0) - (4 * a * c);
-        if (delta > 0) {
-            double x1 = atan(((-1 * b) + sqrt(delta)) / (2 * a));
-            double x2 = atan(((-1 * b) - sqrt(delta)) / (2 * a));
-
-            return abs(x1) < abs(x2) ? x1 : x2;
-        } else if (delta == 0) {
-            return atan((-1) * (b / 2 * a));
-        }
-
-        return NAN;
-    }
 
     float PointDistance(const cv::Point2f &pt1, const cv::Point2f &pt2) {
         return (float) sqrt(pow(pt1.x - pt2.x, 2) + pow(pt1.y - pt2.y, 2));
@@ -252,67 +236,6 @@ namespace rm {
         std::snprintf(str, 64, "%d", number);
         std::string res(str);
         return res;
-    }
-
-
-    void
-    SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, const cv::Size2f &exactSize,
-             cv::Mat &translationVector, cv::Mat &rotationVector, const cv::Rect &ROI) {
-        cv::Point2f offset((float) ROI.x, (float) ROI.y);
-
-        rotationVector = cv::Mat::zeros(3, 1, CV_64FC1);
-        translationVector = cv::Mat::zeros(3, 1, CV_64FC1);
-
-        std::vector<cv::Point3f> exactPoint{cv::Point3f(-exactSize.width / 2.0f, exactSize.height / 2.0f, 0),
-                                            cv::Point3f(exactSize.width / 2.0f, exactSize.height / 2.0f, 0),
-                                            cv::Point3f(exactSize.width / 2.0f, -exactSize.height / 2.0f, 0),
-                                            cv::Point3f(-exactSize.width / 2.0f, -exactSize.height / 2.0f, 0)};
-
-        // TODO: sort points before doing this!!!
-        std::vector<cv::Point2f> coordinate{imagePoints[1] + offset, imagePoints[2] + offset, imagePoints[3] + offset,
-                                            imagePoints[0] + offset};
-
-        cv::solvePnP(exactPoint, coordinate, cameraMatrix, distortionFactor, rotationVector, translationVector, false,
-                     cv::SOLVEPNP_IPPE_SQUARE);
-    }
-
-    double
-    SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, const cv::Point2f &offset, double angleOffset) {
-        double h = translationVector.ptr<double>(0)[1] - offset.y;
-        double d = translationVector.ptr<double>(0)[2];
-
-        double dPitch = -atan2(h, d) + (motorAngle - angleOffset);
-
-        return d * tan(dPitch);
-    }
-
-    double SolveDistance(cv::Mat &translationVector) {
-        return sqrt(pow(translationVector.at<double>(0), 2) + pow(translationVector.at<double>(1), 2) +
-                    pow(translationVector.at<double>(2), 2));
-    }
-
-    void AxisRotateZ(double x, double y, double thetaZ, double &outX, double &outY) {
-        double x1 = x;
-        double y1 = y;
-        double rz = thetaZ * CV_PI / 180;
-        outX = cos(rz) * x1 - sin(rz) * y1;
-        outY = sin(rz) * x1 + cos(rz) * y1;
-    }
-
-    void AxisRotateY(double x, double z, double thetaY, double &outX, double &outZ) {
-        double x1 = x;
-        double z1 = z;
-        double ry = thetaY * CV_PI / 180;
-        outX = cos(ry) * x1 + sin(ry) * z1;
-        outZ = cos(ry) * z1 - sin(ry) * x1;
-    }
-
-    void AxisRotateX(double y, double z, double thetaX, double &outY, double &outZ) {
-        double y1 = y;
-        double z1 = z;
-        double rx = thetaX * CV_PI / 180;
-        outY = cos(rx) * y1 - sin(rx) * z1;
-        outZ = cos(rx) * z1 + sin(rx) * y1;
     }
 
     void CalcPerspective(cv::Point2f input[4], cv::Point2f output[4], float outRatio) {

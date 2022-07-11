@@ -2,8 +2,8 @@
 // Created by yaione on 3/17/22.
 //
 
-#ifndef RM_STANDARD2022_DEBUG_H
-#define RM_STANDARD2022_DEBUG_H
+#ifndef RMCV_DEBUG_H
+#define RMCV_DEBUG_H
 
 #include "core/core.h"
 
@@ -17,4 +17,4 @@ namespace rm::debug {
     void PrintMat(cv::Mat &input, int decimal = 0);
 }
 
-#endif //RM_STANDARD2022_DEBUG_H
+#endif //RMCV_DEBUG_H

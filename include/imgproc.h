@@ -2,8 +2,8 @@
 // Created by yaione on 2/26/2022.
 //
 
-#ifndef RM_STANDARD2022_IMGPROC_H
-#define RM_STANDARD2022_IMGPROC_H
+#ifndef RMCV_IMGPROC_H
+#define RMCV_IMGPROC_H
 
 #include "include/core/core.h"
 
@@ -45,4 +45,4 @@ namespace rm {
     void AutoBinarize(cv::Mat &image, cv::Mat &binary);
 }
 
-#endif //RM_STANDARD2022_IMGPROC_H
+#endif //RMCV_IMGPROC_H

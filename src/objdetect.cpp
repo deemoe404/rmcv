@@ -81,7 +81,7 @@ namespace rm {
 
     void FindArmour(std::vector<rm::LightBlob> &lightBlobs, std::vector<rm::Armour> &armours, float maxAngleDif,
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType enemy,
-                    cv::Point2f attention, bool filter) {
+                    bool filter) {
         armours.clear();
         if (lightBlobs.size() < 2) return;
 
@@ -93,15 +93,14 @@ namespace rm {
 
         float yDifHistory = -1;
         int lastJ = -1;
-        bool rank = !(attention.x == -1.0 && attention.y == -1.0);
 
-        for (int i = 0; i < lightBlobs.size() - 1; i++) {
+        for (int i = 0; i < lightBlobs.size() - 1; ++i) {
             if (lightBlobs[i].camp != enemy) continue;
-            for (int j = i + 1; j < lightBlobs.size(); j++) {
+            for (int j = i + 1; j < lightBlobs.size(); ++j) {
                 if (lightBlobs[j].camp != enemy || rm::LightBlobOverlap(lightBlobs, i, j))
                     continue;
 
-                // Poor angle between two light blob
+                // Poor angle between two light blobs
                 float angleDif = abs(lightBlobs[i].angle - lightBlobs[j].angle);
                 if (angleDif > maxAngleDif) continue;
 
@@ -140,94 +139,9 @@ namespace rm {
                     yDifHistory = yDiff;
                     lastJ = j;
                 }
-
-                armours.push_back(rm::Armour({lightBlobs[i], lightBlobs[j]}, rank ? rm::PointDistance(
-                                                     {(lightBlobs[i].center.x + lightBlobs[j].center.x) / 2.0f,
-                                                      (lightBlobs[i].center.y + lightBlobs[j].center.y) / 2.0f}, attention) : 0,
-                                             lightBlobs[i].camp));
+                armours.push_back(rm::Armour({lightBlobs[i], lightBlobs[j]}, 0, lightBlobs[i].camp));
             }
         }
-
-        if (rank && armours.size() > 1) {
-            std::sort(armours.begin(), armours.end(), [](const rm::Armour &armour1, const rm::Armour &armour2) {
-                return armour1.rank < armour2.rank;
-            });
-        }
-    }
-
-    void
-    SolveShootFactor(cv::Mat &translationVector, rm::ShootFactor &shootFactor, double g, double v0, double deltaHeight,
-                     cv::Point2f offset, double angleOffset, rm::CompensateMode mode) {
-        float yaw = (float) atan2(translationVector.ptr<double>(0)[0] - offset.x, translationVector.ptr<double>(0)[2]) *
-                    180.0f / (float) CV_PI;
-        float pitch = 0;
-        double airTime = 0;
-
-        double d = (translationVector.ptr<double>(0)[2]) / 100.0;
-
-        if (mode == rm::COMPENSATE_NONE) {
-            pitch = (-1) * ((float) atan2(translationVector.ptr<double>(0)[1] - offset.y,
-                                          translationVector.ptr<double>(0)[2]) * 180.0f / (float) CV_PI);
-            airTime = d / v0;
-        } else if (mode == rm::COMPENSATE_CLASSIC) {
-            double normalAngle = atan2(deltaHeight / 100.0, d) * 180.0 / CV_PI;
-            double centerAngle =
-                    -atan2(translationVector.ptr<double>(0)[1] - offset.y, translationVector.ptr<double>(0)[2]) *
-                    180.0 / CV_PI;
-            double targetAngle = rm::ProjectileAngle(v0, g, d, deltaHeight / 100.0) * 180.0 / CV_PI;
-
-            pitch = (float) ((centerAngle - normalAngle + angleOffset) + targetAngle);
-            airTime = d / abs(v0 * cos(targetAngle));
-        } else if (mode == rm::COMPENSATE_NI) {
-            //TODO: Fix the bug of NI first!!!!
-        }
-
-        shootFactor.pitchAngle = pitch;
-        shootFactor.yawAngle = yaw;
-        shootFactor.estimateAirTime = airTime;
-    }
-
-    void SolveShootFactor(rm::ShootFactor &shootFactor, double d, double g, double v0, double h, cv::Point2f offset,
-                          double angleOffset, rm::CompensateMode mode) {
-
-    }
-
-    void SolveCameraPose(cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &output) {
-        output = cv::Mat::zeros(3, 1, CV_64FC1);
-
-        cv::Mat rotT = cv::Mat::eye(3, 3, CV_64F);
-        cv::Rodrigues(tvecs, rotT);
-
-        double rm[9];
-        cv::Mat rotM(3, 3, CV_64FC1, rm);
-        cv::Rodrigues(rvecs, rotM);
-        double r11 = rotM.ptr<double>(0)[0];
-        double r12 = rotM.ptr<double>(0)[1];
-        double r13 = rotM.ptr<double>(0)[2];
-        double r21 = rotM.ptr<double>(1)[0];
-        double r22 = rotM.ptr<double>(1)[1];
-        double r23 = rotM.ptr<double>(1)[2];
-        double r31 = rotM.ptr<double>(2)[0];
-        double r32 = rotM.ptr<double>(2)[1];
-        double r33 = rotM.ptr<double>(2)[2];
-
-        double thetaZ = atan2(r21, r11) / CV_PI * 180;
-        double thetaY = atan2(-1 * r31, sqrt(r32 * r32 + r33 * r33)) / CV_PI * 180;
-        double thetaX = atan2(r32, r33) / CV_PI * 180;
-
-        double tx = tvecs.ptr<double>(0)[0];
-        double ty = tvecs.ptr<double>(0)[1];
-        double tz = tvecs.ptr<double>(0)[2];
-
-        double x = tx, y = ty, z = tz;
-
-        AxisRotateZ(x, y, -1 * thetaZ, x, y);
-        AxisRotateY(x, z, -1 * thetaY, x, z);
-        AxisRotateX(y, z, -1 * thetaX, y, z);
-
-        output.ptr<float>(0)[0] = (float) thetaX * -1;
-        output.ptr<float>(0)[1] = (float) thetaY * -1;
-        output.ptr<float>(0)[2] = (float) thetaZ * -1;
     }
 
 }

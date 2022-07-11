@@ -1,8 +1,8 @@
-# RM_Standard2022
+# rmcv
 
 ## Overview
 
-This project is an implement of RoboMaster computer vision based on OpenCV. The functions that currently implemented
+This project is a library for RoboMaster computer vision based on OpenCV. The functions that currently implemented
 includes:
 
 * DaHeng industrial camera driver

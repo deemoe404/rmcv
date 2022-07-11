@@ -2,23 +2,12 @@
 // Created by yaione on 3/1/2022.
 //
 
-#ifndef RM_STANDARD2022_OBJDETECT_H
-#define RM_STANDARD2022_OBJDETECT_H
+#ifndef RMCV_OBJDETECT_H
+#define RMCV_OBJDETECT_H
 
 #include "core/core.h"
 
 namespace rm {
-    enum CompensateMode {
-        // No compensation
-        COMPENSATE_NONE = 0,
-
-        // Use rm::NewtonIteration & rm::ProjectileMotionFD for compensate
-        COMPENSATE_CLASSIC = 1,
-
-        // Use classic Newton's laws of motion for compensate
-        COMPENSATE_NI = 2
-    };
-
     /// Match a contour if it's a light blob with the given condition.
     /// \param contour    Input contour (more than 6 points).
     /// \param minRatio   Minimal aspect ratio.
@@ -88,25 +77,7 @@ namespace rm {
     ///                    along two light blobs is smaller.
     void FindArmour(std::vector<rm::LightBlob> &lightBlobs, std::vector<rm::Armour> &armours, float maxAngleDif,
                     float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType enemy,
-                    cv::Point2f attention = {-1.0, -1.0}, bool filter = true);
-
-    /// Calculate the shoot factor using Newton Iteration.
-    /// \param target      The target armour.
-    /// \param shootFactor Output shoot factor.
-    /// \param g           Acceleration of gravity (m/s^2).
-    /// \param v0          The initial speed of bullet (m/s).
-    /// \param offset      Offset between camera and barrel (cm).
-    /// \param deltaHeight Height difference between barrel and target (cm).
-    void
-    SolveShootFactor(cv::Mat &translationVector, rm::ShootFactor &shootFactor, double g, double v0, double deltaHeight,
-                     cv::Point2f offset = {0, 0}, double angleOffset = 0,
-                     rm::CompensateMode mode = rm::COMPENSATE_NONE);
-
-    void
-    SolveShootFactor(rm::ShootFactor &shootFactor, double d, double g, double v0, double h, cv::Point2f offset = {0, 0},
-                     double angleOffset = 0, rm::CompensateMode mode = rm::COMPENSATE_NONE);
-
-    void SolveCameraPose(cv::Mat &rvecs, cv::Mat &tvecs, cv::Mat &output);
+                    bool filter = true);
 }
 
-#endif //RM_STANDARD2022_OBJDETECT_H
+#endif //RMCV_OBJDETECT_H

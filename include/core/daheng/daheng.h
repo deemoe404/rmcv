@@ -2,8 +2,8 @@
 // Created by yaione on 3/7/22.
 //
 
-#ifndef RM_STANDARD2022_DAHENG_H
-#define RM_STANDARD2022_DAHENG_H
+#ifndef RMCV_DAHENG_H
+#define RMCV_DAHENG_H
 
 #include "GxIAPI.h"
 #include "DxImageProc.h"
@@ -194,4 +194,4 @@ namespace rm {
 }
 
 
-#endif //RM_STANDARD2022_DAHENG_H
+#endif //RMCV_DAHENG_H

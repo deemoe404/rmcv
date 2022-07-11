@@ -2,8 +2,8 @@
 // Created by yaione on 3/3/2022.
 //
 
-#ifndef RM_STANDARD2022_UTILS_H
-#define RM_STANDARD2022_UTILS_H
+#ifndef RMCV_UTILS_H
+#define RMCV_UTILS_H
 
 #include <cmath>
 #include <vector>
@@ -76,13 +76,7 @@ namespace rm {
     /// \return f(x)/f'(x)
     double ProjectileMotionFD(double theta, std::vector<double> literals);
 
-    /// Solve the estimate launch angle by parameters given.
-    /// \param v0 Initial speed of bullet (m/s).
-    /// \param g Acceleration of gravity (m/s^2).
-    /// \param d Horizontal distance (m).
-    /// \param h Height difference (m).
-    /// \return Estimated launch angle (radians).
-    double ProjectileAngle(double v0, double g, double d, double h);
+
 
     /// Return the distance between two given points.
     /// \param pt1 First point.
@@ -114,35 +108,6 @@ namespace rm {
     std::string PathCombine(const std::string &path1, const std::string &path2);
 
     std::string int2str(int number);
-
-    /// Solve the rotation and the translation vectors that transform a 3D point expressed in the object coordinate
-    /// frame to the camera coordinate frame, using cv::SOLVEPNP_IPPE_SQUARE.
-    /// \param imagePoints Destine points on image (exactly 4).
-    /// \param cameraMatrix Camera matrix.
-    /// \param distortionFactor Distortion factor.
-    /// \param exactSize Exact size of the coordinate object (cm).
-    /// \param translationVector Output translation vector.
-    /// \param rotationVector Output rotation vector.
-    void
-    SolvePNP(cv::Point2f imagePoints[4], cv::Mat &cameraMatrix, cv::Mat &distortionFactor, const cv::Size2f &exactSize,
-             cv::Mat &translationVector, cv::Mat &rotationVector, const cv::Rect &ROI = {0, 0, 0, 0});
-
-    /// Solve height difference between barrel and target using the translation vector of target and the motor angle of
-    /// gimbal.
-    /// \param translationVector The translation vector of target.
-    /// \param motorAngle The motor angle of gimbal, positive upwards (radians).
-    /// \param offset Offset between camera and barrel (cm).
-    /// \return Height difference between barrel and target (cm).
-    double SolveDeltaHeight(cv::Mat &translationVector, double motorAngle, const cv::Point2f &offset = {0, 0},
-                            double angleOffset = 0);
-
-    double SolveDistance(cv::Mat &translationVector);
-
-    void AxisRotateZ(double x, double y, double thetaZ, double &outX, double &outY);
-
-    void AxisRotateY(double x, double z, double thetaY, double &outX, double &outZ);
-
-    void AxisRotateX(double y, double z, double thetaX, double &outY, double &outZ);
 }
 
-#endif //RM_STANDARD2022_UTILS_H
+#endif //RMCV_UTILS_H

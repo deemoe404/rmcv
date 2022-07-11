@@ -2,8 +2,8 @@
 // Created by yaione on 3/4/22.
 //
 
-#ifndef RM_STANDARD2022_SERIALPORT_H
-#define RM_STANDARD2022_SERIALPORT_H
+#ifndef RMCV_SERIALPORT_H
+#define RMCV_SERIALPORT_H
 
 #include <cstdio>
 #include <cstdlib>
@@ -62,4 +62,4 @@ namespace rm {
     };
 }
 
-#endif //RM_STANDARD2022_SERIALPORT_H
+#endif //RMCV_SERIALPORT_H

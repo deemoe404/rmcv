@@ -1,0 +1,53 @@
+\hypertarget{classrm_1_1DahengCamera}{}\doxysection{rm\+::Daheng\+Camera Class Reference}
+\label{classrm_1_1DahengCamera}\index{rm::DahengCamera@{rm::DahengCamera}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{classrm_1_1DahengCamera_a2761256f9bff1691488d34fb59cc80ca}{daheng\+Camera\+Init}} (char $\ast$sn, bool auto\+White\+Balance=false, int expoosure\+Time=2000, double gain\+Factor=1.\+0)
+\item 
+\mbox{\Hypertarget{classrm_1_1DahengCamera_a26eafbe92f9fb49f8cb111793723c1e8}\label{classrm_1_1DahengCamera_a26eafbe92f9fb49f8cb111793723c1e8}} 
+Mat {\bfseries get\+Frame} (bool flip=false, bool mirror=false)
+\item 
+\mbox{\Hypertarget{classrm_1_1DahengCamera_a8882578e2040e77c48dbf08104c12d82}\label{classrm_1_1DahengCamera_a8882578e2040e77c48dbf08104c12d82}} 
+void {\bfseries Process\+Data} (void $\ast$p\+Image\+Buf, void $\ast$p\+Image\+Raw8\+Buf, void $\ast$p\+Image\+R\+G\+B\+Buf, int n\+Image\+Width, int n\+Image\+Height, int n\+Pixel\+Format, int n\+Pixel\+Color\+Filter, bool flip=false, bool mirror=false)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classrm_1_1DahengCamera_af2091fa9cd85767f8c17ec3e2c50fe84}\label{classrm_1_1DahengCamera_af2091fa9cd85767f8c17ec3e2c50fe84}} 
+long {\bfseries fps} = 0
+\item 
+\mbox{\Hypertarget{classrm_1_1DahengCamera_a0e290a2ba858718f4047d0ff63e9a76e}\label{classrm_1_1DahengCamera_a0e290a2ba858718f4047d0ff63e9a76e}} 
+int64\+\_\+t {\bfseries Sensor\+Width} = -\/1
+\item 
+\mbox{\Hypertarget{classrm_1_1DahengCamera_a59b9039f62b362159b793363f177c291}\label{classrm_1_1DahengCamera_a59b9039f62b362159b793363f177c291}} 
+int64\+\_\+t {\bfseries Sensor\+Height} = -\/1
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classrm_1_1DahengCamera_a2761256f9bff1691488d34fb59cc80ca}\label{classrm_1_1DahengCamera_a2761256f9bff1691488d34fb59cc80ca}} 
+\index{rm::DahengCamera@{rm::DahengCamera}!dahengCameraInit@{dahengCameraInit}}
+\index{dahengCameraInit@{dahengCameraInit}!rm::DahengCamera@{rm::DahengCamera}}
+\doxysubsubsection{\texorpdfstring{dahengCameraInit()}{dahengCameraInit()}}
+{\footnotesize\ttfamily bool rm\+::\+Daheng\+Camera\+::daheng\+Camera\+Init (\begin{DoxyParamCaption}\item[{char $\ast$}]{sn,  }\item[{bool}]{auto\+White\+Balance = {\ttfamily false},  }\item[{int}]{expoosure\+Time = {\ttfamily 2000},  }\item[{double}]{gain\+Factor = {\ttfamily 1.0} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Initialize Da\+Heng camera with given parameters. 
+\begin{DoxyParams}{Parameters}
+{\em sn} & SN number of target camera. \\
+\hline
+{\em auto\+White\+Balance} & Auto adjust white balance. \\
+\hline
+{\em expoosure\+Time} & Exposure time. \\
+\hline
+{\em gain\+Factor} & Gain factor. Value should be inside \mbox{[}-\/1.\+0, 1.\+0\mbox{]}. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Initialization status. 
+\end{DoxyReturn}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+daheng.\+h\end{DoxyCompactItemize}

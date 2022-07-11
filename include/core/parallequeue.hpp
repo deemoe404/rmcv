@@ -2,8 +2,8 @@
 // Created by yaione on 3/13/22.
 //
 
-#ifndef RM_STANDARD2022_PARALLEQUEUE_HPP
-#define RM_STANDARD2022_PARALLEQUEUE_HPP
+#ifndef RMCV_PARALLEQUEUE_HPP
+#define RMCV_PARALLEQUEUE_HPP
 
 #include <mutex>
 #include <condition_variable>
@@ -68,4 +68,4 @@ namespace rm {
     };
 }
 
-#endif //RM_STANDARD2022_PARALLEQUEUE_HPP
+#endif //RMCV_PARALLEQUEUE_HPP

@@ -1,9 +1,3 @@
-# DEPRECATED
-
-Since I have left the team and there were a lack of hardware resources to keep up with the development, I am sorry to see this project go.
-
----
-
 # rmcv
 
 ## Overview

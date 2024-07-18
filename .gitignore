@@ -32,7 +32,7 @@
 *.app
 
 # Debug files
-cmake-build-debug/
+cmake-build-*/
 
 # idea configuation files
 .idea/

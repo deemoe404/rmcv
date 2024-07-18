@@ -10,7 +10,7 @@ include_directories(.
         ${CMAKE_CURRENT_BINARY_DIR})
 aux_source_directory(src SRC_DIR)
 add_library(rmcv ${SRC_DIR} include/mobility.h src/mobility.cpp)
-add_subdirectory(samples)
+add_subdirectory(executable)
 
 target_link_libraries(${PROJECT_NAME} gxiapi pthread ${OpenCV_LIBS})
 

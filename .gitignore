@@ -36,3 +36,6 @@ cmake-build-*/
 
 # idea configuation files
 .idea/
+
+# Resouces files
+executable/svm/images

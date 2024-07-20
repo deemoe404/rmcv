@@ -4,16 +4,20 @@ project(rmcv VERSION 0.1.0)
 set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenCV REQUIRED)
-include_directories(.
-        ${OpenCV_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR})
-aux_source_directory(src SRC_DIR)
-add_library(rmcv ${SRC_DIR} include/mobility.h src/mobility.cpp)
+include_directories(
+        ./
+        ./extra
+        ${OpenCV_INCLUDE_DIRS})
+
+aux_source_directory(./src SRC_DIR_CORE)
+add_library(rmcv ${SRC_DIR_CORE})
+target_link_libraries(rmcv pthread ${OpenCV_LIBS})
+set_target_properties(rmcv PROPERTIES LINKER_LANGUAGE CXX)
+
+aux_source_directory(./extra/src SRC_DIR_EXTRA)
+add_library(rmcv_extra ${SRC_DIR_EXTRA}
+        extra/include/rmcv_extra.h)
+target_link_libraries(rmcv_extra gxiapi)
+set_target_properties(rmcv_extra PROPERTIES LINKER_LANGUAGE CXX)
+
 add_subdirectory(executable)
-
-target_link_libraries(${PROJECT_NAME} gxiapi pthread ${OpenCV_LIBS})
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)

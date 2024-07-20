@@ -11,8 +11,6 @@
 #include <opencv2/opencv.hpp>
 #include <cstdlib>
 
-using namespace std;
-using namespace cv;
 
 namespace rm {
     class DahengCamera {
@@ -98,13 +96,13 @@ namespace rm {
             GXCloseLib();
         }
 
-        Mat getFrame(bool flip = false, bool mirror = false) {
+        cv::Mat getFrame(bool flip = false, bool mirror = false) {
             if (GXGetImage(hDevice, &frameData, 100) == GX_STATUS_SUCCESS) {
                 if (frameData.nStatus == 0) {
                     ProcessData(frameData.pImgBuf, pRaw8Buffer, pRGBframeData, frameData.nWidth, frameData.nHeight,
                                 (int) PixelFormat, mirror ? 2 : 4, flip, mirror);
                     fps++;
-                    Mat src(Size(frameData.nWidth, frameData.nHeight), CV_8UC3, pRGBframeData);
+                    cv::Mat src(cv::Size(frameData.nWidth, frameData.nHeight), CV_8UC3, pRGBframeData);
                     return src;
                 }
             }

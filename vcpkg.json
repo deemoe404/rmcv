@@ -1,0 +1,70 @@
+{
+  "name" : "rmcv",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "198d68dbcc6c907cb3d0b9b1d93c3df6ecf93c62",
+  "dependencies" : [ {
+    "name" : "abseil",
+    "version>=" : "20240116.2#3"
+  }, {
+    "name" : "ffmpeg",
+    "version>=" : "6.1.1#11"
+  }, {
+    "name" : "flatbuffers",
+    "version>=" : "24.3.25"
+  }, {
+    "name" : "libjpeg-turbo",
+    "version>=" : "3.0.3"
+  }, {
+    "name" : "liblzma",
+    "version>=" : "5.6.2"
+  }, {
+    "name" : "libpng",
+    "version>=" : "1.6.43#2"
+  }, {
+    "name" : "libwebp",
+    "version>=" : "1.4.0#1"
+  }, {
+    "name" : "opencv4",
+    "version>=" : "4.8.0#21",
+    "features": [
+      "contrib",
+      "ffmpeg"
+    ]
+  }, {
+    "name" : "pkgconf",
+    "version>=" : "2.2.0"
+  }, {
+    "name" : "protobuf",
+    "version>=" : "4.25.1"
+  }, {
+    "name" : "quirc",
+    "version>=" : "1.2"
+  }, {
+    "name" : "tiff",
+    "version>=" : "4.6.0#4"
+  }, {
+    "name" : "utf8-range",
+    "version>=" : "4.25.1"
+  }, {
+    "name" : "vcpkg-cmake-config",
+    "version>=" : "2024-05-23"
+  }, {
+    "name" : "vcpkg-cmake-get-vars",
+    "version>=" : "2023-12-31"
+  }, {
+    "name" : "vcpkg-cmake",
+    "version>=" : "2024-04-23"
+  }, {
+    "name" : "vcpkg-get-python-packages",
+    "version>=" : "2024-01-24"
+  }, {
+    "name" : "vcpkg-pkgconfig-get-modules",
+    "version>=" : "2024-04-03"
+  }, {
+    "name" : "vcpkg-tool-meson",
+    "version>=" : "1.3.2#8"
+  }, {
+    "name" : "zlib",
+    "version>=" : "1.3.1"
+  } ]
+}

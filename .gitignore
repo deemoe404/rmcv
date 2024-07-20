@@ -40,3 +40,6 @@ cmake-build-*/
 # Resouces files
 executable/svm/images
 executable/svm/videos
+
+#vcpkg
+.vcpkg

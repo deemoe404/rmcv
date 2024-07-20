@@ -61,6 +61,7 @@ namespace rm {
 
     bool LightBlobOverlap(std::vector<rm::LightBlob> &lightBlobs, int leftIndex, int rightIndex) {
         if (leftIndex < 0 || rightIndex > lightBlobs.size() || rightIndex - leftIndex < 2) return false;
+        if (lightBlobs[leftIndex].camp != lightBlobs[rightIndex].camp) return false;
 
         float lowerY = std::min(
                 std::min((float) lightBlobs[leftIndex].vertices[1].y, (float) lightBlobs[leftIndex].vertices[2].y),
@@ -70,6 +71,7 @@ namespace rm {
                 std::max((float) lightBlobs[rightIndex].vertices[0].y, (float) lightBlobs[rightIndex].vertices[3].y));
 
         for (int i = leftIndex; i < rightIndex; i++) {
+            if (lightBlobs[i].camp != lightBlobs[leftIndex].camp) continue;
             if (lightBlobs[i].center.x > lightBlobs[leftIndex].center.x &&
                 lightBlobs[i].center.x < lightBlobs[rightIndex].center.x && lightBlobs[i].center.y > lowerY &&
                 lightBlobs[i].center.y < UpperY) {
@@ -97,8 +99,9 @@ namespace rm {
         for (int i = 0; i < lightBlobs.size() - 1; ++i) {
             if (lightBlobs[i].camp != enemy) continue;
             for (int j = i + 1; j < lightBlobs.size(); ++j) {
-                if (lightBlobs[j].camp != enemy || rm::LightBlobOverlap(lightBlobs, i, j))
+                if (lightBlobs[j].camp != enemy)
                     continue;
+                // LightBlobOverlap(lightBlobs, i, j)
 
                 // Poor angle between two light blobs
                 float angleDif = abs(lightBlobs[i].angle - lightBlobs[j].angle);
@@ -118,10 +121,10 @@ namespace rm {
                 float ratio = std::min(heightI, heightJ) / std::max(heightI, heightJ);
                 if (ratio < lenRatio) continue;
 
-                float compensate = sin(atan2(std::min(heightI, heightJ), std::max(heightI, heightJ)));
-                float distance = rm::PointDistance(lightBlobs[i].center, lightBlobs[j].center);
-                float boxRatio = (std::max(heightI, heightI)) / (distance / compensate);
-                if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
+                // float compensate = sin(atan2(std::min(heightI, heightJ), std::max(heightI, heightJ)));
+                // float distance = rm::PointDistance(lightBlobs[i].center, lightBlobs[j].center);
+                // float boxRatio = (std::max(heightI, heightI)) / (distance / compensate);
+                // if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
 
                 if (abs(lightBlobs[i].center.y - lightBlobs[j].center.y) >
                     ((lightBlobs[i].size.height + lightBlobs[j].size.height) / 2))

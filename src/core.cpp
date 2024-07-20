@@ -4,27 +4,37 @@
 
 #include "include/core/core.h"
 
-namespace rm {
-    LightBlob::LightBlob(cv::RotatedRect box, rm::CampType camp) : angle(
-            box.angle > 90 ? box.angle - 90 : box.angle + 90), camp(camp), center(box.center) {
-        VerticesRectify(box, this->vertices, RECT_TALL);
+namespace rm
+{
+    LightBlob::LightBlob(cv::RotatedRect box, const CampType camp) :
+        angle(
+            box.angle > 90
+                ? box.angle - 90
+                : box.angle + 90), camp(camp),
+        center(box.center)
+    {
+        reorder_vertices(box, this->vertices, RECT_TALL);
 
         this->size = {std::min(box.size.height, box.size.width), std::max(box.size.height, box.size.width)};
     }
 
-    Armour::Armour(std::vector<rm::LightBlob> lightBlobs, float rank, rm::CampType camp) : camp(camp), rank(rank) {
-        if (lightBlobs.size() != 2) {
+    Armour::Armour(std::vector<rm::LightBlob> lightBlobs, float rank, rm::CampType camp) : camp(camp), rank(rank)
+    {
+        if (lightBlobs.size() != 2)
+        {
             throw std::runtime_error("Armour must be initialized with 2 rm::LightBlob (s).");
         }
 
         // sort light blobs left to right
         std::sort(lightBlobs.begin(), lightBlobs.end(),
-                  [](const rm::LightBlob &lightBar1, const rm::LightBlob &lightBar2) {
+                  [](const rm::LightBlob& lightBar1, const rm::LightBlob& lightBar2)
+                  {
                       return lightBar1.center.x < lightBar2.center.x;
                   });
 
         int i = 0, j = 3;
-        for (const auto &lightBar: lightBlobs) {
+        for (const auto& lightBar : lightBlobs)
+        {
             vertices[i++] = lightBar.vertices[j--];
             vertices[i++] = lightBar.vertices[j--];
         }
@@ -39,14 +49,16 @@ namespace rm {
         rm::CalcPerspective(vertices, vertices);
     }
 
-    Package::Package(rm::CampType camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat &inputFrame,
-                     const cv::Mat &inputBinary) : camp(camp), mode(mode), speed(speed), pitch(pitch) {
+    Package::Package(rm::CampType camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat& inputFrame,
+                     const cv::Mat& inputBinary) : camp(camp), mode(mode), speed(speed), pitch(pitch)
+    {
         inputFrame.copyTo(this->frame);
         inputBinary.copyTo(this->binary);
     }
 
-    Package::Package(const std::shared_ptr<rm::Package> &input) : camp(input->camp), mode(input->mode),
-                                                                  speed(input->speed), pitch(input->pitch) {
+    Package::Package(const std::shared_ptr<rm::Package>& input) : camp(input->camp), mode(input->mode),
+                                                                  speed(input->speed), pitch(input->pitch)
+    {
         input->frame.copyTo(this->frame);
         input->binary.copyTo(this->binary);
         this->armours = std::vector<rm::Armour>(input->armours);

@@ -4,14 +4,6 @@
 
 #include "include/rmcv.h"
 
-void mouseCallback([[maybe_unused]] int Event, const int X, const int Y,
-                   [[maybe_unused]] int Flags, void* Userdata)
-{
-    auto* const PointPtr = static_cast<cv::Point*>(Userdata);
-    PointPtr->x = X;
-    PointPtr->y = Y;
-}
-
 class video_controller
 {
     int index = 0;
@@ -42,10 +34,6 @@ public:
 int main()
 {
     video_controller video("./videos/output.avi");
-
-    cv::Point MousePosition;
-    namedWindow("Frame", cv::WINDOW_AUTOSIZE);
-    setMouseCallback("Frame", mouseCallback, &MousePosition);
 
     rm::parameters red;
     red.lower_bound = {32, 32, 0};
@@ -105,8 +93,6 @@ int main()
         else if (key_press == '4') red.lower_bound[1]++;
         else if (key_press == '5') red.lower_bound[2]--;
         else if (key_press == '6') red.lower_bound[2]++;
-
-        // video.update(+00);
 
         std::cout << "Lower Bound: " << red.lower_bound << std::endl;
     }

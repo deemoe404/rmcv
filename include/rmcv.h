@@ -8,14 +8,12 @@
 ///
 
 
-
 #ifndef RMCV_RMCV_H
 #define RMCV_RMCV_H
 
 #include "core/core.h"
 #include "camdrivers/daheng.h"
 
-#include "serialport.h"
 #include "parallequeue.hpp"
 #include "imgproc.h"
 #include "objdetect.h"
@@ -24,8 +22,8 @@
 
 
 /// \brief Main modules.
-namespace rm {
-
+namespace rm
+{
 }
 
 #endif //RMCV_RMCV_H

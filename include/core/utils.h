@@ -11,7 +11,6 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <filesystem>
-#include <sys/io.h>
 #include <cstring>
 #include "opencv2/opencv.hpp"
 
@@ -43,7 +42,7 @@ namespace rm {
     /// \param input The original rectangle.
     /// \param output Reordered vertices.
     /// \param type Rectangle type.
-    void VerticesRectify(cv::RotatedRect &input, cv::Point2f *output, RectType type);
+    void reorder_vertices(cv::RotatedRect &input, cv::Point2f *output, RectType type);
 
     /// Calibrate given point sets in to specified aspect ratio.
     /// \param input Origin point sets.

@@ -79,7 +79,7 @@ public:
 
 int main()
 {
-    dataset rm_labels("images/", {"1", "2", "3", "4", "5", "Sentry", "Negtive"});
+    dataset rm_labels("images/20240719/", {"1", "2", "3", "4", "5", "Sentry", "Negtive"});
 
     float correct = 0, total = 0;
     for (int i = 0; i < 100; i++)
@@ -116,9 +116,9 @@ int main()
             }
         }
 
-        const double inference_time = static_cast<double>(cv::getTickCount() - tick) / cv::getTickFrequency() * 1000;
+        const double inference_time = static_cast<double>(cv::getTickCount() - tick) / cv::getTickFrequency() * 1000 * 1000;
         std::cout << i << " Accuracy: " << correct / total * 100 << "%, train time: " << train_time <<
-            "s, inference time: " << inference_time / total << "ms." << std::endl;
+            "s, inference time: " << inference_time / total << "us." << std::endl;
     }
     std::cout << "Total Accuracy: " << correct / total * 100 << "%" << std::endl;
 

@@ -2,7 +2,7 @@
 // Created by yaione on 3/4/22.
 //
 
-#include "include/serialport.h"
+#include "serialport.h"
 
 namespace rm {
     unsigned char LookupCRC(unsigned char *data, unsigned char dataLength, const unsigned char *crcTable) {

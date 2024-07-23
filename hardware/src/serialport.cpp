@@ -29,7 +29,7 @@ namespace rm {
                 options.c_cflag &= ~CSIZE;
                 options.c_cflag |= CS8;
                 options.c_cflag &= ~CSTOPB;
-                options.c_iflag |= IGNPAR;
+                options.c_iflag = 0;
                 options.c_oflag = 0;
                 options.c_lflag = 0;
 

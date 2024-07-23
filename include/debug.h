@@ -5,17 +5,19 @@
 #ifndef RMCV_DEBUG_H
 #define RMCV_DEBUG_H
 
-#include "core/core.h"
+#include "core.h"
 
 /// \brief Debug utilities.
-namespace rm::debug {
-    void DrawArmours(const std::vector<rm::Armour> &input, cv::Mat &output, int index);
+namespace rm::debug
+{
+    void DrawArmours(const std::vector<rm::armour>& input, cv::Mat& output, int index);
 
-    void DrawArmour(rm::Armour input, cv::Mat &output);
+    void DrawArmour(rm::armour input, cv::Mat& output);
 
-    void DrawLightBlobs(const std::vector<rm::LightBlob> &input, cv::Mat &output, int index);
+    void draw_lightblobs(const std::vector<lightblob>& positive, const std::vector<contour>& negative, cv::Mat& output,
+                        int index);
 
-    void PrintMat(cv::Mat &input, int decimal = 0);
+    void PrintMat(cv::Mat& input, int decimal = 0);
 }
 
 #endif //RMCV_DEBUG_H

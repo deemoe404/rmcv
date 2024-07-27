@@ -1,6 +1,5 @@
-add_executable(standard standard/main.cpp standard/main.h)
-target_include_directories(standard PRIVATE ../include)
-target_link_libraries(standard rmcv)
+add_executable(main main.cpp)
+target_link_libraries(main rmcv) #rmcv_hardware
 
 add_executable(svm_optimizer svm/optimizer.cpp)
 target_link_libraries(svm_optimizer rmcv)

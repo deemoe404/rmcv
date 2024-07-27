@@ -14,7 +14,9 @@
 #include <cstring>
 #include "opencv2/opencv.hpp"
 
+
 #include <string>
+#include <thread>
 #include <algorithm>
 #include <filesystem>
 #include <random>
@@ -215,6 +217,12 @@ namespace rm::utils
     std::string PathCombine(const std::string& path1, const std::string& path2);
 
     std::string int2str(int number);
+
+    /// Convert euler angles to rotation matrix.
+    /// \param x Rotation angle around x axis in radians.
+    /// \param y Rotation angle around y axis in radians.
+    /// \param z Rotation angle around z axis in radians.
+    cv::Mat euler2matrix(double x, double y, double z);
 }
 
 #endif //RMCV_CORE_H

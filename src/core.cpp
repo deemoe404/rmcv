@@ -389,14 +389,14 @@ namespace rm::utils
         return res;
     }
 
-    void CalcPerspective(cv::Point2f input[4], cv::Point2f output[4], float outRatio)
+    void CalcPerspective(cv::Point2f input[4], cv::Point2f output[4], const float outRatio)
     {
-        float leftHeight = PointDistance(input[0], input[1]);
-        float rightHeight = PointDistance(input[2], input[3]);
-        float maxHeight = fmax(leftHeight, rightHeight);
+        const float leftHeight = PointDistance(input[0], input[1]);
+        const float rightHeight = PointDistance(input[2], input[3]);
+        const float maxHeight = fmax(leftHeight, rightHeight);
 
-        cv::Size2f size((maxHeight * outRatio), maxHeight);
-        cv::Point2f center = LineCenter(LineCenter(input[0], input[1]), LineCenter(input[2], input[3]));
+        const cv::Size2f size(maxHeight * outRatio, maxHeight);
+        const cv::Point2f center = LineCenter(LineCenter(input[0], input[1]), LineCenter(input[2], input[3]));
 
         output[0].x = center.x - size.width / 2;
         output[0].y = center.y - size.height / 2;
@@ -411,5 +411,25 @@ namespace rm::utils
     cv::Point2f LineCenter(const cv::Point2f& pt1, const cv::Point2f& pt2)
     {
         return {pt1.x / 2 + pt2.x / 2, pt1.y / 2 + pt2.y / 2};
+    }
+
+    cv::Mat euler2matrix(const double x, const double y, const double z)
+    {
+        const cv::Mat r_z = (cv::Mat_<double>(3, 3, CV_64F) <<
+            std::cos(z), -std::sin(z), 0,
+            std::sin(z), std::cos(z), 0,
+            0, 0, 1);
+
+        const cv::Mat r_y = (cv::Mat_<double>(3, 3, CV_64F) <<
+            std::cos(y), 0, std::sin(y),
+            0, 1, 0,
+            -std::sin(y), 0, std::cos(y));
+
+        const cv::Mat r_x = (cv::Mat_<double>(3, 3, CV_64F) <<
+            1, 0, 0,
+            0, std::cos(x), -std::sin(x),
+            0, std::sin(x), std::cos(x));
+
+        return r_z * r_y * r_x;
     }
 }

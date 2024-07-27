@@ -7,3 +7,6 @@ target_link_libraries(svm_optimizer rmcv)
 
 add_executable(svm_labeler svm/labeler.cpp)
 target_link_libraries(svm_labeler rmcv)
+
+add_executable(kalman_filter_test kalman_filter/test.cpp)
+target_link_libraries(kalman_filter_test rmcv)

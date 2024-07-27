@@ -42,23 +42,23 @@ namespace rm {
                             0x82, 0xb3, 0xe0, 0xd1, 0x46, 0x77, 0x24, 0x15, 0x3b, 0x0a, 0x59, 0x68, 0xff, 0xce, 0x9d,
                             0xac};
 
-    unsigned char LookupCRC(unsigned char *data, unsigned char dataLength, const unsigned char *crcTable = rm::CRC8);
+    unsigned char lookup_CRC(unsigned char *data, unsigned char dataLength, const unsigned char *crcTable = rm::CRC8);
 
-    class SerialPort {
+    class serial_port {
     private:
         int fd = -1;
         bool initialized = false;
 
     public:
-        SerialPort() = default;
+        serial_port() = default;
 
-        bool Initialize(const char *deviceName = "/dev/ttyUSB0", unsigned int speed = B460800);
+        bool initialize(const char *deviceName = "/dev/ttyUSB0", unsigned int speed = B230400);
 
-        bool Send(const unsigned char *packet, int length) const;
+        bool send(const unsigned char *packet, int length) const;
 
-        bool Receive(unsigned char *packet, int length);
+        bool receive(unsigned char *packet, int length) const;
 
-        void Destroyed() const;
+        void destroyed() const;
     };
 }
 

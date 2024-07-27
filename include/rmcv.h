@@ -11,14 +11,14 @@
 #ifndef RMCV_RMCV_H
 #define RMCV_RMCV_H
 
-#include "core/core.h"
-#include "camdrivers/daheng.h"
-
-#include "parallequeue.hpp"
+#include "core.h"
 #include "imgproc.h"
 #include "objdetect.h"
 #include "debug.h"
 #include "mobility.h"
+#include "svm.h"
+
+#include "parallequeue.hpp"
 
 
 /// \brief Main modules.

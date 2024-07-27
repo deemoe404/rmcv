@@ -2,11 +2,13 @@
 // Created by yaione on 3/5/22.
 //
 
-#include "include/objdetect.h"
+#include "objdetect.h"
 
-namespace rm {
-    bool MatchLightBlob(const std::vector<cv::Point> &contour, float minRatio, float maxRatio, float tiltAngle,
-                        float minArea, float maxArea, cv::RotatedRect &lightBlobBox, bool fitEllipse) {
+namespace rm
+{
+    bool MatchLightBlob(const std::vector<cv::Point>& contour, float minRatio, float maxRatio, float tiltAngle,
+                        float minArea, float maxArea, cv::RotatedRect& lightBlobBox, bool fitEllipse)
+    {
         if (contour.size() < 6 || cv::contourArea(contour) < minArea || cv::contourArea(contour) > maxArea)
             return false;
 
@@ -25,126 +27,136 @@ namespace rm {
         return true;
     }
 
-    void FindLightBlobs(std::vector<rm::Contour> &contours, std::vector<rm::LightBlob> &lightBlobs, float minRatio,
-                        float maxRatio, float tiltAngle, float minArea, float maxArea, const cv::Mat &source,
-                        bool fitEllipse) {
+    void FindLightBlobs(std::vector<contour>& contours, std::vector<lightblob>& lightBlobs, float minRatio,
+                        float maxRatio, float tiltAngle, float minArea, float maxArea, const cv::Mat& source,
+                        bool fitEllipse)
+    {
         lightBlobs.clear();
         if (source.channels() != 3) return;
 
         cv::RotatedRect box;
-        for (auto &contour: contours) {
-            if (!rm::MatchLightBlob(contour, minRatio, maxRatio, tiltAngle, minArea, maxArea, box, fitEllipse))
+        for (auto& contour : contours)
+        {
+            if (!MatchLightBlob(contour, minRatio, maxRatio, tiltAngle, minArea, maxArea, box, fitEllipse))
                 continue;
 
-            cv::Scalar meanValue = cv::mean(source(cv::boundingRect(contour)));
-            if (meanValue.val[1] > meanValue.val[0] && meanValue.val[1] > meanValue.val[2]) {
-                lightBlobs.emplace_back(box, rm::CAMP_GUIDELIGHT);
-            } else {
-                lightBlobs.emplace_back(box, meanValue.val[0] > meanValue.val[2] ? rm::CAMP_BLUE : rm::CAMP_RED);
+            cv::Scalar meanValue = mean(source(boundingRect(contour)));
+            if (meanValue.val[1] > meanValue.val[0] && meanValue.val[1] > meanValue.val[2])
+            {
+                lightBlobs.emplace_back(box, CAMP_GUIDELIGHT);
+            }
+            else
+            {
+                lightBlobs.emplace_back(box, meanValue.val[0] > meanValue.val[2] ? CAMP_BLUE : CAMP_RED);
             }
         }
     }
 
-    void FindLightBlobs(std::vector<rm::Contour> &contours, std::vector<rm::LightBlob> &lightBlobs, float minRatio,
-                        float maxRatio, float tiltAngle, float minArea, float maxArea, rm::CampType camp,
-                        bool fitEllipse) {
-        lightBlobs.clear();
+    void filter_lightblobs(const std::vector<contour>& contours, std::vector<lightblob>& positive,
+                           std::vector<contour>& negative, const float tilt_max, const range<float> ratio_range,
+                           const range<double> area_range, color_camp enemy)
+    {
+        positive.clear();
+        negative.clear();
 
-        cv::RotatedRect box;
-        for (auto &contour: contours) {
-            if (!rm::MatchLightBlob(contour, minRatio, maxRatio, tiltAngle, minArea, maxArea, box, fitEllipse))
+        for (auto& contour : contours)
+        {
+            if (contour.size() < 6 || !area_range.contains(contourArea(contour)))
                 continue;
 
-            lightBlobs.emplace_back(box, camp);
+            bool negative_flag = false;
+            cv::RotatedRect ellipse = fitEllipseDirect(contour);
+            cv::RotatedRect box = minAreaRect(contour);
+
+            if (const float ratio =
+                    std::max(ellipse.size.width, ellipse.size.height) /
+                    std::min(ellipse.size.width, ellipse.size.height);
+                !ratio_range.contains(ratio))
+                negative_flag = true;
+
+            // Perpendicular to the frame is considered as 90 degrees, tilt left < 90, tilt right > 90
+            if (const float angle = ellipse.angle > 90 ? ellipse.angle - 90 : ellipse.angle + 90;
+                abs(angle - 90) > tilt_max)
+                negative_flag = true;
+
+            if (negative_flag) negative.push_back(contour);
+            else positive.emplace_back(ellipse, enemy);
         }
     }
 
-    bool LightBlobOverlap(std::vector<rm::LightBlob> &lightBlobs, int leftIndex, int rightIndex) {
+    bool LightBlobOverlap(const std::vector<lightblob>& lightBlobs, const int leftIndex, const int rightIndex)
+    {
         if (leftIndex < 0 || rightIndex > lightBlobs.size() || rightIndex - leftIndex < 2) return false;
         if (lightBlobs[leftIndex].camp != lightBlobs[rightIndex].camp) return false;
 
         float lowerY = std::min(
-                std::min((float) lightBlobs[leftIndex].vertices[1].y, (float) lightBlobs[leftIndex].vertices[2].y),
-                std::min((float) lightBlobs[rightIndex].vertices[1].y, (float) lightBlobs[rightIndex].vertices[2].y));
+            std::min((float)lightBlobs[leftIndex].vertices[1].y, (float)lightBlobs[leftIndex].vertices[2].y),
+            std::min((float)lightBlobs[rightIndex].vertices[1].y, (float)lightBlobs[rightIndex].vertices[2].y));
         float UpperY = std::max(
-                std::max((float) lightBlobs[leftIndex].vertices[0].y, (float) lightBlobs[leftIndex].vertices[3].y),
-                std::max((float) lightBlobs[rightIndex].vertices[0].y, (float) lightBlobs[rightIndex].vertices[3].y));
+            std::max((float)lightBlobs[leftIndex].vertices[0].y, (float)lightBlobs[leftIndex].vertices[3].y),
+            std::max((float)lightBlobs[rightIndex].vertices[0].y, (float)lightBlobs[rightIndex].vertices[3].y));
 
-        for (int i = leftIndex; i < rightIndex; i++) {
+        for (int i = leftIndex; i < rightIndex; i++)
+        {
             if (lightBlobs[i].camp != lightBlobs[leftIndex].camp) continue;
             if (lightBlobs[i].center.x > lightBlobs[leftIndex].center.x &&
                 lightBlobs[i].center.x < lightBlobs[rightIndex].center.x && lightBlobs[i].center.y > lowerY &&
-                lightBlobs[i].center.y < UpperY) {
+                lightBlobs[i].center.y < UpperY)
+            {
                 return true;
             }
         }
         return false;
     }
 
-    void FindArmour(std::vector<rm::LightBlob> &lightBlobs, std::vector<rm::Armour> &armours, float maxAngleDif,
-                    float errAngle, float minBoxRatio, float maxBoxRatio, float lenRatio, rm::CampType enemy,
-                    bool filter) {
+    void filter_armours(std::vector<lightblob>& lightblobs, std::vector<armour>& armours,
+                        const float angle_difference_max, const float shear_max, const float lenght_ratio_max,
+                        const color_camp enemy)
+    {
         armours.clear();
-        if (lightBlobs.size() < 2) return;
+        if (lightblobs.size() < 2) return;
 
-        // sort ascending by x
-        std::sort(lightBlobs.begin(), lightBlobs.end(),
-                  [](const rm::LightBlob &lightBlob1, const rm::LightBlob &lightBlob2) {
-                      return lightBlob1.center.x < lightBlob2.center.x;
-                  });
-
-        float yDifHistory = -1;
-        int lastJ = -1;
-
-        for (int i = 0; i < lightBlobs.size() - 1; ++i) {
-            if (lightBlobs[i].camp != enemy) continue;
-            for (int j = i + 1; j < lightBlobs.size(); ++j) {
-                if (lightBlobs[j].camp != enemy)
-                    continue;
-                // LightBlobOverlap(lightBlobs, i, j)
-
-                // Poor angle between two light blobs
-                float angleDif = abs(lightBlobs[i].angle - lightBlobs[j].angle);
-                if (angleDif > maxAngleDif) continue;
-
-                float y = abs(lightBlobs[i].center.y - lightBlobs[j].center.y);
-                float x = abs(lightBlobs[i].center.x - lightBlobs[j].center.x);
-                float angle = atan2(y, x) * 180.0f / (float) CV_PI;
-                float errorI = abs(lightBlobs[i].angle > 90 ? abs(lightBlobs[i].angle - angle) - 90 :
-                                   abs(180 - lightBlobs[i].angle - angle) - 90);
-                float errorJ = abs(lightBlobs[j].angle > 90 ? abs(lightBlobs[j].angle - angle) - 90 :
-                                   abs(180 - lightBlobs[j].angle - angle) - 90);
-                if (errorI > errAngle || errorJ > errAngle) continue;
-
-                float heightI = lightBlobs[i].size.height;
-                float heightJ = lightBlobs[j].size.height;
-                float ratio = std::min(heightI, heightJ) / std::max(heightI, heightJ);
-                if (ratio < lenRatio) continue;
-
-                // float compensate = sin(atan2(std::min(heightI, heightJ), std::max(heightI, heightJ)));
-                // float distance = rm::PointDistance(lightBlobs[i].center, lightBlobs[j].center);
-                // float boxRatio = (std::max(heightI, heightI)) / (distance / compensate);
-                // if (boxRatio > maxBoxRatio || boxRatio < minBoxRatio)continue;
-
-                if (abs(lightBlobs[i].center.y - lightBlobs[j].center.y) >
-                    ((lightBlobs[i].size.height + lightBlobs[j].size.height) / 2))
+        for (int i = 0; i < lightblobs.size() - 1; ++i)
+        {
+            if (lightblobs[i].camp != enemy)
+                continue;
+            for (int j = i + 1; j < lightblobs.size(); ++j)
+            {
+                if (lightblobs[j].camp != enemy)
                     continue;
 
-                if (filter) {
-                    float yDiff = std::min(lightBlobs[j].size.height, lightBlobs[i].size.height);
-                    if (lastJ == i) {
-                        if (yDifHistory < yDiff) {
-                            armours.pop_back();
-                        } else {
-                            continue;
-                        }
-                    }
-                    yDifHistory = yDiff;
-                    lastJ = j;
-                }
-                armours.push_back(rm::Armour({lightBlobs[i], lightBlobs[j]}, 0, lightBlobs[i].camp));
+                if (const float angle_difference = abs(lightblobs[i].angle - lightblobs[j].angle);
+                    angle_difference > angle_difference_max)
+                    continue;
+
+                const float y = abs(lightblobs[i].center.y - lightblobs[j].center.y);
+                const float x = abs(lightblobs[i].center.x - lightblobs[j].center.x);
+                const float rect_angle = atan2(y, x) * 180.0f / static_cast<float>(CV_PI);
+                const float shear_i = abs(lightblobs[i].angle > 90
+                                              ? abs(lightblobs[i].angle - rect_angle) - 90
+                                              : abs(180 - lightblobs[i].angle - rect_angle) - 90);
+                const float shear_j = abs(lightblobs[j].angle > 90
+                                              ? abs(lightblobs[j].angle - rect_angle) - 90
+                                              : abs(180 - lightblobs[j].angle - rect_angle) - 90);
+                if (shear_i > shear_max || shear_j > shear_max)
+                    continue;
+
+                float height_i = lightblobs[i].size.height;
+                float height_j = lightblobs[j].size.height;
+                if (const float ratio = std::min(height_i, height_j) / std::max(height_i, height_j);
+                    ratio < lenght_ratio_max)
+                    continue;
+
+                if (abs(lightblobs[i].center.y - lightblobs[j].center.y) >
+                    (lightblobs[i].size.height + lightblobs[j].size.height) / 2)
+                    continue;
+
+                if (abs(lightblobs[i].center.x - lightblobs[j].center.x)>
+                    (lightblobs[i].size.height + lightblobs[j].size.height) * 2)
+                    continue;
+
+                armours.push_back(armour({lightblobs[i], lightblobs[j]}, 0, lightblobs[i].camp));
             }
         }
     }
-
 }

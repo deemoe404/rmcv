@@ -11,46 +11,52 @@
 #include <queue>
 #include <memory>
 
-namespace rm {
-    template<typename DATATYPE, typename SEQUENCE = std::deque<DATATYPE>>
-    class ParallelQueue {
-    private:
+namespace rm
+{
+    template <typename DATATYPE, typename SEQUENCE = std::deque<DATATYPE>>
+    class parallel_queue
+    {
         std::condition_variable m_cond;
         std::queue<DATATYPE, SEQUENCE> m_data;
         mutable std::mutex m_mutex;
 
     public:
-        ParallelQueue() = default;
+        parallel_queue() = default;
 
-        ParallelQueue(ParallelQueue &&) = delete;
+        parallel_queue(parallel_queue&&) = delete;
 
-        ~ParallelQueue() = default;
+        ~parallel_queue() = default;
 
-        ParallelQueue &operator=(const ParallelQueue &) = delete;
+        parallel_queue& operator=(const parallel_queue&) = delete;
 
-        bool Empty() const {
+        bool empty() const
+        {
             std::lock_guard<std::mutex> lg(m_mutex);
             return m_data.empty();
         }
 
-        ParallelQueue(const ParallelQueue &other) {
+        parallel_queue(const parallel_queue& other)
+        {
             std::lock_guard<std::mutex> lg(other.m_mutex);
             m_data = other.m_data;
         }
 
-        void push(const DATATYPE &data) {
+        void push(const DATATYPE& data)
+        {
             std::lock_guard<std::mutex> lg(m_mutex);
             m_data.push(data);
             m_cond.notify_one();
         }
 
-        void push(DATATYPE &&data) {
+        void push(DATATYPE&& data)
+        {
             std::lock_guard<std::mutex> lg(m_mutex);
             m_data.push(std::move(data));
             m_cond.notify_one();
         }
 
-        std::shared_ptr<DATATYPE> tryPop() {
+        std::shared_ptr<DATATYPE> tryPop()
+        {
             std::lock_guard<std::mutex> lg(m_mutex);
             if (m_data.empty()) return {};
             auto res = std::make_shared<DATATYPE>(m_data.front());
@@ -58,7 +64,8 @@ namespace rm {
             return res;
         }
 
-        std::shared_ptr<DATATYPE> pop() {
+        std::shared_ptr<DATATYPE> pop()
+        {
             std::unique_lock<std::mutex> lg(m_mutex);
             m_cond.wait(lg, [this] { return !m_data.empty(); });
             auto res = std::make_shared<DATATYPE>(std::move(m_data.front()));

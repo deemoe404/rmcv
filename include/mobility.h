@@ -10,7 +10,7 @@
 #ifndef RMCV_MOBILITY_H
 #define RMCV_MOBILITY_H
 
-#include "core/core.h"
+#include "core.h"
 
 namespace rm {
     /// \brief Define witch method is used to calculate the compensation of gravity.

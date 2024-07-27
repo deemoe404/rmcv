@@ -2,7 +2,7 @@
 // Created by yaione on 7/11/2022.
 //
 
-#include "include/mobility.h"
+#include "mobility.h"
 
 namespace rm {
     void AxisRotateX(double y, double z, double thetaX, double &outY, double &outZ) {

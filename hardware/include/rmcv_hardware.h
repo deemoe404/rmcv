@@ -6,6 +6,7 @@
 #define RMCV_EXTRA_H
 
 #include "serialport.h"
+#include "daheng.h"
 
 namespace rm
 {

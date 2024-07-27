@@ -15,8 +15,7 @@ target_link_libraries(rmcv pthread ${OpenCV_LIBS})
 set_target_properties(rmcv PROPERTIES LINKER_LANGUAGE CXX)
 
 aux_source_directory(./hardware/src SRC_DIR_EXTRA)
-add_library(rmcv_hardware ${SRC_DIR_EXTRA}
-        hardware/include/rmcv_hardware.h)
+add_library(rmcv_hardware ${SRC_DIR_EXTRA})
 target_link_libraries(rmcv_hardware gxiapi)
 set_target_properties(rmcv_hardware PROPERTIES LINKER_LANGUAGE CXX)
 

@@ -12,12 +12,14 @@
 
 #include "core.h"
 
-namespace rm {
+namespace rm
+{
     /// \brief Define witch method is used to calculate the compensation of gravity.
-    [[maybe_unused]] typedef enum CompensateMode {
-        COMPENSATE_NONE = 0,    ///< No compensation
+    [[maybe_unused]] typedef enum CompensateMode
+    {
+        COMPENSATE_NONE = 0, ///< No compensation
         COMPENSATE_CLASSIC = 1, ///< Use newtonian's theorem of mechanics
-        COMPENSATE_NI = 2       ///< Use newton iteration method
+        COMPENSATE_NI = 2 ///< Use newton iteration method
     } CompensateMode;
 
     /// \brief Rotate the vector around the x-axis.
@@ -26,7 +28,7 @@ namespace rm {
     /// \param thetaX angle to be rotate.
     /// \param outY   y of the vector after rotation.
     /// \param outZ   z of the vector after rotation.
-    void AxisRotateX(double y, double z, double thetaX, double &outY, double &outZ);
+    void AxisRotateX(double y, double z, double thetaX, double& outY, double& outZ);
 
     /// \brief Rotate the vector around the y-axis.
     /// \param x      x of the vector.
@@ -34,7 +36,7 @@ namespace rm {
     /// \param thetaY angle to be rotate.
     /// \param outX   x of the vector after rotation.
     /// \param outZ   z of the vector after rotation.
-    void AxisRotateY(double x, double z, double thetaY, double &outX, double &outZ);
+    void AxisRotateY(double x, double z, double thetaY, double& outX, double& outZ);
 
     /// \brief Rotate the vector around the z-axis.
     /// \param x      x of the vector.
@@ -42,7 +44,7 @@ namespace rm {
     /// \param thetaZ angle to be rotate.
     /// \param outX   x of the vector after rotation.
     /// \param outY   y of the vector after rotation.
-    void AxisRotateZ(double x, double y, double thetaZ, double &outX, double &outY);
+    void AxisRotateZ(double x, double y, double thetaZ, double& outX, double& outY);
 
     /// \brief Solve height difference between barrel and target.
     /// \param translationVector The translation vector of target.
@@ -51,7 +53,7 @@ namespace rm {
     /// \param angleOffset       Angle offset between camera and barrel.      (RAD)
     /// \return Height difference between barrel and target in cm, NAN if translationVector is not in cv::Mat format.
     [[maybe_unused]] double
-    DeltaHeight(cv::InputArray translationVector, double motorAngle, const cv::Point2f &offset = {0, 0},
+    DeltaHeight(cv::InputArray translationVector, double motorAngle, const cv::Point2f& offset = {0, 0},
                 double angleOffset = 0);
 
     /// \brief Solve the distance between camera and target.
@@ -92,21 +94,18 @@ namespace rm {
     /// \return Estimation air time, NAN if translationVector is not in cv::Mat format.
     [[maybe_unused]] double
     SolveGEA(cv::InputArray translationVector, cv::OutputArray gimbalErrorAngle, double g, double v0, double h,
-             const cv::Point2f &offset = {0, 0}, double angleOffset = 0, rm::CompensateMode mode = rm::COMPENSATE_NONE);
+             const cv::Point2f& offset = {0, 0}, double angleOffset = 0, rm::CompensateMode mode = rm::COMPENSATE_NONE);
 
     /// \brief Solve the rotation & translation vector using cv::solvePnP & cv::SOLVEPNP_IPPE_SQUARE.
-    /// \param imagePoints       Object points on image (Quantity must be four).
+    /// \param points_image      Points on the image.
     /// \param cameraMatrix      Camera matrix.
     /// \param distortionFactor  Camera distortion factor.
     /// \param exactSize         Exact size of the coordinate object (cm).
-    /// \param translationVector [OUT] Translation vector.
-    /// \param rotationVector    [OUT] Rotation vector.
     /// \return False if imagePoints.size() is not 4, or there might be errors in Camera-parameters or Points-given, such
     ///         as wrong There is no one-to-one correspondence between the points on the image and the actual points.
-    [[maybe_unused]] bool
-    SolvePNP(const std::vector<cv::Point2f> &imagePoints, cv::InputArray cameraMatrix, cv::InputArray distortionFactor,
-             const cv::Size2f &exactSize, cv::OutputArray translationVector, cv::OutputArray rotationVector,
-             const cv::Rect &ROI = {0, 0, 0, 0});
+    std::tuple<cv::Mat, cv::Mat>
+    solve_PnP(const cv::Point2f points_image[4], cv::InputArray cameraMatrix, cv::InputArray distortionFactor,
+              const cv::Size2f& exactSize, const cv::Rect& ROI = {0, 0, 0, 0});
 }
 
 #endif //RMCV_MOBILITY_H

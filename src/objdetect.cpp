@@ -52,12 +52,12 @@ namespace rm
         }
     }
 
-    void filter_lightblobs(const std::vector<contour>& contours, std::vector<lightblob>& positive,
-                           std::vector<contour>& negative, const float tilt_max, const range<float> ratio_range,
-                           const range<double> area_range, color_camp enemy)
+    auto filter_lightblobs(const std::vector<contour>& contours, const float tilt_max, const range<float> ratio_range,
+                           const range<double> area_range, camp enemy)
+        -> std::tuple<std::vector<lightblob>, std::vector<contour>>
     {
-        positive.clear();
-        negative.clear();
+        std::vector<lightblob> positive;
+        std::vector<contour> negative;
 
         for (auto& contour : contours)
         {
@@ -82,12 +82,14 @@ namespace rm
             if (negative_flag) negative.push_back(contour);
             else positive.emplace_back(ellipse, enemy);
         }
+
+        return {positive, negative};
     }
 
     bool LightBlobOverlap(const std::vector<lightblob>& lightBlobs, const int leftIndex, const int rightIndex)
     {
         if (leftIndex < 0 || rightIndex > lightBlobs.size() || rightIndex - leftIndex < 2) return false;
-        if (lightBlobs[leftIndex].camp != lightBlobs[rightIndex].camp) return false;
+        if (lightBlobs[leftIndex].target != lightBlobs[rightIndex].target) return false;
 
         float lowerY = std::min(
             std::min((float)lightBlobs[leftIndex].vertices[1].y, (float)lightBlobs[leftIndex].vertices[2].y),
@@ -98,7 +100,7 @@ namespace rm
 
         for (int i = leftIndex; i < rightIndex; i++)
         {
-            if (lightBlobs[i].camp != lightBlobs[leftIndex].camp) continue;
+            if (lightBlobs[i].target != lightBlobs[leftIndex].target) continue;
             if (lightBlobs[i].center.x > lightBlobs[leftIndex].center.x &&
                 lightBlobs[i].center.x < lightBlobs[rightIndex].center.x && lightBlobs[i].center.y > lowerY &&
                 lightBlobs[i].center.y < UpperY)
@@ -111,18 +113,18 @@ namespace rm
 
     void filter_armours(std::vector<lightblob>& lightblobs, std::vector<armour>& armours,
                         const float angle_difference_max, const float shear_max, const float lenght_ratio_max,
-                        const color_camp enemy)
+                        const camp enemy)
     {
         armours.clear();
         if (lightblobs.size() < 2) return;
 
         for (int i = 0; i < lightblobs.size() - 1; ++i)
         {
-            if (lightblobs[i].camp != enemy)
+            if (lightblobs[i].target != enemy)
                 continue;
             for (int j = i + 1; j < lightblobs.size(); ++j)
             {
-                if (lightblobs[j].camp != enemy)
+                if (lightblobs[j].target != enemy)
                     continue;
 
                 if (const float angle_difference = abs(lightblobs[i].angle - lightblobs[j].angle);
@@ -151,11 +153,11 @@ namespace rm
                     (lightblobs[i].size.height + lightblobs[j].size.height) / 2)
                     continue;
 
-                if (abs(lightblobs[i].center.x - lightblobs[j].center.x)>
+                if (abs(lightblobs[i].center.x - lightblobs[j].center.x) >
                     (lightblobs[i].size.height + lightblobs[j].size.height) * 2)
                     continue;
 
-                armours.push_back(armour({lightblobs[i], lightblobs[j]}, 0, lightblobs[i].camp));
+                armours.push_back(armour({lightblobs[i], lightblobs[j]}, 0, lightblobs[i].target));
             }
         }
     }

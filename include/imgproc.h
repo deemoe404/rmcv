@@ -9,12 +9,12 @@
 
 namespace rm
 {
-    /// Calibrate a portion of the source frame to the destine rect.
+    /// Calibrate a portion of the source frame to the destine rect using Affine Transformation Correction.
     /// \param source Source image.
-    /// \param calibration Output calibrated image.
     /// \param vertices Vertices of the portion on the source frame.
     /// \param outSize Destine size.
-    void CalcRatio(cv::Mat& source, cv::Mat& calibration, cv::Point2f vertices[4], cv::Size outSize);
+    /// \return Calibrated image.
+    cv::Mat affine_correction(const cv::Mat& source, cv::Point2f vertices[4], cv::Size outSize);
 
     /// Perform a gamma transform on the input image.
     /// \param source Source image.
@@ -24,10 +24,9 @@ namespace rm
 
     /// Extract specified color from source image.
     /// \param image Source image.
-    /// \param binary Output binary image.
-    /// \param enemy Specify the camp of the color to be extracted.
+    /// \param target Specify the camp of the color to be extracted.
     /// \param lower_bound Lower bound when performing binarization.
-    void extract_color(cv::InputArray image, cv::OutputArray binary, color_camp enemy, int lower_bound);
+    std::vector<contour> extract_color(cv::InputArray image, camp target, int lower_bound);
 
     /// Auto enhance image by the given benchmarks.
     /// \param frame Source image & destine image.

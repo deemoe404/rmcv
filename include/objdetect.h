@@ -44,9 +44,9 @@ namespace rm
     /// \param ratio_range Aspect ratio range.
     /// \param area_range  Area range.
     /// \param enemy       Enemy camp.
-    void filter_lightblobs(const std::vector<contour>& contours, std::vector<lightblob>& positive,
-                           std::vector<contour>& negative, float tilt_max, range<float> ratio_range,
-                           range<double> area_range, color_camp enemy);
+    auto filter_lightblobs(const std::vector<contour>& contours, float tilt_max, range<float> ratio_range,
+                           range<double> area_range, camp enemy)
+        -> std::tuple<std::vector<lightblob>, std::vector<contour>>;
 
     /// Find guid light
     /// \param lightBlobs
@@ -69,7 +69,7 @@ namespace rm
     /// \param lenght_ratio_max     Maximal length ratio between two light blobs.
     /// \param enemy                Enemy camp.
     void filter_armours(std::vector<lightblob>& lightblobs, std::vector<armour>& armours,
-                        float angle_difference_max, float shear_max, float lenght_ratio_max, color_camp enemy);
+                        float angle_difference_max, float shear_max, float lenght_ratio_max, camp enemy);
 }
 
 #endif //RMCV_OBJDETECT_H

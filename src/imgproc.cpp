@@ -6,45 +6,48 @@
 
 namespace rm
 {
-    void CalcRatio(cv::Mat& source, cv::Mat& calibration,
-                   cv::Point2f vertices[4], cv::Size outSize)
+    cv::Mat affine_correction(const cv::Mat& source, cv::Point2f vertices[4], const cv::Size outSize)
     {
         // handel the case of vertices out of screen
         for (int i = 0; i < 4; i++)
         {
-            if (vertices[i].x < 0 || vertices[i].y < 0 || vertices[i].x > (
-                    float)
-                source.cols - 1 || vertices[i].y > (float)source.rows - 1)
+            if (vertices[i].x < 0 ||
+                vertices[i].y < 0 ||
+                vertices[i].x > static_cast<float>(source.cols) - 1 ||
+                vertices[i].y > static_cast<float>(source.rows) - 1)
             {
                 if (vertices[i].x < 0) vertices[i].x = 0;
+
                 if (vertices[i].y < 0) vertices[i].y = 0;
-                if (vertices[i].x > (float)source.cols - 1)
-                    vertices[i].x = (
-                        float)source.cols - 1;
-                if (vertices[i].y > (float)source.rows - 1)
-                    vertices[i].y = (
-                        float)source.rows - 1;
+
+                if (vertices[i].x > static_cast<float>(source.cols) - 1)
+                    vertices[i].x = static_cast<float>(source.cols) - 1;
+
+                if (vertices[i].y > static_cast<float>(source.rows) - 1)
+                    vertices[i].y = static_cast<float>(source.rows) - 1;
             }
         }
 
-        cv::Rect box = cv::boundingRect(std::vector<cv::Point>({
+        const cv::Rect box = boundingRect(std::vector<cv::Point>({
             vertices[0], vertices[1], vertices[2], vertices[3]
         }));
-        cv::Point2f srcPts[3] = {
-            {vertices[1].x - (float)box.x, vertices[1].y - (float)box.y},
-            {vertices[2].x - (float)box.x, vertices[2].y - (float)box.y},
-            {vertices[0].x - (float)box.x, vertices[0].y - (float)box.y}
+        const cv::Point2f srcPts[3] = {
+            {vertices[1].x - static_cast<float>(box.x), vertices[1].y - static_cast<float>(box.y)},
+            {vertices[2].x - static_cast<float>(box.x), vertices[2].y - static_cast<float>(box.y)},
+            {vertices[0].x - static_cast<float>(box.x), vertices[0].y - static_cast<float>(box.y)}
         };
-        cv::Point2f dstPts[3] = {
+        const cv::Point2f dstPts[3] = {
             {0, 0},
-            {(float)(box.width), 0},
-            {0, (float)(box.height)}
+            {static_cast<float>(box.width), 0},
+            {0, static_cast<float>(box.height)}
         };
-        auto warp = cv::getAffineTransform(srcPts, dstPts);
-        cv::warpAffine(source(box), calibration, warp, calibration.size());
+        const auto warp = getAffineTransform(srcPts, dstPts);
 
-        // resize to the dst size
-        cv::resize(calibration, calibration, outSize);
+        cv::Mat calibration;
+        warpAffine(source(box), calibration, warp, calibration.size());
+        resize(calibration, calibration, outSize);
+
+        return calibration;
     }
 
     void CalcGamma(cv::Mat& source, cv::Mat& calibration, float gamma)
@@ -60,21 +63,27 @@ namespace rm
         cv::LUT(source, lookUpTable, calibration);
     }
 
-    void extract_color(cv::InputArray image, cv::OutputArray binary, color_camp enemy, int lower_bound)
+    std::vector<contour> extract_color(cv::InputArray image, camp target, int lower_bound)
     {
         std::vector<cv::Mat> channels;
         split(image, channels);
+        cv::Mat binary;
 
-        if (enemy == CAMP_GUIDELIGHT)
+        if (target == CAMP_GUIDELIGHT)
         {
             auto gray = channels[1] - channels[2];
             inRange(gray, lower_bound, 255, binary);
         }
         else
         {
-            auto gray = channels[enemy == CAMP_BLUE ? 0 : 2] - channels[enemy == CAMP_BLUE ? 2 : 0];
+            auto gray = channels[target == CAMP_BLUE ? 0 : 2] - channels[target == CAMP_BLUE ? 2 : 0];
             inRange(gray, lower_bound, 255, binary);
         }
+
+        std::vector<contour> contours;
+        findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+
+        return contours;
     }
 
     void AutoEnhance(cv::Mat& frame, float maxGainFactor, float minGainFactor)

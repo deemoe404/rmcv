@@ -19,7 +19,7 @@ namespace rm
     }
 
     armour::armour(std::vector<lightblob> lightblobs, const float rank, const camp target) :
-        observer(6, 6, 0, CV_64F), rank(rank), target(target)
+        observer(6, 6, 0, CV_64F), rank(rank), identity(target)
     {
         if (lightblobs.size() != 2)
         {

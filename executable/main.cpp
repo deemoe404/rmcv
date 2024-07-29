@@ -163,7 +163,7 @@ int main()
             }
             else
             {
-                for (auto armour : tracking)
+                for (const auto armour : tracking)
                 {
                     int index = 0;
                     float max_iou = 0;
@@ -171,7 +171,7 @@ int main()
 
                     for (int i{0}; i < armours->size(); i++)
                     {
-                        if (armours->at(i).camp != armour.camp) // what to do?
+                        if (armours->at(i).identity != armour.identity) // what to do?
                         {
                         }
 

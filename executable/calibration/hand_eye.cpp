@@ -19,7 +19,7 @@ int main()
     auto criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 40, 0.001);
     for (int i = 1; i <= 30; i++)
     {
-        cv::Mat gray = imread("2079/" + std::to_string(i) + ".png", cv::IMREAD_GRAYSCALE);
+        cv::Mat gray = imread("data/2079/" + std::to_string(i) + ".png", cv::IMREAD_GRAYSCALE);
         if (std::vector<cv::Point2f> corners;
             findChessboardCorners(gray, pattern_size, corners))
         {
@@ -37,7 +37,7 @@ int main()
 
     std::cout << cameraMatrix << std::endl << distCoeffs << std::endl << error << std::endl;
 
-    cv::FileStorage fs("2079.xml", cv::FileStorage::READ);
+    cv::FileStorage fs("data/2079.xml", cv::FileStorage::READ);
     cv::Mat gryo_data;
     fs["data"] >> gryo_data;
     fs.release();

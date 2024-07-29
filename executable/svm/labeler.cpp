@@ -47,7 +47,7 @@ public:
 /// @param parameters 
 /// @param target_camp 
 /// @return 
-auto reconizer(const cv::Mat& original_frame, const rm::parameters& parameters, const rm::color_camp target_camp)
+auto reconizer(const cv::Mat& original_frame, const rm::parameters& parameters, const rm::camp target_camp)
     -> std::tuple<cv::Mat, std::vector<rm::lightblob>, std::vector<rm::contour>, std::vector<rm::armour>>
 {
     cv::Mat binary;
@@ -94,7 +94,7 @@ int main()
         for (auto armour : armours)
         {
             cv::Mat tmp;
-            rm::CalcRatio(video.frame, tmp, armour.icon, {80, 80});
+            rm::affine_correction(video.frame, tmp, armour.icon, {80, 80});
             icon_images.push_back(tmp);
         }
 

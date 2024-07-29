@@ -77,7 +77,7 @@ namespace rm::debug
             const std::vector<cv::Point> vertices(std::begin(lightblob.vertices), std::end(lightblob.vertices));
             const std::vector<std::vector<cv::Point>> contours = {vertices};
 
-            const cv::Scalar color = lightblob.camp == CAMP_RED ? cv::Scalar(0, 255, 0) : cv::Scalar(0, 0, 255);
+            const cv::Scalar color = lightblob.target == CAMP_RED ? cv::Scalar(0, 255, 0) : cv::Scalar(0, 0, 255);
             drawContours(output, contours, -1, color, 1);
         };
 

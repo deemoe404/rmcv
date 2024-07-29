@@ -24,7 +24,7 @@
 
 namespace rm
 {
-    enum color_camp
+    enum camp
     {
         CAMP_RED = 0, CAMP_BLUE = 1, CAMP_GUIDELIGHT = 2, CAMP_NEUTRAL = -1
     };
@@ -89,44 +89,35 @@ namespace rm
     {
     public:
         float angle = 0; /// Rotation angle of the light blob (vertical when the angle is 90)
-        rm::color_camp camp = rm::CAMP_NEUTRAL; /// Camp this light blob belongs to
+        camp target = CAMP_NEUTRAL; /// Camp this light blob belongs to
         cv::Point2f center; /// Mass center of the light blob
         cv::Point2f vertices[4]; /// Four vertices around the light blob
         cv::Size2f size; /// Width and height of the light blob
 
         lightblob() = default;
 
-        explicit lightblob(cv::RotatedRect box, rm::color_camp camp = rm::CAMP_NEUTRAL);
+        explicit lightblob(cv::RotatedRect box, rm::camp camp = rm::CAMP_NEUTRAL);
     };
 
     class armour
     {
+        cv::KalmanFilter observer;
+        cv::Mat measurement = cv::Mat::zeros(6, 1, CV_32F);
+        bool initialized = false;
+
     public:
         float rank = 0; /// A value help in sorting multiple armours
-        rm::color_camp camp = rm::CAMP_NEUTRAL; /// Camp this armour belongs to
+        int64 timespan = 0;
+        camp target = CAMP_NEUTRAL; /// Camp this armour belongs to
         cv::Point2f icon[4]; /// Vertices of icon area
         cv::Point2f vertices[4]; /// Vertices of armour (square with light blob as side length for better PNP result)
+        cv::Point3d position; /// Position of the armour in 3D space
 
         armour() = default;
 
-        explicit armour(std::vector<rm::lightblob> lightBlobs, float rank = 0, rm::color_camp camp = rm::CAMP_NEUTRAL);
-    };
+        explicit armour(std::vector<lightblob> lightblobs, float rank = 0, camp target = CAMP_NEUTRAL);
 
-    class Package
-    {
-    public:
-        rm::color_camp camp = rm::CAMP_NEUTRAL; /// Self camp
-        rm::AimMode mode = rm::AIM_COMBAT; /// Aim mode
-        unsigned char speed = 0; /// Bullet speed
-        float pitch = 0; /// Pitch angle
-        cv::Mat frame;
-        cv::Mat binary;
-        std::vector<rm::armour> armours;
-
-        Package(rm::color_camp camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat& inputFrame,
-                const cv::Mat& inputBinary);
-
-        explicit Package(const std::shared_ptr<rm::Package>& input);
+        void reset(double process_noise, double measurement_noise);
     };
 }
 
@@ -137,6 +128,8 @@ namespace rm::utils
                                                                     {});
 
     std::vector<cv::Mat> read_image_recursive(const std::filesystem::path& directory);
+
+    cv::Mat flatten_image(const cv::Mat& input, int data_type, cv::Size image_size);
 
     FileType GetFileType(const char* filename);
 

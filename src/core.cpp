@@ -6,11 +6,11 @@
 
 namespace rm
 {
-    lightblob::lightblob(cv::RotatedRect box, const color_camp camp) :
+    lightblob::lightblob(cv::RotatedRect box, const camp target) :
         angle(
             box.angle > 90
                 ? box.angle - 90
-                : box.angle + 90), camp(camp),
+                : box.angle + 90), target(target),
         center(box.center)
     {
         utils::reorder_vertices(box, this->vertices, RECT_TALL);
@@ -18,22 +18,23 @@ namespace rm
         this->size = {std::min(box.size.height, box.size.width), std::max(box.size.height, box.size.width)};
     }
 
-    armour::armour(std::vector<rm::lightblob> lightBlobs, float rank, rm::color_camp camp) : camp(camp), rank(rank)
+    armour::armour(std::vector<lightblob> lightblobs, const float rank, const camp target) :
+        observer(6, 6, 0, CV_64F), rank(rank), target(target)
     {
-        if (lightBlobs.size() != 2)
+        if (lightblobs.size() != 2)
         {
             throw std::runtime_error("armour must be initialized with 2 rm::lightblob (s).");
         }
 
         // sort light blobs left to right
-        std::sort(lightBlobs.begin(), lightBlobs.end(),
+        std::sort(lightblobs.begin(), lightblobs.end(),
                   [](const rm::lightblob& lightBar1, const rm::lightblob& lightBar2)
                   {
                       return lightBar1.center.x < lightBar2.center.x;
                   });
 
         int i = 0, j = 3;
-        for (const auto& lightBar : lightBlobs)
+        for (const auto& lightBar : lightblobs)
         {
             vertices[i++] = lightBar.vertices[j--];
             vertices[i++] = lightBar.vertices[j--];
@@ -43,25 +44,30 @@ namespace rm
         float distanceR = rm::utils::PointDistance(vertices[2], vertices[3]);
         float offsetL = round((distanceL / 0.50f - distanceL) / 2);
         float offsetR = round((distanceR / 0.50f - distanceR) / 2);
-        rm::utils::ExtendCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
-        rm::utils::ExtendCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
+        utils::ExtendCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
+        utils::ExtendCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
 
-        rm::utils::CalcPerspective(vertices, vertices);
+        utils::CalcPerspective(vertices, vertices);
     }
 
-    Package::Package(rm::color_camp camp, rm::AimMode mode, unsigned char speed, float pitch, const cv::Mat& inputFrame,
-                     const cv::Mat& inputBinary) : camp(camp), mode(mode), speed(speed), pitch(pitch)
+    void armour::reset(double process_noise, double measurement_noise)
     {
-        inputFrame.copyTo(this->frame);
-        inputBinary.copyTo(this->binary);
-    }
+        setIdentity(observer.measurementMatrix);
+        setIdentity(observer.processNoiseCov, cv::Scalar::all(5e-5));
+        setIdentity(observer.measurementNoiseCov, cv::Scalar::all(0.5));
+        setIdentity(observer.errorCovPost, cv::Scalar::all(0.05));
 
-    Package::Package(const std::shared_ptr<rm::Package>& input) : camp(input->camp), mode(input->mode),
-                                                                  speed(input->speed), pitch(input->pitch)
-    {
-        input->frame.copyTo(this->frame);
-        input->binary.copyTo(this->binary);
-        this->armours = std::vector<rm::armour>(input->armours);
+        measurement = cv::Mat::zeros(6, 1, CV_64F);
+
+        observer.transitionMatrix = (cv::Mat_<double>(6, 6, CV_64F) <<
+            1, 0, 0, 1, 0, 0,
+            0, 1, 0, 0, 1, 0,
+            0, 0, 1, 0, 0, 1,
+            0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 1);
+
+        initialized = false;
     }
 }
 
@@ -100,6 +106,22 @@ namespace rm::utils
             images.push_back(image);
         });
         return images;
+    }
+
+    cv::Mat flatten_image(const cv::Mat& input, const int data_type, const cv::Size image_size = {0, 0})
+    {
+        cv::Mat image;
+        input.copyTo(image);
+
+        if (image_size.width != 0 && image_size.height != 0)
+        {
+            resize(image, image, image_size, 0, 0, cv::INTER_LINEAR);
+        }
+
+        image = image.reshape(1, 1);
+        image.convertTo(image, data_type);
+
+        return image;
     }
 
     rm::FileType GetFileType(const char* filename)

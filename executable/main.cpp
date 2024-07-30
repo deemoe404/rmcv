@@ -32,6 +32,7 @@ void serial_function(rm::parallel_queue<serial_package>& serial_queue)
         if (buffer[0] != 0x38 ||
             buffer[23] != rm::lookup_CRC(buffer, 23))
         {
+            std::cout << "error: " << error_counter << std::endl;
             error_counter++;
             continue;
         }
@@ -87,13 +88,21 @@ void process_function(rm::parallel_queue<frame_package>& frame_queue,
         const auto frame = frame_queue.pop();
         const auto parms = frame->package.target == rm::camp::CAMP_RED ? red : blue;
 
-        const auto contours = extract_color(frame->image, frame->package.target, 80);
+// parms
+
+        const auto contours = extract_color(frame->image, rm::CAMP_BLUE, 80);
         auto [positive_lightblobs, negtive_lightblobs] =
             filter_lightblobs(contours, 70, {1.5, 80}, {10, 99999},
-                              frame->package.target);
+                              rm::CAMP_BLUE);
 
         std::vector<rm::armour> armours;
-        filter_armours(positive_lightblobs, armours, 12, 22, 12, frame->package.target);
+        filter_armours(positive_lightblobs, armours, 12, 22, 0.9, rm::CAMP_BLUE);
+
+        // svm
+
+        // pnp
+
+        // project
 
         cv::Mat debug;
         frame->image.copyTo(debug);
@@ -122,7 +131,9 @@ int main()
         while (1)
         {
             const auto image = debug_queue.pop();
-            cv::imshow("debug", *image);
+            cv::Mat smoll;
+            resize(*image, smoll, cv::Size(640, 480));
+            imshow("debug", smoll);
             cv::waitKey(1);
         }
     }, std::ref(debug_queue));

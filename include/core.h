@@ -107,11 +107,14 @@ namespace rm
 
     public:
         float rank = 0; /// A value help in sorting multiple armours
-        int64 timespan = 0;
         camp identity = CAMP_NEUTRAL; /// Camp this armour belongs to
         cv::Point2f icon[4]; /// Vertices of icon area
         cv::Point2f vertices[4]; /// Vertices of armour (square with light blob as side length for better PNP result)
+
         cv::Point3d position; /// Position of the armour in 3D space
+        int64 timespan = 0;
+        int lost_count = 0;
+        std::map<int, int> id_count = {};
 
         armour() = default;
 

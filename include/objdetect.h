@@ -63,12 +63,11 @@ namespace rm
 
     /// Fit armours from a set of light blobs.
     /// \param lightblobs           Input light blobs.
-    /// \param armours              Output armours
     /// \param angle_difference_max Maximal angle difference between two light blobs.
     /// \param shear_max            Maximal shear between two light blobs with the rectangle.
     /// \param lenght_ratio_max     Maximal length ratio between two light blobs.
     /// \param enemy                Enemy camp.
-    void filter_armours(std::vector<lightblob>& lightblobs, std::vector<armour>& armours,
+    std::vector<armour> filter_armours(std::vector<lightblob>& lightblobs,
                         float angle_difference_max, float shear_max, float lenght_ratio_max, camp enemy);
 }
 

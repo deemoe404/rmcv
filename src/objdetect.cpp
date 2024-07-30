@@ -111,12 +111,13 @@ namespace rm
         return false;
     }
 
-    void filter_armours(std::vector<lightblob>& lightblobs, std::vector<armour>& armours,
+    std::vector<armour> filter_armours(std::vector<lightblob>& lightblobs,
                         const float angle_difference_max, const float shear_max, const float lenght_ratio_max,
                         const camp enemy)
     {
-        armours.clear();
-        if (lightblobs.size() < 2) return;
+        std::vector<armour> armours;
+
+        if (lightblobs.size() < 2) return {};
 
         for (int i = 0; i < lightblobs.size() - 1; ++i)
         {
@@ -160,5 +161,7 @@ namespace rm
                 armours.push_back(armour({lightblobs[i], lightblobs[j]}, 0, lightblobs[i].target));
             }
         }
+
+        return armours;
     }
 }

@@ -3,9 +3,105 @@
 //
 
 #include "rmcv.h"
+#include "rmcv_hardware.h"
+
+struct serial_package
+{
+    rm::camp target;
+    double pitch, yaw, roll;
+    double pitch_abs, yaw_abs;
+};
 
 int main()
 {
+    bool stop = false;
+
+    rm::parallel_queue<serial_package> serial_queue;
+    std::thread serial_thread([&serial_queue, &stop]
+    {
+        rm::serial_port serial;
+        bool status = serial.initialize("/dev/ttyUSB0", B460800);
+
+        int error_counter = 0;
+        while (status && !stop)
+        {
+            if (error_counter > 10)
+            {
+                serial.destroyed();
+                status = serial.initialize("/dev/ttyUSB0", B460800);
+                error_counter = 0;
+            }
+
+            unsigned char buffer[256];
+            serial.receive(buffer, 24);
+
+            if (buffer[0] != 0x38 ||
+                buffer[23] != rm::lookup_CRC(buffer, 23))
+            {
+                std::cout << "error" << std::endl;
+                error_counter++;
+                continue;
+            }
+
+            const rm::camp target_camp = buffer[1] & 0x01 ? rm::camp::CAMP_RED : rm::camp::CAMP_BLUE;
+
+            float pitch, yaw, roll, pitch_abs, yaw_abs;
+            std::memcpy(&yaw, buffer + 3, sizeof(float));
+            std::memcpy(&pitch_abs, buffer + 7, sizeof(float));
+            std::memcpy(&pitch, buffer + 11, sizeof(float));
+            std::memcpy(&roll, buffer + 15, sizeof(float));
+            std::memcpy(&yaw_abs, buffer + 19, sizeof(float));
+
+            if (!serial_queue.empty()) serial_queue.tryPop();
+            serial_queue.push({
+                target_camp,
+                static_cast<double>(pitch) * 180.0f / CV_PI,
+                static_cast<double>(yaw) * 180.0f / CV_PI,
+                static_cast<double>(roll) * 180.0f / CV_PI,
+                static_cast<double>(pitch_abs),
+                static_cast<double>(yaw_abs)
+            });
+
+            std::cout << "pitch: " << pitch << " yaw: " << yaw << " roll: " << roll << " pitch_abs: " << pitch_abs << " yaw_abs: " << yaw_abs << std::endl;
+        }
+    });
+
+    std::thread frame_thread([&serial_queue, &stop]
+    {
+        rm::hardware::daheng camera;
+        auto status = camera.initialize("KE0210010004", false, 4000, 1);
+        int i = 0;
+        cv::Mat gryo_data_read;
+        while (status && !stop)
+        {
+            cv::Mat image = camera.capture(true, true);
+            if (image.empty()) break;
+
+            imshow("preview", image);
+            auto key = cv::waitKey(1);
+
+            if (key == 'c')
+            {
+                imwrite("data/20240630/" + std::to_string(i++) + ".png", image);
+                auto package = serial_queue.pop();
+                cv::Mat tmp = (cv::Mat_<double>(1, 5, CV_64F) << package->pitch, package->yaw, package->roll, package->pitch_abs, package->yaw_abs);
+                gryo_data_read.push_back(tmp);
+            }
+
+            if(key == 'q')
+            {
+                cv::FileStorage fs("data/20240630.xml", cv::FileStorage::WRITE);
+                fs << "data" << gryo_data_read;
+                fs.release();
+                stop = true;
+                break;
+            }
+        }
+    });
+
+    serial_thread.join();
+    frame_thread.join();
+
     cv::Size pattern_size(11, 8);
     std::vector<cv::Point3f> objp(pattern_size.width * pattern_size.height);
     std::generate(objp.begin(), objp.end(), [n = 0, &pattern_size]() mutable -> cv::Point3f
@@ -45,9 +141,10 @@ int main()
     std::vector<cv::Mat> R_gripper2base, t_gripper2base;
     for (int i{0}; i < rvecs.size(); i++)
     {
-        const double x = gryo_data.at<double>(i, 2) * CV_PI / 180.0f,
-                     y = gryo_data.at<double>(i, 0) * CV_PI / 180.0f,
-                     z = gryo_data.at<double>(i, 1) * CV_PI / 180.0f;
+        const double x = 0,
+                     y = (gryo_data.at<double>(i, 3) - 705) * CV_2PI / 8192.0f,
+                     z = (gryo_data.at<double>(i, 4) - 6165) * CV_2PI / 8192.0f;
+
 
         auto r = rm::utils::euler2matrix(x, y, z);
 

@@ -64,25 +64,6 @@ namespace rm
         }
     };
 
-    struct parameters
-    {
-        int extraction_lower_bound = 80;
-
-        float lightblob_tilt_max = 70.0;
-        range<float> lightblob_ratio = {1.5, 80.0};
-        range<double> lightblob_area = {10, 99999};
-
-        float armour_angle_difference_max = 12;
-        float armour_shear_max = 22;
-        float armour_lenght_ratio_max = 12;
-
-        parameters() = default;
-
-        explicit parameters(const std::string& path)
-        {
-        }
-    };
-
     typedef std::vector<cv::Point> contour;
 
     class lightblob
@@ -107,18 +88,17 @@ namespace rm
 
     public:
         float rank = 0; /// A value help in sorting multiple armours
-        camp identity = CAMP_NEUTRAL; /// Camp this armour belongs to
         cv::Point2f icon[4]; /// Vertices of icon area
         cv::Point2f vertices[4]; /// Vertices of armour (square with light blob as side length for better PNP result)
 
-        cv::Point3d position; /// Position of the armour in 3D space
         int64 timespan = 0;
         int lost_count = 0;
-        std::map<int, int> id_count = {};
+        cv::Point3d position; /// Position of the armour in 3D space
+        std::map<int, int> identity = {};
 
         armour() = default;
 
-        explicit armour(std::vector<lightblob> lightblobs, float rank = 0, camp target = CAMP_NEUTRAL);
+        explicit armour(std::vector<lightblob> lightblobs, float rank = 0);
 
         void reset(double process_noise, double measurement_noise);
     };
@@ -126,9 +106,8 @@ namespace rm
 
 namespace rm::utils
 {
-    std::vector<std::filesystem::path> list_directory_recursive(const std::filesystem::path& directory,
-                                                                const std::vector<std::string>& extension_whitelist =
-                                                                    {});
+    std::vector<std::filesystem::path> list_directory_recursive(
+        const std::filesystem::path& directory, const std::vector<std::string>& extension_whitelist = {});
 
     std::vector<cv::Mat> read_image_recursive(const std::filesystem::path& directory);
 

@@ -18,8 +18,8 @@ namespace rm
         this->size = {std::min(box.size.height, box.size.width), std::max(box.size.height, box.size.width)};
     }
 
-    armour::armour(std::vector<lightblob> lightblobs, const float rank, const camp target) :
-        observer(6, 6, 0, CV_64F), rank(rank), identity(target)
+    armour::armour(std::vector<lightblob> lightblobs, const float rank) :
+        observer(6, 6, 0, CV_64F), rank(rank)
     {
         if (lightblobs.size() != 2)
         {

@@ -10,9 +10,9 @@
 /// \brief Debug utilities.
 namespace rm::debug
 {
-    void DrawArmours(const std::vector<rm::armour>& input, cv::Mat& output, int index);
+    void draw_armours(const std::vector<armour>& input, cv::Mat& output, int index);
 
-    void DrawArmour(rm::armour input, cv::Mat& output);
+    void DrawArmour(armour input, cv::Mat& output);
 
     void draw_lightblobs(const std::vector<lightblob>& positive, const std::vector<contour>& negative, cv::Mat& output,
                         int index);

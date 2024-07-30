@@ -6,45 +6,33 @@
 
 namespace rm::debug
 {
-    void DrawArmours(const std::vector<rm::armour>& input, cv::Mat& output, int index)
+    void draw_armours(const std::vector<armour>& input, cv::Mat& output, const int index)
     {
         if (input.empty()) return;
 
-        std::vector<std::vector<cv::Point>> contours;
-        if (index < 0 || index > input.size())
+        std::vector<contour> contours;
+        auto process_armour = [&](const armour& ar)
         {
-            for (auto& armour : input)
-            {
-                std::vector<cv::Point> vertices;
-                std::vector<cv::Point> icons;
-                for (auto& vertex : armour.vertices)
-                {
-                    vertices.push_back(vertex);
-                }
-                for (auto& vertex : armour.icon)
-                {
-                    icons.push_back(vertex);
-                }
-                contours.push_back(vertices);
-                contours.push_back(icons);
-            }
+            contours.emplace_back(ar.vertices, ar.vertices + 4);
+            contours.emplace_back(ar.icon, ar.icon + 4);
+
+            const std::string position =
+                std::to_string(ar.position.x) + ", " +
+                std::to_string(ar.position.y) + ", " +
+                std::to_string(ar.position.z);
+            putText(output, position, ar.vertices[0], cv::FONT_HERSHEY_SIMPLEX, 0.5, {0, 255, 255});
+        };
+
+        if (index < 0 || index >= input.size())
+        {
+            for (const auto& ar : input) process_armour(ar);
         }
         else
         {
-            std::vector<cv::Point> vertices;
-            std::vector<cv::Point> icons;
-            for (auto& vertex : input[index].vertices)
-            {
-                vertices.push_back(vertex);
-            }
-            for (auto& vertex : input[index].icon)
-            {
-                icons.push_back(vertex);
-            }
-            contours.push_back(vertices);
-            contours.push_back(icons);
+            process_armour(input[index]);
         }
-        cv::drawContours(output, contours, -1, {0, 255, 255}, 1);
+
+        drawContours(output, contours, -1, {0, 255, 255}, 1);
     }
 
     void DrawArmour(rm::armour input, cv::Mat& output)

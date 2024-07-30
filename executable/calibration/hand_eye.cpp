@@ -9,7 +9,6 @@ struct serial_package
 {
     rm::camp target;
     double pitch, yaw, roll;
-    double pitch_abs, yaw_abs;
 };
 
 int main()
@@ -45,24 +44,20 @@ int main()
 
             const rm::camp target_camp = buffer[1] & 0x01 ? rm::camp::CAMP_RED : rm::camp::CAMP_BLUE;
 
-            float pitch, yaw, roll, pitch_abs, yaw_abs;
+            float pitch, yaw, roll;
             std::memcpy(&yaw, buffer + 3, sizeof(float));
-            std::memcpy(&pitch_abs, buffer + 7, sizeof(float));
             std::memcpy(&pitch, buffer + 11, sizeof(float));
             std::memcpy(&roll, buffer + 15, sizeof(float));
-            std::memcpy(&yaw_abs, buffer + 19, sizeof(float));
 
             if (!serial_queue.empty()) serial_queue.tryPop();
             serial_queue.push({
                 target_camp,
                 static_cast<double>(pitch) * 180.0f / CV_PI,
                 static_cast<double>(yaw) * 180.0f / CV_PI,
-                static_cast<double>(roll) * 180.0f / CV_PI,
-                static_cast<double>(pitch_abs),
-                static_cast<double>(yaw_abs)
+                static_cast<double>(roll) * 180.0f / CV_PI
             });
 
-            std::cout << "pitch: " << pitch << " yaw: " << yaw << " roll: " << roll << " pitch_abs: " << pitch_abs << " yaw_abs: " << yaw_abs << std::endl;
+            std::cout << "pitch: " << pitch << " yaw: " << yaw << " roll: " << roll << std::endl;
         }
     });
 
@@ -84,11 +79,11 @@ int main()
             {
                 imwrite("data/20240630/" + std::to_string(i++) + ".png", image);
                 auto package = serial_queue.pop();
-                cv::Mat tmp = (cv::Mat_<double>(1, 5, CV_64F) << package->pitch, package->yaw, package->roll, package->pitch_abs, package->yaw_abs);
+                cv::Mat tmp = (cv::Mat_<double>(1, 3, CV_64F) << package->pitch, package->yaw, package->roll);
                 gryo_data_read.push_back(tmp);
             }
 
-            if(key == 'q')
+            if (key == 'q')
             {
                 cv::FileStorage fs("data/20240630.xml", cv::FileStorage::WRITE);
                 fs << "data" << gryo_data_read;
@@ -141,10 +136,9 @@ int main()
     std::vector<cv::Mat> R_gripper2base, t_gripper2base;
     for (int i{0}; i < rvecs.size(); i++)
     {
-        const double x = 0,
-                     y = (gryo_data.at<double>(i, 3) - 705) * CV_2PI / 8192.0f,
-                     z = (gryo_data.at<double>(i, 4) - 6165) * CV_2PI / 8192.0f;
-
+        const double z = gryo_data.at<double>(i, 1),
+                     y = gryo_data.at<double>(i, 0),
+                     x = gryo_data.at<double>(i, 2);
 
         auto r = rm::utils::euler2matrix(x, y, z);
 
@@ -158,22 +152,15 @@ int main()
 
     for (int i{0}; i < rvecs.size(); i++)
     {
-        const double z = gryo_data.at<double>(i, 1) * CV_PI / 180.0f,
-                     y = gryo_data.at<double>(i, 0) * CV_PI / 180.0f,
-                     x = gryo_data.at<double>(i, 2) * CV_PI / 180.0f;
+        const double z = gryo_data.at<double>(i, 1),
+                     y = gryo_data.at<double>(i, 0),
+                     x = gryo_data.at<double>(i, 2);
 
         auto r = rm::utils::euler2matrix(x, y, z);
 
-        // cv::Mat offset = cv::Mat::eye(4, 4, CV_64F);
-        // R_cam2gripper.copyTo(offset(cv::Rect(0, 0, 3, 3)));
-        // t_cam2gripper.copyTo(offset(cv::Rect(3, 0, 1, 3)));
-
-        cv::Mat h_gripper2camera = (cv::Mat_<double>(4, 4, CV_64F) <<
-            0, 1, 0, 62.0f,
-            0, 0, -1, 43.85f,
-            1, 0, 0, 124.0f,
-            0, 0, 0, 1
-        );
+        cv::Mat h_gripper2camera = cv::Mat::eye(4, 4, CV_64F);
+        R_cam2gripper.copyTo(h_gripper2camera(cv::Rect(0, 0, 3, 3)));
+        t_cam2gripper.copyTo(h_gripper2camera(cv::Rect(3, 0, 1, 3)));
 
         cv::Mat camera_position = cv::Mat::ones(4, 1, CV_64F);
         tvecs[i].copyTo(camera_position(cv::Rect(0, 0, 1, 3)));
@@ -181,7 +168,7 @@ int main()
         cv::Mat h_base2gripper = cv::Mat::eye(4, 4, CV_64F);
         r.copyTo(h_base2gripper(cv::Rect(0, 0, 3, 3)));
 
-        cv::Mat world_position = h_base2gripper.inv() * (h_gripper2camera.inv() * camera_position);
+        cv::Mat world_position = h_base2gripper * (h_gripper2camera * camera_position);
         std::cout << "x: " << world_position.at<double>(0) << " y: " << world_position.at<double>(1) << " z: " <<
             world_position.at<double>(2) << std::endl;
     }

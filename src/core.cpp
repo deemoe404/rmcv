@@ -108,7 +108,7 @@ namespace rm::utils
         return images;
     }
 
-    cv::Mat flatten_image(const cv::Mat& input, const int data_type, const cv::Size image_size = {0, 0})
+    cv::Mat flatten_image(const cv::Mat& input, const int data_type, const cv::Size image_size)
     {
         cv::Mat image;
         input.copyTo(image);

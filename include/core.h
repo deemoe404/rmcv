@@ -111,7 +111,7 @@ namespace rm::utils
 
     std::vector<cv::Mat> read_image_recursive(const std::filesystem::path& directory);
 
-    cv::Mat flatten_image(const cv::Mat& input, int data_type, cv::Size image_size);
+    cv::Mat flatten_image(const cv::Mat& input, int data_type, cv::Size image_size = {0,0});
 
     FileType GetFileType(const char* filename);
 

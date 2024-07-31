@@ -90,6 +90,7 @@ namespace rm
         float rank = 0; /// A value help in sorting multiple armours
         cv::Point2f icon[4]; /// Vertices of icon area
         cv::Point2f vertices[4]; /// Vertices of armour (square with light blob as side length for better PNP result)
+        cv::Rect2f bounding_box; /// Bounding box of the armour
 
         int64 timespan = 0;
         int lost_count = 0;
@@ -100,7 +101,9 @@ namespace rm
 
         explicit armour(std::vector<lightblob> lightblobs, float rank = 0);
 
-        void reset(double process_noise, double measurement_noise);
+        void reset(double process_noise, double measurement_noise, double error);
+
+        void update();
     };
 }
 

@@ -47,15 +47,17 @@ namespace rm
         utils::ExtendCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
         utils::ExtendCord(vertices[3], vertices[2], offsetR, icon[3], icon[2]);
 
+        bounding_box = boundingRect(std::vector(icon, icon + 4));
+
         utils::CalcPerspective(vertices, vertices);
     }
 
-    void armour::reset(double process_noise, double measurement_noise)
+    void armour::reset(double process_noise, double measurement_noise, double error)
     {
         setIdentity(observer.measurementMatrix);
-        setIdentity(observer.processNoiseCov, cv::Scalar::all(5e-5));
-        setIdentity(observer.measurementNoiseCov, cv::Scalar::all(0.5));
-        setIdentity(observer.errorCovPost, cv::Scalar::all(0.05));
+        setIdentity(observer.processNoiseCov, cv::Scalar::all(process_noise));
+        setIdentity(observer.measurementNoiseCov, cv::Scalar::all(measurement_noise));
+        setIdentity(observer.errorCovPost, cv::Scalar::all(error));
 
         measurement = cv::Mat::zeros(6, 1, CV_64F);
 

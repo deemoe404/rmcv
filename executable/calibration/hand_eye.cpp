@@ -13,7 +13,7 @@ struct serial_package
 
 int main()
 {
-    bool stop = false;
+    bool stop = true;
 
     rm::parallel_queue<serial_package> serial_queue;
     std::thread serial_thread([&serial_queue, &stop]
@@ -52,9 +52,9 @@ int main()
             if (!serial_queue.empty()) serial_queue.tryPop();
             serial_queue.push({
                 target_camp,
-                static_cast<double>(pitch) * 180.0f / CV_PI,
-                static_cast<double>(yaw) * 180.0f / CV_PI,
-                static_cast<double>(roll) * 180.0f / CV_PI
+                static_cast<double>(pitch) *  CV_PI / 180.0f,
+                static_cast<double>(yaw) *  CV_PI / 180.0f,
+                static_cast<double>(roll) * CV_PI / 180.0f
             });
 
             std::cout << "pitch: " << pitch << " yaw: " << yaw << " roll: " << roll << std::endl;
@@ -72,7 +72,11 @@ int main()
             cv::Mat image = camera.capture(true, true);
             if (image.empty()) break;
 
-            imshow("preview", image);
+            cv::Mat show;
+            image.copyTo(show);
+            cv::resize(show, show, cv::Size(640, 512));
+
+            imshow("preview", show);
             auto key = cv::waitKey(1);
 
             if (key == 'c')
@@ -108,13 +112,13 @@ int main()
     std::vector<std::vector<cv::Point3f>> object_points;
     std::vector<std::vector<cv::Point2f>> image_points;
     auto criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 40, 0.001);
-    for (int i = 1; i <= 30; i++)
+    for (int i = 0; i <= 119; i++)
     {
-        cv::Mat gray = imread("data/2079/" + std::to_string(i) + ".png", cv::IMREAD_GRAYSCALE);
+        cv::Mat gray = imread("data/20240630/" + std::to_string(i) + ".png", cv::IMREAD_GRAYSCALE);
         if (std::vector<cv::Point2f> corners;
             findChessboardCorners(gray, pattern_size, corners))
         {
-            cornerSubPix(gray, corners, cv::Size(14, 14), cv::Size(-1, -1), criteria);
+            cornerSubPix(gray, corners, cv::Size(8, 8), cv::Size(-1, -1), criteria);
             object_points.push_back(objp);
             image_points.push_back(corners);
         }
@@ -128,7 +132,7 @@ int main()
 
     std::cout << cameraMatrix << std::endl << distCoeffs << std::endl << error << std::endl;
 
-    cv::FileStorage fs("data/2079.xml", cv::FileStorage::READ);
+    cv::FileStorage fs("data/20240630.xml", cv::FileStorage::READ);
     cv::Mat gryo_data;
     fs["data"] >> gryo_data;
     fs.release();
@@ -168,6 +172,7 @@ int main()
         cv::Mat h_base2gripper = cv::Mat::eye(4, 4, CV_64F);
         r.copyTo(h_base2gripper(cv::Rect(0, 0, 3, 3)));
 
+        // cv::Mat gripper_position =
         cv::Mat world_position = h_base2gripper * (h_gripper2camera * camera_position);
         std::cout << "x: " << world_position.at<double>(0) << " y: " << world_position.at<double>(1) << " z: " <<
             world_position.at<double>(2) << std::endl;

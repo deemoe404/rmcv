@@ -13,9 +13,9 @@ cv::Mat discof = (cv::Mat_<double>(1, 5) <<
     -0.03436366268485048f, 0.1953669264956857f, 0.0001485060439399386f, -0.003814875777013483f, -
     0.3181808766352414f);
 cv::Mat h_gripper2camera = (cv::Mat_<double>(4, 4) <<
-    0.009496335714993975f, -0.01011098215449402f, -0.9999037891956705f, -278.4485137621207f,
-    0.9997472036560227f, -0.02028397331158516f, 0.009699959209097164f, -130.1949669375455f,
-    -0.02038009788866046f, -0.999743131242504f, 0.00991580271497039f, 43.81158762150466f,
+    0.0007941130268316332f, 0.009683274185178004f, -0.9999528006788897f, -27.25811584661768f,
+    0.9989588796104363f, 0.04560298009571095f, 0.001234930707386894f, -51.46996511920027f,
+    0.04561278583864914f, -0.9989127101040636f, -0.009636978810429797f, 77.11760876626687f,
     0.0f, 0.0f, 0.0f, 1.0f);
 
 const cv::Ptr<cv::ml::SVM> svm_red = cv::ml::SVM::load("svm.xml");
@@ -60,7 +60,7 @@ int main()
         {
             const auto image = debug_queue.pop();
             cv::Mat smoll;
-            resize(*image, smoll, cv::Size(640, 480));
+            resize(*image, smoll, cv::Size(1024, 768));
             imshow("debug", smoll);
             cv::waitKey(1);
         }
@@ -139,20 +139,22 @@ void process_function(rm::parallel_queue<frame_package>& frame_queue,
         cv::Mat h_base2gripper = cv::Mat::eye(4, 4, CV_64F);
         r.copyTo(h_base2gripper(cv::Rect(0, 0, 3, 3)));
 
-        auto contours = extract_color(frame->image, rm::CAMP_BLUE, 80);
+        auto [contours, binary] = extract_color(frame->image, rm::CAMP_BLUE, 80);
         auto [positive, negtive] =
             filter_lightblobs(contours, 70, {1.5, 80}, {10, 99999}, rm::CAMP_BLUE);
         auto armours =
-            filter_armours(positive, 12, 22, 0.9, rm::CAMP_BLUE);
+            filter_armours(positive, 12, 22, 0.4, rm::CAMP_BLUE);
 
         for (auto& armour : armours)
         {
             cv::Mat icon = rm::affine_correction(frame->image, armour.icon, {20, 20});
+            icon = rm::utils::flatten_image(icon, CV_32FC1);
             int label = static_cast<int>(svm_red->predict(icon));
             armour.identity.insert({label, 1});
 
             auto [rvec, tvec] =
                 rm::solve_PnP(armour.vertices, cammat, discof, {27, 27});
+
             cv::Mat camera_position = cv::Mat::ones(4, 1, CV_64F);
             tvec.copyTo(camera_position(cv::Rect(0, 0, 1, 3)));
 
@@ -165,7 +167,8 @@ void process_function(rm::parallel_queue<frame_package>& frame_queue,
         }
 
         cv::Mat debug;
-        frame->image.copyTo(debug);
+        binary.copyTo(debug);
+        cv::cvtColor(debug, debug, cv::COLOR_GRAY2BGR);
         rm::debug::draw_lightblobs(positive, negtive, debug, -1);
         rm::debug::draw_armours(armours, debug, -1);
 

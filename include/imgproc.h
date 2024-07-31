@@ -26,7 +26,7 @@ namespace rm
     /// \param image Source image.
     /// \param target Specify the camp of the color to be extracted.
     /// \param lower_bound Lower bound when performing binarization.
-    std::vector<contour> extract_color(cv::InputArray image, camp target, int lower_bound);
+    std::tuple<std::vector<contour>, cv::Mat> extract_color(cv::InputArray image, camp target, int lower_bound);
 
     /// Auto enhance image by the given benchmarks.
     /// \param frame Source image & destine image.

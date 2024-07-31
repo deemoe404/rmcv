@@ -63,7 +63,7 @@ namespace rm
         cv::LUT(source, lookUpTable, calibration);
     }
 
-    std::vector<contour> extract_color(cv::InputArray image, camp target, int lower_bound)
+    std::tuple<std::vector<contour>, cv::Mat> extract_color(cv::InputArray image, camp target, int lower_bound)
     {
         std::vector<cv::Mat> channels;
         split(image, channels);
@@ -80,10 +80,14 @@ namespace rm
             inRange(gray, lower_bound, 255, binary);
         }
 
+        // close operation
+        cv::Mat kernel = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+        morphologyEx(binary, binary, cv::MORPH_CLOSE, kernel);
+
         std::vector<contour> contours;
         findContours(binary, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
 
-        return contours;
+        return {contours, binary};
     }
 
     void AutoEnhance(cv::Mat& frame, float maxGainFactor, float minGainFactor)

@@ -16,7 +16,7 @@ namespace rm::debug
             contours.emplace_back(ar.vertices, ar.vertices + 4);
             contours.emplace_back(ar.icon, ar.icon + 4);
 
-            const std::string position =
+            const std::string position = std::to_string(ar.identity.begin()->first) + ": " +
                 std::to_string(ar.position.x) + ", " +
                 std::to_string(ar.position.y) + ", " +
                 std::to_string(ar.position.z);

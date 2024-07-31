@@ -158,7 +158,7 @@ namespace rm
                     (lightblobs[i].size.height + lightblobs[j].size.height) * 2)
                     continue;
 
-                armours.push_back(armour({lightblobs[i], lightblobs[j]}, 0, lightblobs[i].target));
+                armours.push_back(armour({lightblobs[i], lightblobs[j]}, 0));
             }
         }
 

@@ -24,7 +24,7 @@ const cv::Ptr<cv::ml::SVM> svm_blue = cv::ml::SVM::load("svm.xml");
 struct serial_package
 {
     rm::camp target;
-    double pitch, yaw, roll;
+    rm::euler<double> rotation;
 };
 
 struct frame_package
@@ -54,11 +54,44 @@ int main()
     rm::parallel_queue<cv::Mat> debug_queue;
     std::thread process_thread(process_function, std::ref(frame_queue), std::ref(armour_queue), std::ref(debug_queue));
 
-    std::thread debug_thread([](rm::parallel_queue<cv::Mat>& debug_queue)
+    std::thread tracking_thread([&armour_queue]()
+    {
+        std::vector<rm::armour> tracking;
+        while (1)
+        {
+            auto armours = armour_queue.pop();
+            if (armours->empty()) continue;
+
+            if (tracking.empty())
+            {
+                tracking = *armours;
+                continue;
+            }
+
+            for (auto& target : tracking)
+            {
+                if (auto [index, IoU] = target.max_IoU(*armours);
+                    IoU > 0.5)
+                {
+                    target.update(armours->at(index));
+                    armours->erase(armours->begin() + index);
+                }
+                else if (target.lost_count++ > 25)
+                    tracking.erase(std::remove(tracking.begin(), tracking.end(), target), tracking.end());
+                else target.update(target.timestamp);
+            }
+
+            tracking.insert(tracking.end(), armours->begin(), armours->end());
+
+            // decide which armour to shoot
+        }
+    });
+
+    std::thread debug_thread([](rm::parallel_queue<cv::Mat>& debug)
     {
         while (1)
         {
-            const auto image = debug_queue.pop();
+            const auto image = debug.pop();
             cv::Mat smoll;
             resize(*image, smoll, cv::Size(1024, 768));
             imshow("debug", smoll);
@@ -69,6 +102,7 @@ int main()
     serial_thread.join();
     frame_thread.join();
     process_thread.join();
+    tracking_thread.join();
     debug_thread.join();
 }
 
@@ -101,12 +135,11 @@ void serial_function(rm::parallel_queue<serial_package>& serial_queue)
         std::memcpy(&pitch, buffer + 11, sizeof(float));
         std::memcpy(&roll, buffer + 15, sizeof(float));
 
+        const rm::euler euler(roll * CV_PI / 180.0f, pitch * CV_PI / 180.0f, yaw * CV_PI / 180.0f);
+
         if (!serial_queue.empty()) serial_queue.tryPop();
         serial_queue.push({
-            buffer[1] & 0x01 ? rm::camp::CAMP_RED : rm::camp::CAMP_BLUE,
-            static_cast<double>(pitch) * CV_PI / 180.0f,
-            static_cast<double>(yaw) * CV_PI / 180.0f,
-            static_cast<double>(roll) * CV_PI / 180.0f
+            buffer[1] & 0x01 ? rm::camp::CAMP_RED : rm::camp::CAMP_BLUE, euler
         });
     }
 }
@@ -134,10 +167,7 @@ void process_function(rm::parallel_queue<frame_package>& frame_queue,
     while (1)
     {
         const auto frame = frame_queue.pop();
-        const auto r = rm::utils::euler2matrix(frame->package.roll, frame->package.pitch, frame->package.yaw);
-
-        cv::Mat h_base2gripper = cv::Mat::eye(4, 4, CV_64F);
-        r.copyTo(h_base2gripper(cv::Rect(0, 0, 3, 3)));
+        const auto h_base2gripper = rm::utils::euler2homogeneous(frame->package.rotation);
 
         auto [contours, binary] = extract_color(frame->image, rm::CAMP_BLUE, 80);
         auto [positive, negtive] =
@@ -163,12 +193,15 @@ void process_function(rm::parallel_queue<frame_package>& frame_queue,
                                           world_position.at<double>(1, 0),
                                           world_position.at<double>(2, 0));
 
-            armour.timespan = frame->timestamp;
+            armour.timestamp = frame->timestamp;
+            armour.reset(5e-5, 0.5, 0.05);
         }
+        if (!armour_queue.empty()) armour_queue.tryPop();
+        armour_queue.push(armours);
 
         cv::Mat debug;
         binary.copyTo(debug);
-        cv::cvtColor(debug, debug, cv::COLOR_GRAY2BGR);
+        cvtColor(debug, debug, cv::COLOR_GRAY2BGR);
         rm::debug::draw_lightblobs(positive, negtive, debug, -1);
         rm::debug::draw_armours(armours, debug, -1);
 

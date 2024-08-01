@@ -68,17 +68,17 @@ int main()
                 continue;
             }
 
-            for (auto& target : tracking)
+            for (int i{0}; i < tracking.size(); i++)
             {
-                if (auto [index, IoU] = target.max_IoU(*armours);
+                if (auto [index, IoU] = tracking[i].max_IoU(*armours);
                     IoU > 0.5)
                 {
-                    target.update(armours->at(index));
+                    tracking[i].update(armours->at(index));
                     armours->erase(armours->begin() + index);
                 }
-                else if (target.lost_count++ > 25)
-                    tracking.erase(std::remove(tracking.begin(), tracking.end(), target), tracking.end());
-                else target.update(target.timestamp);
+                else if (tracking[i].lost_count++ > 25)
+                    tracking.erase(tracking.begin() + i);
+                else tracking[i].update(tracking[i].timestamp);
             }
 
             tracking.insert(tracking.end(), armours->begin(), armours->end());

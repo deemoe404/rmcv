@@ -6,6 +6,7 @@
 #define SVM_H
 
 #include <core.h>
+#include <random>
 
 namespace rm::svm
 {

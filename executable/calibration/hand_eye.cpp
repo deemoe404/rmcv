@@ -174,8 +174,9 @@ int main()
 
         // cv::Mat gripper_position =
         cv::Mat world_position = h_base2gripper * (h_gripper2camera * camera_position);
-        std::cout << "x: " << world_position.at<double>(0) << " y: " << world_position.at<double>(1) << " z: " <<
-            world_position.at<double>(2) << std::endl;
+        std::cout << "x: " << world_position.at<double>(0) <<
+            " y: " << world_position.at<double>(1) <<
+            " z: " << world_position.at<double>(2) << std::endl;
     }
 
     return 0;

@@ -18,17 +18,13 @@ namespace rm
         this->size = {std::min(box.size.height, box.size.width), std::max(box.size.height, box.size.width)};
     }
 
-    armour::armour(std::vector<lightblob> lightblobs, const float rank) :
-        observer(6, 6, 0, CV_64F), rank(rank)
+    armour::armour(std::vector<lightblob> lightblobs) : observer(6, 6, 0, CV_64F)
     {
-        if (lightblobs.size() != 2)
-        {
-            throw std::runtime_error("armour must be initialized with 2 rm::lightblob (s).");
-        }
+        if (lightblobs.size() != 2) return;
 
         // sort light blobs left to right
         std::sort(lightblobs.begin(), lightblobs.end(),
-                  [](const rm::lightblob& lightBar1, const rm::lightblob& lightBar2)
+                  [](const lightblob& lightBar1, const lightblob& lightBar2)
                   {
                       return lightBar1.center.x < lightBar2.center.x;
                   });
@@ -126,59 +122,6 @@ namespace rm::utils
         return image;
     }
 
-    rm::FileType GetFileType(const char* filename)
-    {
-        struct stat buffer{};
-        if (stat(filename, &buffer) == 0)
-        {
-            if (S_ISREG(buffer.st_mode))
-                return rm::FILETYPE_REGULAR_FILE;
-
-            if (S_ISDIR(buffer.st_mode))
-                return rm::FILETYPE_DIRECTORY;
-
-            if (S_ISLNK(buffer.st_mode))
-                return rm::FILETYPE_SYMBOLIC_LINK;
-
-            if (S_ISSOCK(buffer.st_mode))
-                return rm::FILETYPE_SOCKET;
-        }
-
-        return rm::FILETYPE_UNKNOWN;
-    }
-
-    bool ListFiles(const char* path, std::vector<std::string>& filenames)
-    {
-        // NOLINT(misc-no-recursion)
-        DIR* pDir;
-        struct dirent* ptr;
-        if (!(pDir = opendir(path)))
-        {
-            return false;
-        }
-
-        std::filesystem::path fullPath;
-        while ((ptr = readdir(pDir)) != nullptr)
-        {
-            fullPath = path;
-            if (strcmp(ptr->d_name, ".") != 0 && strcmp(ptr->d_name, "..") != 0)
-            {
-                fullPath /= ptr->d_name;
-                if (GetFileType(fullPath.string().c_str()) == rm::FILETYPE_DIRECTORY)
-                {
-                    ListFiles(fullPath.string().c_str(), filenames);
-                }
-                else
-                {
-                    filenames.push_back(fullPath.string());
-                }
-            }
-        }
-
-        closedir(pDir);
-        return true;
-    }
-
     cv::Rect GetROI(cv::Point2f* imagePoints, int pointsCount, float scaleFactor, const cv::Size& frameSize,
                     const cv::Rect& previous)
     {
@@ -245,61 +188,6 @@ namespace rm::utils
 
         // TODO: Add side support & handle some edge case.
     }
-
-    double NewtonIteration(double (*fd)(double), double x0, double error, int cycle)
-    {
-        double a = x0;
-        double x = x0 - fd(x0);
-
-        while (fabs(x - a) > error && cycle--)
-        {
-            a = x;
-            x = x - fd(x);
-            if (a == x)
-            {
-                return x;
-            }
-        }
-        return x;
-    }
-
-    double NewtonIteration(double (*fd)(double, std::vector<double>), const std::vector<double>& literals, double x0,
-                           double error, int cycle)
-    {
-        double a = x0;
-        double x = x0 - fd(x0, literals);
-
-        while (fabs(x - a) > error && cycle--)
-        {
-            a = x;
-            x = x - fd(x, literals);
-            if (a == x)
-            {
-                return x;
-            }
-        }
-        return x;
-    }
-
-    double ProjectileMotionFD(double theta, std::vector<double> literals)
-    {
-        if (literals.size() == 4)
-        {
-            double g = literals[0], d = literals[1], h = literals[2], v0 = literals[3];
-            int towards = (int)theta ? (int)theta / abs((int)theta) : 1;
-
-            double fx = h - d * tan(theta) + towards * (pow(d, 2.0) * g / pow(cos(theta) * v0, 2.0) * 2.0);
-            double dx = towards * (pow(d, 2.0) * g * sin(theta)) / ((pow(v0, 2.0) * pow(cos(theta), 3.0))) -
-                d * (pow(tan(theta), 2.0) + 1);
-
-            return (1 * fx / dx);
-        }
-        else
-        {
-            return -1;
-        }
-    }
-
 
     float PointDistance(const cv::Point2f& pt1, const cv::Point2f& pt2)
     {
@@ -396,21 +284,6 @@ namespace rm::utils
                 }
             }
         }
-    }
-
-    std::string PathCombine(const std::string& path1, const std::string& path2)
-    {
-        std::filesystem::path fullPath = path1;
-        fullPath /= path2;
-        return fullPath.string();
-    }
-
-    std::string int2str(int number)
-    {
-        char str[64] = {0};
-        std::snprintf(str, 64, "%d", number);
-        std::string res(str);
-        return res;
     }
 
     void CalcPerspective(cv::Point2f input[4], cv::Point2f output[4], const float outRatio)

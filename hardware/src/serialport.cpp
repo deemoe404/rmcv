@@ -17,7 +17,7 @@ namespace rm
         return crc;
     }
 
-    bool serial_port::initialize(const char* device, unsigned int speed)
+    bool serial_port::initialize(const char* device, const unsigned int speed)
     {
         fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
         if (fd != -1)

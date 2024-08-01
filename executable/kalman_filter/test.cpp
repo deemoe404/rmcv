@@ -9,7 +9,7 @@ int main()
     cv::KalmanFilter KF(6, 6, 0);
 
     setIdentity(KF.measurementMatrix);
-    setIdentity(KF.processNoiseCov, cv::Scalar::all(5e-5));
+    setIdentity(KF.processNoiseCov, cv::Scalar::all(5e-3));
     setIdentity(KF.measurementNoiseCov, cv::Scalar::all(0.5));
     setIdentity(KF.errorCovPost, cv::Scalar::all(0.05));
 
@@ -29,7 +29,7 @@ int main()
     {
         auto noise = [
                 generator = std::default_random_engine(cv::getTickCount()),
-                distribution = std::normal_distribution<float>(0, 10)]() mutable
+                distribution = std::normal_distribution<float>(0, 1)]() mutable
         {
             return distribution(generator);
         };
@@ -58,14 +58,14 @@ int main()
         }
         else
         {
-            KF.predict();
-
             const auto dt = t - t_last;
             const auto value = function(t);
 
             KF.transitionMatrix.at<float>(0, 3) = dt;
             KF.transitionMatrix.at<float>(1, 4) = dt;
             KF.transitionMatrix.at<float>(2, 5) = dt;
+
+            KF.predict();
 
             measurement.at<float>(3) = (value - measurement.at<float>(0)) / dt;
             measurement.at<float>(4) = (value - measurement.at<float>(1)) / dt;

@@ -50,6 +50,18 @@ namespace rm
         }
     };
 
+    template <typename T>
+    struct euler
+    {
+        T x;
+        T y;
+        T z;
+
+        euler(T x, T y, T z) : x(x), y(y), z(z)
+        {
+        }
+    };
+
     typedef std::vector<cv::Point> contour;
 
     class lightblob
@@ -77,7 +89,7 @@ namespace rm
         cv::Point2f vertices[4]; /// Vertices of armour (square with light blob as side length for better PNP result)
         cv::Rect2f bounding_box; /// Bounding box of the armour
 
-        int64 timespan = 0;
+        int64 timestamp = 0;
         int lost_count = 0;
         cv::Point3d position;
         std::map<int, int> identity = {};
@@ -86,7 +98,13 @@ namespace rm
 
         void reset(double process_noise, double measurement_noise, double error);
 
-        void update();
+        void update(const armour& new_observation);
+
+        void update(int64 new_timestamp);
+
+        [[nodiscard]] std::tuple<int, double> identity_max() const;
+
+        [[nodiscard]] std::tuple<int, float> max_IoU(std::vector<armour> armours) const;
     };
 }
 
@@ -151,7 +169,7 @@ namespace rm::utils
     /// \param x Rotation angle around x axis in radians.
     /// \param y Rotation angle around y axis in radians.
     /// \param z Rotation angle around z axis in radians.
-    cv::Mat euler2matrix(double x, double y, double z);
+    cv::Mat euler2homogeneous(double x, double y, double z);
 }
 
 #endif //RMCV_CORE_H

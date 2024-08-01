@@ -36,8 +36,8 @@ namespace rm
             vertices[i++] = lightBar.vertices[j--];
         }
 
-        float distanceL = rm::utils::PointDistance(vertices[0], vertices[1]);
-        float distanceR = rm::utils::PointDistance(vertices[2], vertices[3]);
+        float distanceL = utils::PointDistance(vertices[0], vertices[1]);
+        float distanceR = utils::PointDistance(vertices[2], vertices[3]);
         float offsetL = round((distanceL / 0.50f - distanceL) / 2);
         float offsetR = round((distanceR / 0.50f - distanceR) / 2);
         utils::ExtendCord(vertices[0], vertices[1], offsetL, icon[0], icon[1]);
@@ -48,7 +48,7 @@ namespace rm
         utils::CalcPerspective(vertices, vertices);
     }
 
-    void armour::reset(double process_noise, double measurement_noise, double error)
+    void armour::reset(const double process_noise, const double measurement_noise, const double error)
     {
         setIdentity(observer.measurementMatrix);
         setIdentity(observer.processNoiseCov, cv::Scalar::all(process_noise));
@@ -66,6 +66,99 @@ namespace rm
             0, 0, 0, 0, 0, 1);
 
         initialized = false;
+    }
+
+    void armour::update(const armour& new_observation)
+    {
+        for (auto [fst, snd] : new_observation.identity)
+        {
+            identity[fst] += snd;
+        }
+
+        if (initialized)
+        {
+            const auto delta_tick = new_observation.timestamp - timestamp;
+            const double dt = static_cast<double>(delta_tick) / cv::getTickFrequency();
+
+            observer.transitionMatrix.at<double>(0, 3) = dt;
+            observer.transitionMatrix.at<double>(1, 4) = dt;
+            observer.transitionMatrix.at<double>(2, 5) = dt;
+
+            observer.predict();
+
+            measurement.at<double>(3) = (new_observation.position.x - measurement.at<double>(0)) / dt;
+            measurement.at<double>(4) = (new_observation.position.y - measurement.at<double>(1)) / dt;
+            measurement.at<double>(5) = (new_observation.position.z - measurement.at<double>(2)) / dt;
+
+            measurement.at<double>(0) = new_observation.position.x;
+            measurement.at<double>(1) = new_observation.position.y;
+            measurement.at<double>(2) = new_observation.position.z;
+
+            observer.correct(measurement);
+        }
+        else
+        {
+            measurement.at<double>(0) = new_observation.position.x;
+            measurement.at<double>(1) = new_observation.position.y;
+            measurement.at<double>(2) = new_observation.position.z;
+
+            observer.correct(measurement);
+            initialized = true;
+        }
+
+        timestamp = new_observation.timestamp;
+    }
+
+    void armour::update(const int64 new_timestamp)
+    {
+        if (!initialized) return;
+
+        const auto delta_tick = new_timestamp - timestamp;
+        const double dt = static_cast<double>(delta_tick) / cv::getTickFrequency();
+
+        observer.transitionMatrix.at<double>(0, 3) = dt;
+        observer.transitionMatrix.at<double>(1, 4) = dt;
+        observer.transitionMatrix.at<double>(2, 5) = dt;
+
+        observer.predict();
+    }
+
+    std::tuple<int, double> armour::identity_max() const
+    {
+        double sum = 0;
+        for (const auto& [fst, snd] : identity) sum += exp(snd);
+
+        double max = 0;
+        int max_id = -1;
+        for (const auto& [fst, snd] : identity)
+        {
+            if (const double prob = exp(snd) / sum;
+                prob > max)
+            {
+                max = prob;
+                max_id = fst;
+            }
+        }
+
+        return {max_id, max};
+    }
+
+    std::tuple<int, float> armour::max_IoU(std::vector<armour> armours) const
+    {
+        int index = -1;
+        float max = 0;
+        for (int i = 0; i < armours.size(); i++)
+        {
+            auto intersection = bounding_box & armours[i].bounding_box;
+            const auto union_area = bounding_box.area() + armours[i].bounding_box.area() - intersection.area();
+            if (const float iou = intersection.area() / union_area;
+                iou > max)
+            {
+                max = iou;
+                index = i;
+            }
+        }
+        return {index, max};
     }
 }
 
@@ -310,7 +403,12 @@ namespace rm::utils
         return {pt1.x / 2 + pt2.x / 2, pt1.y / 2 + pt2.y / 2};
     }
 
-    cv::Mat euler2matrix(const double x, const double y, const double z)
+    cv::Mat euler2homogeneous(const euler<double>& rotation)
+    {
+        return euler2homogeneous(rotation.x, rotation.y, rotation.z);
+    }
+
+    cv::Mat euler2homogeneous(const double x, const double y, const double z)
     {
         const cv::Mat r_z = (cv::Mat_<double>(3, 3, CV_64F) <<
             std::cos(z), -std::sin(z), 0,
@@ -327,6 +425,10 @@ namespace rm::utils
             0, std::cos(x), -std::sin(x),
             0, std::sin(x), std::cos(x));
 
-        return r_z * r_y * r_x;
+        const cv::Mat matrix = r_z * r_y * r_x;
+        const cv::Mat homogeneous = cv::Mat::eye(4, 4, CV_64F);
+        matrix.copyTo(homogeneous(cv::Rect(0, 0, 3, 3)));
+
+        return homogeneous;
     }
 }

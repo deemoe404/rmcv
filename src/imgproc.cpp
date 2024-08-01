@@ -8,29 +8,13 @@ namespace rm
 {
     cv::Mat affine_correction(const cv::Mat& source, cv::Point2f vertices[4], const cv::Size outSize)
     {
-        // handel the case of vertices out of screen
         for (int i = 0; i < 4; i++)
         {
-            if (vertices[i].x < 0 ||
-                vertices[i].y < 0 ||
-                vertices[i].x > static_cast<float>(source.cols) - 1 ||
-                vertices[i].y > static_cast<float>(source.rows) - 1)
-            {
-                if (vertices[i].x < 0) vertices[i].x = 0;
-
-                if (vertices[i].y < 0) vertices[i].y = 0;
-
-                if (vertices[i].x > static_cast<float>(source.cols) - 1)
-                    vertices[i].x = static_cast<float>(source.cols) - 1;
-
-                if (vertices[i].y > static_cast<float>(source.rows) - 1)
-                    vertices[i].y = static_cast<float>(source.rows) - 1;
-            }
+            vertices[i].x = std::max(0.0f, std::min(vertices[i].x, static_cast<float>(source.cols) - 1));
+            vertices[i].y = std::max(0.0f, std::min(vertices[i].y, static_cast<float>(source.rows) - 1));
         }
 
-        const cv::Rect box = boundingRect(std::vector<cv::Point>({
-            vertices[0], vertices[1], vertices[2], vertices[3]
-        }));
+        const cv::Rect box = boundingRect(std::vector<cv::Point>(vertices, vertices + 4));
         const cv::Point2f srcPts[3] = {
             {vertices[1].x - static_cast<float>(box.x), vertices[1].y - static_cast<float>(box.y)},
             {vertices[2].x - static_cast<float>(box.x), vertices[2].y - static_cast<float>(box.y)},

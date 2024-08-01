@@ -403,31 +403,14 @@ namespace rm::utils
         return {pt1.x / 2 + pt2.x / 2, pt1.y / 2 + pt2.y / 2};
     }
 
-    cv::Mat euler2homogeneous(const euler<double>& rotation)
+    cv::Mat homogeneous(const cv::Mat& rotation, const cv::Mat& translation)
     {
-        return euler2homogeneous(rotation.x, rotation.y, rotation.z);
-    }
+        if (rotation.rows != 3 || rotation.cols != 3 || translation.rows != 3 || translation.cols != 1) return {};
 
-    cv::Mat euler2homogeneous(const double x, const double y, const double z)
-    {
-        const cv::Mat r_z = (cv::Mat_<double>(3, 3, CV_64F) <<
-            std::cos(z), -std::sin(z), 0,
-            std::sin(z), std::cos(z), 0,
-            0, 0, 1);
+        cv::Mat homogeneous = cv::Mat::eye(4, 4, CV_64F);
 
-        const cv::Mat r_y = (cv::Mat_<double>(3, 3, CV_64F) <<
-            std::cos(y), 0, std::sin(y),
-            0, 1, 0,
-            -std::sin(y), 0, std::cos(y));
-
-        const cv::Mat r_x = (cv::Mat_<double>(3, 3, CV_64F) <<
-            1, 0, 0,
-            0, std::cos(x), -std::sin(x),
-            0, std::sin(x), std::cos(x));
-
-        const cv::Mat matrix = r_z * r_y * r_x;
-        const cv::Mat homogeneous = cv::Mat::eye(4, 4, CV_64F);
-        matrix.copyTo(homogeneous(cv::Rect(0, 0, 3, 3)));
+        rotation.copyTo(homogeneous(cv::Rect(0, 0, 3, 3)));
+        translation.copyTo(homogeneous(cv::Rect(3, 0, 1, 3)));
 
         return homogeneous;
     }

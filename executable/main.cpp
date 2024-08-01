@@ -167,7 +167,7 @@ void process_function(rm::parallel_queue<frame_package>& frame_queue,
     while (1)
     {
         const auto frame = frame_queue.pop();
-        const auto h_base2gripper = rm::utils::euler2homogeneous(frame->package.rotation);
+        const auto h_base2gripper = rm::utils::homogeneous(frame->package.rotation.to_matrix());
 
         auto [contours, binary] = extract_color(frame->image, rm::CAMP_BLUE, 80);
         auto [positive, negtive] =

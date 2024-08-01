@@ -8,18 +8,11 @@
 #include <cmath>
 #include <vector>
 #include <string>
-#include <sys/stat.h>
-#include <dirent.h>
 #include <filesystem>
-#include <cstring>
-#include "opencv2/opencv.hpp"
-
-
-#include <string>
 #include <thread>
-#include <algorithm>
-#include <filesystem>
-#include <random>
+#include <sys/stat.h>
+
+#include <opencv2/opencv.hpp>
 #include <opencv2/ml.hpp>
 
 namespace rm
@@ -60,6 +53,35 @@ namespace rm
         euler(T x, T y, T z) : x(x), y(y), z(z)
         {
         }
+
+        explicit euler(cv::Mat array) : x(array.at<T>(0)), y(array.at<T>(1)), z(array.at<T>(2))
+        {
+        }
+
+        [[nodiscard]] cv::Mat to_array() const
+        {
+            return cv::Mat_<T>(3, 1) << x, y, z;
+        }
+
+        [[nodiscard]] cv::Mat to_matrix() const
+        {
+            const cv::Mat r_z = (cv::Mat_<double>(3, 3, CV_64F) <<
+                std::cos(z), -std::sin(z), 0,
+                std::sin(z), std::cos(z), 0,
+                0, 0, 1);
+
+            const cv::Mat r_y = (cv::Mat_<double>(3, 3, CV_64F) <<
+                std::cos(y), 0, std::sin(y),
+                0, 1, 0,
+                -std::sin(y), 0, std::cos(y));
+
+            const cv::Mat r_x = (cv::Mat_<double>(3, 3, CV_64F) <<
+                1, 0, 0,
+                0, std::cos(x), -std::sin(x),
+                0, std::sin(x), std::cos(x));
+
+            return r_z * r_y * r_x;
+        }
     };
 
     typedef std::vector<cv::Point> contour;
@@ -72,8 +94,6 @@ namespace rm
         cv::Point2f center; /// Mass center of the light blob
         cv::Point2f vertices[4]; /// Four vertices around the light blob
         cv::Size2f size; /// Width and height of the light blob
-
-        lightblob() = default;
 
         explicit lightblob(cv::RotatedRect box, rm::camp camp = rm::CAMP_NEUTRAL);
     };
@@ -163,13 +183,7 @@ namespace rm::utils
     void
     ExtendCord(const cv::Point2f& pt1, const cv::Point2f& pt2, float deltaLen, cv::Point2f& dst1, cv::Point2f& dst2);
 
-    cv::Mat euler2homogeneous(const euler<double>& rotation);
-
-    /// Convert euler angles to rotation matrix.
-    /// \param x Rotation angle around x axis in radians.
-    /// \param y Rotation angle around y axis in radians.
-    /// \param z Rotation angle around z axis in radians.
-    cv::Mat euler2homogeneous(double x, double y, double z);
+    cv::Mat homogeneous(const cv::Mat& rotation, const cv::Mat& translation = cv::Mat::zeros(3, 1, CV_64F));
 }
 
 #endif //RMCV_CORE_H

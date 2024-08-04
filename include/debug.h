@@ -10,6 +10,24 @@
 /// \brief Debug utilities.
 namespace rm::debug
 {
+    class logger
+    {
+        cv::FileStorage storage;
+        cv::VideoCapture stream_reader;
+        cv::VideoWriter stream_writer;
+
+        int64 section_id = 0;
+        int64 frame_id = 0;
+        bool reading = true;
+
+    public:
+        explicit logger(int64 section_id = -1, int FPS = 210, const cv::Size& resolution = {1280, 1024});
+
+        ~logger();
+
+        void write(const cv::Mat& image, const cv::Mat& data);
+    };
+
     void draw_armours(const std::vector<armour>& input, cv::Mat& output, int index);
 
     void DrawArmour(armour input, cv::Mat& output);

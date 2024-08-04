@@ -6,6 +6,40 @@
 
 namespace rm::debug
 {
+    logger::logger(const int64 section_id, int FPS, const cv::Size& resolution): section_id(section_id)
+    {
+        const auto path = std::filesystem::current_path() / std::to_string(section_id);
+        if (!exists(path))
+        {
+            create_directory(path);
+            stream_writer.open(
+                (path / "video.avi").string(), cv::VideoWriter::fourcc('F', 'F', 'V', '1'), FPS, resolution);
+            reading = false;
+        }
+        else
+        {
+            stream_reader.open((path / "video.avi").string());
+            reading = true;
+        }
+        storage.open((path / "metadata.xml").string(), reading ? cv::FileStorage::READ : cv::FileStorage::WRITE);
+    }
+
+    logger::~logger()
+    {
+        storage.release();
+        if (reading) stream_reader.release();
+        else stream_writer.release();
+    }
+
+    void logger::write(const cv::Mat& image, const cv::Mat& data)
+    {
+        if (reading) return;
+
+        stream_writer.write(image);
+        storage << "frame" << frame_id++;
+        storage << "data" << data;
+    }
+
     void draw_armours(const std::vector<armour>& input, cv::Mat& output, const int index)
     {
         if (input.empty()) return;

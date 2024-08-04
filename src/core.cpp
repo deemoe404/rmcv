@@ -70,10 +70,10 @@ namespace rm
 
     void armour::update(const armour& new_observation)
     {
-        for (auto [fst, snd] : new_observation.identity)
-        {
-            identity[fst] += snd;
-        }
+        if (identity_history.find(new_observation.identity) == identity_history.end())
+            identity_history[new_observation.identity] = 1;
+        else
+            identity_history[new_observation.identity]++;
 
         if (initialized)
         {
@@ -126,11 +126,11 @@ namespace rm
     std::tuple<int, double> armour::identity_max() const
     {
         double sum = 0;
-        for (const auto& [fst, snd] : identity) sum += exp(snd);
+        for (const auto& [fst, snd] : identity_history) sum += exp(snd);
 
         double max = 0;
         int max_id = -1;
-        for (const auto& [fst, snd] : identity)
+        for (const auto& [fst, snd] : identity_history)
         {
             if (const double prob = exp(snd) / sum;
                 prob > max)

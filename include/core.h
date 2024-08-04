@@ -100,6 +100,8 @@ namespace rm
 
     class armour
     {
+        std::map<int, int> identity_history = {};
+
         cv::KalmanFilter observer;
         cv::Mat measurement = cv::Mat::zeros(6, 1, CV_32F);
         bool initialized = false;
@@ -112,7 +114,7 @@ namespace rm
         int64 timestamp = 0;
         int lost_count = 0;
         cv::Point3d position;
-        std::map<int, int> identity = {};
+        int identity = -1;
 
         explicit armour(std::vector<lightblob> lightblobs);
 

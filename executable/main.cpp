@@ -178,9 +178,7 @@ void process_function(rm::parallel_queue<frame_package>& frame_queue,
         for (auto& armour : armours)
         {
             cv::Mat icon = rm::affine_correction(frame->image, armour.icon, {20, 20});
-            icon = rm::utils::flatten_image(icon, CV_32FC1);
-            int label = static_cast<int>(svm_red->predict(icon));
-            armour.identity.insert({label, 1});
+            armour.identity = static_cast<int>(svm_red->predict(rm::utils::flatten_image(icon, CV_32FC1)));
 
             auto [rvec, tvec] =
                 rm::solve_PnP(armour.vertices, cammat, discof, {27, 27});

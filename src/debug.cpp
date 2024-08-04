@@ -50,7 +50,7 @@ namespace rm::debug
             contours.emplace_back(ar.vertices, ar.vertices + 4);
             contours.emplace_back(ar.icon, ar.icon + 4);
 
-            const std::string position = std::to_string(ar.identity.begin()->first) + ": " +
+            const std::string position = std::to_string(ar.identity) + ": " +
                 std::to_string(ar.position.x) + ", " +
                 std::to_string(ar.position.y) + ", " +
                 std::to_string(ar.position.z);
@@ -67,26 +67,6 @@ namespace rm::debug
         }
 
         drawContours(output, contours, -1, {0, 255, 255}, 1);
-    }
-
-    void DrawArmour(rm::armour input, cv::Mat& output)
-    {
-        std::vector<std::vector<cv::Point>> contours;
-
-        std::vector<cv::Point> vertices;
-        std::vector<cv::Point> icons;
-        for (auto& vertex : input.vertices)
-        {
-            vertices.push_back(vertex);
-        }
-        for (auto& vertex : input.icon)
-        {
-            icons.push_back(vertex);
-        }
-        contours.push_back(vertices);
-        contours.push_back(icons);
-
-        cv::drawContours(output, contours, -1, {0, 255, 255}, 1);
     }
 
     void draw_lightblobs(const std::vector<lightblob>& positive, const std::vector<contour>& negative, cv::Mat& output,
@@ -110,21 +90,5 @@ namespace rm::debug
 
         if (!negative.empty())
             drawContours(output, negative, -1, {0, 255, 255}, 1);
-    }
-
-    void PrintMat(cv::Mat& input, int decimal)
-    {
-        for (int i = 0; i < input.size().height; i++)
-        {
-            std::cout << "[ ";
-            for (int j = 0; j < input.size().width; j++)
-            {
-                std::cout << std::fixed << std::setw(2) << std::setprecision(decimal) << input.at<float>(i, j);
-                if (j != input.size().width - 1)
-                    std::cout << ", ";
-                else
-                    std::cout << " ]" << std::endl;
-            }
-        }
     }
 }

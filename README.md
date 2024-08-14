@@ -10,4 +10,3 @@ includes:
 * Pattern matching for light blob and armour
 * Serial port communication (Linux only temporarily)
 * Gravity compensation
-* Baidu ppdet for target detection

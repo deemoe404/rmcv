@@ -42,5 +42,8 @@ executable/svm/images
 executable/svm/videos
 executable/calibration/data
 
-#vcpkg
-.vcpkg
+# vcpkg
+.vcpkg*
+
+# macOS
+.DS_Store

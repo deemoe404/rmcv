@@ -17,7 +17,7 @@ namespace rm::debug
         cv::VideoWriter stream_writer;
 
         int64 section_id = 0;
-        int64 frame_id = 0;
+        int frame_id = 0;
         bool reading = true;
 
     public:
